@@ -14,6 +14,7 @@
 
 #include "Net/UnrealNetwork.h"
 #include "Bounty/Weapon/BaseWeapon.h"
+#include "Bounty/BountyComponents/CombatComponent.h"
 
 ABountyCharacter::ABountyCharacter()
 {
@@ -31,7 +32,8 @@ ABountyCharacter::ABountyCharacter()
 
 	GetCharacterMovement()->JumpZVelocity = 700.f;
 	GetCharacterMovement()->AirControl = 0.35f;
-	GetCharacterMovement()->MaxWalkSpeed = 275.f;
+	GetCharacterMovement()->MaxWalkSpeed = 650.f;
+	GetCharacterMovement()->MaxWalkSpeedCrouched = 250.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
@@ -49,6 +51,9 @@ ABountyCharacter::ABountyCharacter()
 
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
 	OverheadWidget->SetupAttachment(RootComponent);
+
+	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
+	Combat->SetIsReplicated(true);
 }
 
 void ABountyCharacter::BeginPlay()
@@ -83,14 +88,26 @@ void ABountyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 
 		// Jumping
-		//EnhancedInputComponent->BindAction(IA_Jump, ETriggerEvent::Started, this, &ACharacter::Jump);
-		//EnhancedInputComponent->BindAction(IA_Jump, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		EnhancedInputComponent->BindAction(IA_JumpNDodge, ETriggerEvent::Started, this, &ACharacter::Jump);
+		EnhancedInputComponent->BindAction(IA_JumpNDodge, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 		// Moving
 		EnhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Triggered, this, &ABountyCharacter::InputMove);
 
 		// Looking
 		EnhancedInputComponent->BindAction(IA_Look, ETriggerEvent::Triggered, this, &ABountyCharacter::InputLook);
+
+		// Equipping
+		EnhancedInputComponent->BindAction(IA_Equip, ETriggerEvent::Triggered, this, &ABountyCharacter::InputEquip);
+	}
+}
+
+void ABountyCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	if (Combat)
+	{
+		Combat->Character = this;
 	}
 }
 
@@ -137,7 +154,7 @@ void ABountyCharacter::InputMove(const FInputActionValue& Value)
 {
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
-
+	
 	if (Controller != nullptr)
 	{
 		// find out which way is forward
@@ -151,8 +168,10 @@ void ABountyCharacter::InputMove(const FInputActionValue& Value)
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
 		// add movement 
-		AddMovementInput(ForwardDirection, MovementVector.Y);
-		AddMovementInput(RightDirection, MovementVector.X);
+		float magnitudeY = MovementVector.Y / 50.f;
+		float magnitudeX = MovementVector.X / 50.f;
+		AddMovementInput(ForwardDirection, magnitudeY);
+		AddMovementInput(RightDirection, magnitudeX);
 	}
 }
 
@@ -166,5 +185,13 @@ void ABountyCharacter::InputLook(const FInputActionValue& Value)
 		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
+	}
+}
+
+void ABountyCharacter::InputEquip(const FInputActionValue& Value)
+{
+	if (Combat && HasAuthority())
+	{
+		Combat->EquipWeapon(OverlappingWeapon);
 	}
 }
