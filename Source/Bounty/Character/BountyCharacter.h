@@ -34,6 +34,7 @@ private:
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;	// Replaicate 변수 설정
 	void SetOverlappingWeapon(ABaseWeapon* _weapon);
+	bool IsUsingGamepad() const;
 
 private:
 	// components

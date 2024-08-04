@@ -16,6 +16,8 @@
 #include "Bounty/Weapon/BaseWeapon.h"
 #include "Bounty/BountyComponents/CombatComponent.h"
 
+#include "GameFramework/InputDeviceSubsystem.h"
+
 ABountyCharacter::ABountyCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -136,6 +138,24 @@ void ABountyCharacter::SetOverlappingWeapon(ABaseWeapon* _weapon)
 		}
 	}
 }
+bool ABountyCharacter::IsUsingGamepad() const
+{
+	UInputDeviceSubsystem* inputDeviceSubsystem = UInputDeviceSubsystem::Get();
+	if (inputDeviceSubsystem)
+	{
+		FHardwareDeviceIdentifier device = inputDeviceSubsystem->GetMostRecentlyUsedHardwareDevice(GetPlatformUserId());
+		if (device.PrimaryDeviceType == EHardwareDevicePrimaryType::Gamepad)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	return false;
+}
+
 void ABountyCharacter::OnRep_OverlappingWeapon(ABaseWeapon* _lastWeapon)
 {
 	if (OverlappingWeapon)
@@ -154,7 +174,6 @@ void ABountyCharacter::InputMove(const FInputActionValue& Value)
 {
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
-	
 	if (Controller != nullptr)
 	{
 		// find out which way is forward
@@ -168,10 +187,19 @@ void ABountyCharacter::InputMove(const FInputActionValue& Value)
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
 		// add movement 
-		float magnitudeY = MovementVector.Y / 50.f;
-		float magnitudeX = MovementVector.X / 50.f;
-		AddMovementInput(ForwardDirection, magnitudeY);
-		AddMovementInput(RightDirection, magnitudeX);
+		if (IsUsingGamepad())
+		{
+			float magnitudeY = MovementVector.Y / 50.f;
+			float magnitudeX = MovementVector.X / 50.f;
+
+			AddMovementInput(ForwardDirection, magnitudeY);
+			AddMovementInput(RightDirection, magnitudeX);
+		}
+		else
+		{
+			AddMovementInput(ForwardDirection, MovementVector.Y);
+			AddMovementInput(RightDirection, MovementVector.X);
+		}
 	}
 }
 
