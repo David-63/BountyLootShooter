@@ -15,9 +15,19 @@ class BOUNTY_API UCombatComponent : public UActorComponent
 
 private:
 	class ABountyCharacter* Character;
+	UPROPERTY(Replicated)
 	class ABaseWeapon* EquippedWeapon;
+	UPROPERTY(Replicated)
+	bool bIsADS;
+
+protected:
+	void SetADS(bool _bIsADS);
+	UFUNCTION(Server, Reliable)
+	void ServerSetADS(bool _bIsADS);
+
 
 public:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;	// Replaicate 변수 설정
 	void EquipWeapon(ABaseWeapon* _weaponToEquip);
 
 public:	

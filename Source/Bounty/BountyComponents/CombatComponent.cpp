@@ -6,6 +6,7 @@
 #include "Bounty/Weapon/BaseWeapon.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Components/SphereComponent.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values for this component's properties
 UCombatComponent::UCombatComponent()
@@ -28,6 +29,24 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+}
+
+void UCombatComponent::SetADS(bool _bIsADS)
+{
+	bIsADS = _bIsADS;
+	ServerSetADS(_bIsADS);
+}
+
+void UCombatComponent::ServerSetADS_Implementation(bool _bIsADS)
+{
+	bIsADS = _bIsADS;
+}
+
+void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
+	DOREPLIFETIME(UCombatComponent, bIsADS);	
 }
 
 void UCombatComponent::EquipWeapon(ABaseWeapon* _weaponToEquip)

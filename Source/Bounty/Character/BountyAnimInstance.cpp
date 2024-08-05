@@ -20,11 +20,14 @@ void UBountyAnimInstance::NativeUpdateAnimation(float _deltaTime)
 	}
 	if (nullptr == BountyCharacter) return;
 
+	// for locomotion
 	FVector velocity = BountyCharacter->GetVelocity();
 	velocity.Z = 0.f;
 	MoveSpeed = velocity.Size();
-
 	bIsInAir = BountyCharacter->GetCharacterMovement()->IsFalling();
 	bIsAccelerating = BountyCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f ? true : false;
 
+	bIsWeaponEquipped = BountyCharacter->IsWeaponEquipped();
+	bIsCrouched = BountyCharacter->bIsCrouched;
+	bIsADS = BountyCharacter->IsADS();
 }
