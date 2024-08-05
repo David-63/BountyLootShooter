@@ -5,6 +5,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Bounty/Character/BountyCharacter.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ABaseWeapon::ABaseWeapon()
@@ -62,11 +63,49 @@ void ABaseWeapon::Tick(float DeltaTime)
 }
 
 
+void ABaseWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ABaseWeapon, WeaponState);
+}
+
 void ABaseWeapon::ShowPickupWidget(bool _showWidget)
 {
 	if (PickupWidget)
 	{
 		PickupWidget->SetVisibility(_showWidget);
+	}
+}
+
+void ABaseWeapon::SetWeaponState(EWeaponState _state)
+{
+	WeaponState = _state;
+	switch (WeaponState)
+	{
+	case EWeaponState::EWS_Initial:
+		break;
+	case EWeaponState::EWS_Equipped:
+		ShowPickupWidget(false);
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+	case EWeaponState::EWS_Dropped:
+		break;
+	}
+}
+
+void ABaseWeapon::OnRep_WeaponState()
+{
+	switch (WeaponState)
+	{
+	case EWeaponState::EWS_Initial:
+		break;
+	case EWeaponState::EWS_Equipped:
+		ShowPickupWidget(false);
+		break;
+	case EWeaponState::EWS_Dropped:
+		break;
+	default:
+		break;
 	}
 }
 

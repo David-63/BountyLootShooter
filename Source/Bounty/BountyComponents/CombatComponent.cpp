@@ -5,7 +5,7 @@
 #include "Bounty/Character/BountyCharacter.h"
 #include "Bounty/Weapon/BaseWeapon.h"
 #include "Engine/SkeletalMeshSocket.h"
-
+#include "Components/SphereComponent.h"
 
 // Sets default values for this component's properties
 UCombatComponent::UCombatComponent()
@@ -42,5 +42,4 @@ void UCombatComponent::EquipWeapon(ABaseWeapon* _weaponToEquip)
 		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
 	}
 	EquippedWeapon->SetOwner(Character);
-	EquippedWeapon->ShowPickupWidget(false);
 }

@@ -168,6 +168,14 @@ void ABountyCharacter::OnRep_OverlappingWeapon(ABaseWeapon* _lastWeapon)
 	}
 }
 
+void ABountyCharacter::ServerInputEquip_Implementation()
+{
+	if (Combat)
+	{
+		Combat->EquipWeapon(OverlappingWeapon);
+	}
+}
+
 
 
 void ABountyCharacter::InputMove(const FInputActionValue& Value)
@@ -218,8 +226,15 @@ void ABountyCharacter::InputLook(const FInputActionValue& Value)
 
 void ABountyCharacter::InputEquip(const FInputActionValue& Value)
 {
-	if (Combat && HasAuthority())
+	if (Combat)
 	{
-		Combat->EquipWeapon(OverlappingWeapon);
+		if (HasAuthority())
+		{
+			Combat->EquipWeapon(OverlappingWeapon);
+		}
+		else
+		{
+			ServerInputEquip();
+		}
 	}
 }
