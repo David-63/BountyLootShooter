@@ -30,17 +30,18 @@ ABountyCharacter::ABountyCharacter()
 
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 400.0f, 0.0f); // ...at this rotation rate
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 
-	GetCharacterMovement()->JumpZVelocity = 700.f;
+	GetCharacterMovement()->GravityScale = 1.5f;
+	GetCharacterMovement()->JumpZVelocity = 800.f;
 	GetCharacterMovement()->AirControl = 0.35f;
-	GetCharacterMovement()->MaxWalkSpeed = 650.f;
+
+	GetCharacterMovement()->MaxWalkSpeed = 550.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
 	GetCharacterMovement()->MaxWalkSpeedCrouched = 250.f;
-	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
-
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
