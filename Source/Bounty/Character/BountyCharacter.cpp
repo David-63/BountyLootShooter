@@ -201,6 +201,12 @@ bool ABountyCharacter::IsADS() const
 	return (Combat && Combat->bIsADS);
 }
 
+ABaseWeapon* ABountyCharacter::GetEquippedWeapon() const
+{
+	if (nullptr == Combat) return nullptr;
+	return Combat->EquippedWeapon;
+}
+
 void ABountyCharacter::OnRep_OverlappingWeapon(ABaseWeapon* _lastWeapon)
 {
 	if (OverlappingWeapon)

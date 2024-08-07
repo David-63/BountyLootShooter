@@ -5,6 +5,7 @@
 #include "BountyCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Bounty/Weapon/BaseWeapon.h"
 
 void UBountyAnimInstance::NativeInitializeAnimation()
 {
@@ -52,4 +53,15 @@ void UBountyAnimInstance::NativeUpdateAnimation(float _deltaTime)
 	// for aim offset
 	AO_Yaw = BountyCharacter->GetAO_Yaw();
 	AO_Pitch = BountyCharacter->GetAO_Pitch();
+
+	EquippedWeapon = BountyCharacter->GetEquippedWeapon();
+	if (bIsWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && BountyCharacter->GetMesh())
+	{
+		LeftHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("LefthandSocket"), ERelativeTransformSpace::RTS_World);
+		FVector outPosition;
+		FRotator outRotation;
+		BountyCharacter->GetMesh()->TransformToBoneSpace(FName("hand_r"), LeftHandTransform.GetLocation(), FRotator::ZeroRotator, outPosition, outRotation);
+		LeftHandTransform.SetLocation(outPosition);
+		LeftHandTransform.SetRotation(FQuat(outRotation));
+	}
 }

@@ -44,6 +44,11 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = Aim, meta = (AllowPrivateAccess = "true"))
 	float AO_Pitch;
 
+	UPROPERTY(BlueprintReadOnly, Category = Aim, meta = (AllowPrivateAccess = "true"))
+	FTransform LeftHandTransform;
+
+	class ABaseWeapon* EquippedWeapon;
+
 public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float _deltaTime) override;
