@@ -7,16 +7,18 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
+#include "Components/WidgetComponent.h"
+
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-#include "Components/WidgetComponent.h"
+#include "GameFramework/InputDeviceSubsystem.h"
 
 #include "Net/UnrealNetwork.h"
 #include "Bounty/Weapon/BaseWeapon.h"
 #include "Bounty/BountyComponents/CombatComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
-#include "GameFramework/InputDeviceSubsystem.h"
 
 ABountyCharacter::ABountyCharacter()
 {
@@ -70,6 +72,7 @@ void ABountyCharacter::BeginPlay()
 void ABountyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	ADS_Offset(DeltaTime);
 }
 
 void ABountyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -111,6 +114,38 @@ void ABountyCharacter::PostInitializeComponents()
 	{
 		Combat->Character = this;
 	}
+}
+
+void ABountyCharacter::ADS_Offset(float _deltaTime)
+{
+	if (Combat && nullptr == Combat->EquippedWeapon) return;
+	FVector velocity = GetVelocity();
+	velocity.Z = 0.f;
+	float moveSpeed = velocity.Size();
+	bool bIsInAir = GetCharacterMovement()->IsFalling();
+	if (0.f == moveSpeed && !bIsInAir) // standing still, not jumping
+	{
+		FRotator currentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		FRotator deltaRotation = UKismetMathLibrary::NormalizedDeltaRotator(currentAimRotation, StartingAimRotation);
+		AO_Yaw = deltaRotation.Yaw;
+		bUseControllerRotationYaw = false;
+	}
+	if (0.f < moveSpeed || bIsInAir) // running, or jumping
+	{
+		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		AO_Yaw = 0.f;
+		bUseControllerRotationYaw = true;
+	}
+
+	AO_Pitch = GetBaseAimRotation().Pitch;
+	if (90.f < AO_Pitch && !IsLocallyControlled())
+	{
+		// map pitch from [270, 360) to [-90, 0)
+		FVector2D inRange(270.f, 360.f);
+		FVector2D outRange(-90.f, 0.f);
+		AO_Pitch = FMath::GetMappedRangeValueClamped(inRange, outRange, AO_Pitch);
+	}
+
 }
 
 void ABountyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

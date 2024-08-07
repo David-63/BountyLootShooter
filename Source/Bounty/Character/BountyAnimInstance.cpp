@@ -48,4 +48,8 @@ void UBountyAnimInstance::NativeUpdateAnimation(float _deltaTime)
 	const float rotationValue = deltaCharacterDirection.Yaw / _deltaTime;
 	const float interpRotation = FMath::FInterpTo(Lean, rotationValue, _deltaTime, 6.f);
 	Lean = FMath::Clamp(interpRotation, -90.f, 90.f);
+
+	// for aim offset
+	AO_Yaw = BountyCharacter->GetAO_Yaw();
+	AO_Pitch = BountyCharacter->GetAO_Pitch();
 }
