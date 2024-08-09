@@ -54,6 +54,7 @@ void UBountyAnimInstance::NativeUpdateAnimation(float _deltaTime)
 	AO_Yaw = BountyCharacter->GetAO_Yaw();
 	AO_Pitch = BountyCharacter->GetAO_Pitch();
 
+	// for fabrik
 	EquippedWeapon = BountyCharacter->GetEquippedWeapon();
 	if (bIsWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && BountyCharacter->GetMesh())
 	{
@@ -64,4 +65,8 @@ void UBountyAnimInstance::NativeUpdateAnimation(float _deltaTime)
 		LeftHandTransform.SetLocation(outPosition);
 		LeftHandTransform.SetRotation(FQuat(outRotation));
 	}
+
+
+	// for turning movement
+	TurningInPlace = BountyCharacter->GetTurningInPlace();
 }

@@ -51,16 +51,20 @@ ABountyCharacter::ABountyCharacter()
 	CameraBoom->TargetArmLength = 70.0f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
-	// Create a follow camera
+	// Camera setup
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 
+	// ui
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
 	OverheadWidget->SetupAttachment(RootComponent);
-
+		
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	Combat->SetIsReplicated(true);
+	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 }
 
 void ABountyCharacter::BeginPlay()
@@ -128,13 +132,20 @@ void ABountyCharacter::ADS_Offset(float _deltaTime)
 		FRotator currentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		FRotator deltaRotation = UKismetMathLibrary::NormalizedDeltaRotator(currentAimRotation, StartingAimRotation);
 		AO_Yaw = deltaRotation.Yaw;
-		bUseControllerRotationYaw = false;
+		if (ETurningInPlace::ETIP_NotTurning == TurningInPlace)
+		{
+			InterpAO_Yaw = AO_Yaw;
+		}
+		bUseControllerRotationYaw = true;
+		TurnInPlace(_deltaTime);
+
 	}
 	if (0.f < moveSpeed || bIsInAir) // running, or jumping
 	{
 		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		AO_Yaw = 0.f;
 		bUseControllerRotationYaw = true;
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 	}
 
 	AO_Pitch = GetBaseAimRotation().Pitch;
@@ -146,6 +157,28 @@ void ABountyCharacter::ADS_Offset(float _deltaTime)
 		AO_Pitch = FMath::GetMappedRangeValueClamped(inRange, outRange, AO_Pitch);
 	}
 
+}
+
+void ABountyCharacter::TurnInPlace(float _deltaTime)
+{
+	if (90.f < AO_Yaw)
+	{
+		TurningInPlace = ETurningInPlace::ETIP_Right;
+	}
+	else if (-90.f > AO_Yaw)
+	{
+		TurningInPlace = ETurningInPlace::ETIP_Left;
+	}
+	if (ETurningInPlace::ETIP_NotTurning != TurningInPlace)
+	{
+		InterpAO_Yaw = FMath::FInterpTo(InterpAO_Yaw, 0.f, _deltaTime, 10.f);
+		AO_Yaw = InterpAO_Yaw;
+		if (15.f > FMath::Abs(AO_Yaw))
+		{
+			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+			StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		}
+	}
 }
 
 void ABountyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

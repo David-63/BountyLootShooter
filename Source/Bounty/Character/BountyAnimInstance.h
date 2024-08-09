@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+#include "Bounty/BountyType/TurningInPlace.h"
 #include "BountyAnimInstance.generated.h"
 
 /**
@@ -44,10 +45,12 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = Aim, meta = (AllowPrivateAccess = "true"))
 	float AO_Pitch;
 
-	UPROPERTY(BlueprintReadOnly, Category = Aim, meta = (AllowPrivateAccess = "true"))
+	class ABaseWeapon* EquippedWeapon;
+	UPROPERTY(BlueprintReadOnly, Category = WeaponOffset, meta = (AllowPrivateAccess = "true"))
 	FTransform LeftHandTransform;
 
-	class ABaseWeapon* EquippedWeapon;
+	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	ETurningInPlace TurningInPlace;
 
 public:
 	virtual void NativeInitializeAnimation() override;
