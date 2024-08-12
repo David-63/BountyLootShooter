@@ -86,6 +86,7 @@ protected:
 	void InputEquip(const FInputActionValue& Value);
 	void InputCrouch();
 	void InputADS();
+	virtual void Jump() override;
 
 public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
