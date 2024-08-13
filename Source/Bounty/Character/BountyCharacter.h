@@ -33,6 +33,8 @@ private:
 	FRotator StartingAimRotation;
 
 	ETurningInPlace TurningInPlace;
+	UPROPERTY(EditAnywhere, Category = Combat)
+	class UAnimMontage* FireArmMontage;
 
 private:
 	UFUNCTION()
@@ -41,7 +43,7 @@ private:
 	void ServerInputEquip();
 	void ADS_Offset(float _deltaTime);
 	void TurnInPlace(float _deltaTime);
-
+	
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;	// Replaicate 변수 초기화
 	void SetOverlappingWeapon(ABaseWeapon* _weapon);
@@ -52,6 +54,7 @@ public:
 	FORCEINLINE float GetAO_Pitch() const { return AO_Pitch; }
 	ABaseWeapon* GetEquippedWeapon() const;
 	FORCEINLINE ETurningInPlace GetTurningInPlace() const { return TurningInPlace; }
+	void PlayFireArmMontage(bool _bADS);
 
 private:
 	// components
@@ -76,6 +79,8 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* IA_ADS;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* IA_Fire;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* IA_Sprint;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* IA_ReloadNSwap;
@@ -86,6 +91,7 @@ protected:
 	void InputEquip(const FInputActionValue& Value);
 	void InputCrouch();
 	void InputADS();
+	void InputFire();
 	virtual void Jump() override;
 
 public:

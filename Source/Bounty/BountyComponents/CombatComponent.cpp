@@ -54,10 +54,19 @@ void UCombatComponent::OnRep_EquipWeapon()
 	}
 }
 
+void UCombatComponent::Attack(bool _presseed)
+{
+	bIsAttacked = _presseed;
+
+	if (!Character) return;
+	GEngine->AddOnScreenDebugMessage(2, 0.1f, FColor::Blue, FString::Printf(TEXT("Attak called by combat")));
+	Character->PlayFireArmMontage(bIsADS);
+}
+
 
 void UCombatComponent::EquipWeapon(ABaseWeapon* _weaponToEquip)
 {
-	if (Character == nullptr || _weaponToEquip == nullptr) return;
+	if (nullptr == Character || nullptr == _weaponToEquip) return;
 
 	EquippedWeapon = _weaponToEquip;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);

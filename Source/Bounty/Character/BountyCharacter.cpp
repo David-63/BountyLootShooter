@@ -20,6 +20,7 @@
 #include "Kismet/KismetMathLibrary.h"
 
 
+
 ABountyCharacter::ABountyCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -98,20 +99,17 @@ void ABountyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 
-		// Jumping
 		EnhancedInputComponent->BindAction(IA_JumpNDodge, ETriggerEvent::Started, this, &ABountyCharacter::Jump);
 		EnhancedInputComponent->BindAction(IA_JumpNDodge, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
-		// Moving
 		EnhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Triggered, this, &ABountyCharacter::InputMove);
-
-		// Looking
 		EnhancedInputComponent->BindAction(IA_Look, ETriggerEvent::Triggered, this, &ABountyCharacter::InputLook);
-
-		// Equipping
-		EnhancedInputComponent->BindAction(IA_Equip, ETriggerEvent::Triggered, this, &ABountyCharacter::InputEquip);
 		EnhancedInputComponent->BindAction(IA_Crouch, ETriggerEvent::Started, this, &ABountyCharacter::InputCrouch);
+
+		EnhancedInputComponent->BindAction(IA_Equip, ETriggerEvent::Triggered, this, &ABountyCharacter::InputEquip);
 		EnhancedInputComponent->BindAction(IA_ADS, ETriggerEvent::Started, this, &ABountyCharacter::InputADS);
+		EnhancedInputComponent->BindAction(IA_Fire, ETriggerEvent::Started, this, &ABountyCharacter::InputFire);
+		
 	}
 }
 
@@ -244,6 +242,20 @@ ABaseWeapon* ABountyCharacter::GetEquippedWeapon() const
 	return Combat->EquippedWeapon;
 }
 
+void ABountyCharacter::PlayFireArmMontage(bool _bADS)
+{
+	if (nullptr == Combat || nullptr == Combat->EquippedWeapon) return;
+
+
+	if (FireArmMontage)
+	{
+		GEngine->AddOnScreenDebugMessage(3, 0.1f, FColor::Blue, FString::Printf(TEXT("PlayMontage")));
+		FName sessionName;
+		sessionName = _bADS ? FName("RifleADS") : FName("RifleHip");
+		Super::PlayAnimMontage(FireArmMontage, 1.f, sessionName);
+	}
+}
+
 void ABountyCharacter::OnRep_OverlappingWeapon(ABaseWeapon* _lastWeapon)
 {
 	if (OverlappingWeapon)
@@ -346,6 +358,14 @@ void ABountyCharacter::InputADS()
 
 	Combat->bIsADS ? Combat->SetADS(false) : Combat->SetADS(true);
 
+}
+
+void ABountyCharacter::InputFire()
+{
+	if (!Combat) return;
+
+	GEngine->AddOnScreenDebugMessage(1, 0.1f, FColor::Blue, FString::Printf(TEXT("Input Attack")));
+	Combat->Attack(true);
 }
 
 void ABountyCharacter::Jump()

@@ -25,12 +25,16 @@ private:
 	UPROPERTY(EditAnywhere)
 	float ADSMoveSpeed;
 
+	bool bIsAttacked;
+
 protected:
 	void SetADS(bool _bIsADS);
 	UFUNCTION(Server, Reliable)
 	void ServerSetADS(bool _bIsADS);
 	UFUNCTION()
 	void OnRep_EquipWeapon();
+
+	void Attack(bool _presseed);
 
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;	// Replaicate 변수 설정
