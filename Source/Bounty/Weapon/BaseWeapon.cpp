@@ -6,6 +6,8 @@
 #include "Components/WidgetComponent.h"
 #include "Bounty/Character/BountyCharacter.h"
 #include "Net/UnrealNetwork.h"
+#include "Animation/AnimationAsset.h"
+#include "Components/SkeletalMeshComponent.h"
 
 // Sets default values
 ABaseWeapon::ABaseWeapon()
@@ -91,6 +93,13 @@ void ABaseWeapon::SetWeaponState(EWeaponState _state)
 	case EWeaponState::EWS_Dropped:
 		break;
 	}
+}
+
+void ABaseWeapon::Fire()
+{
+	if (!FireAnimation) return;
+	
+	WeaponMesh->PlayAnimation(FireAnimation, false);
 }
 
 void ABaseWeapon::OnRep_WeaponState()

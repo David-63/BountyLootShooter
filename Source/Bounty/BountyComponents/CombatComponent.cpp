@@ -59,8 +59,11 @@ void UCombatComponent::Attack(bool _presseed)
 	bIsAttacked = _presseed;
 
 	if (!Character) return;
+	if (!EquippedWeapon) return;
+
 	GEngine->AddOnScreenDebugMessage(2, 0.1f, FColor::Blue, FString::Printf(TEXT("Attak called by combat")));
 	Character->PlayFireArmMontage(bIsADS);
+	EquippedWeapon->Fire();
 }
 
 

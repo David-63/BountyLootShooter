@@ -34,6 +34,9 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	class UWidgetComponent* PickupWidget;
 
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	class UAnimationAsset* FireAnimation;
+
 private:
 	UFUNCTION()
 	void OnRep_WeaponState();
@@ -50,7 +53,7 @@ public:
 	void SetWeaponState(EWeaponState _state);
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
-
+	void Fire();
 	
 public:	
 	// Sets default values for this actor's properties
