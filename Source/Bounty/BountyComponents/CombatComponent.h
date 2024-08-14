@@ -29,8 +29,6 @@ private:
 
 	bool bIsAttackHold;
 
-	FVector HitTarget;
-
 protected:
 	void SetADS(bool _bIsADS);
 	UFUNCTION(Server, Reliable)
@@ -41,11 +39,11 @@ protected:
 	void Attack(bool _presseed);
 
 	UFUNCTION(Server, Reliable)
-	void ServerAttack();
+	void ServerAttack(const FVector_NetQuantize& _traceHitTarget);
 
 	// NetMulticast 옵션으로 서버에서 호출시 모든 클라이언트가 동일하게 작동함
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastAttack();
+	void MulticastAttack(const FVector_NetQuantize& _traceHitTarget);
 
 	void TraceUnderCrosshairs(FHitResult& _traceHitResult);
 

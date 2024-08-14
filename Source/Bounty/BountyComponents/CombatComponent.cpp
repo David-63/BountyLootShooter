@@ -34,8 +34,6 @@ void UCombatComponent::BeginPlay()
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	FHitResult traceHitResult;
-	TraceUnderCrosshairs(traceHitResult);
 }
 
 void UCombatComponent::TraceUnderCrosshairs(FHitResult& _traceHitResult)
@@ -51,25 +49,12 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& _traceHitResult)
 	bool isScreenToWorld = UGameplayStatics::DeprojectScreenToWorld
 		(UGameplayStatics::GetPlayerController(this, 0), crossHairLocation, crossHairWorldPosition, crossHairWorldDirection);
 
-	if (isScreenToWorld)
-	{
-		FVector begin = crossHairWorldPosition;
-		FVector end = begin + crossHairWorldDirection * TRACE_LENGTH;
+	if (!isScreenToWorld) return;
 
-		GetWorld()->LineTraceSingleByChannel(_traceHitResult, begin, end, ECollisionChannel::ECC_Visibility);
+	FVector begin = crossHairWorldPosition;
+	FVector end = begin + crossHairWorldDirection * TRACE_LENGTH;
 
-		if (!_traceHitResult.bBlockingHit)
-		{
-			_traceHitResult.ImpactPoint = end;
-			HitTarget = end;
-		}
-		else
-		{
-			HitTarget = _traceHitResult.ImpactPoint;
-			DrawDebugSphere(GetWorld(), _traceHitResult.ImpactPoint, 12.f, 6, FColor::Emerald);
-		}
-	}
-
+	GetWorld()->LineTraceSingleByChannel(_traceHitResult, begin, end, ECollisionChannel::ECC_Visibility);
 }
 
 void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -95,24 +80,25 @@ void UCombatComponent::Attack(bool _presseed)
 
 	if (bIsAttackHold)
 	{
-		ServerAttack();
+		FHitResult traceHitResult;
+		TraceUnderCrosshairs(traceHitResult);
+		ServerAttack(traceHitResult.ImpactPoint);
 	}
 	
 }
 
-void UCombatComponent::ServerAttack_Implementation()
+void UCombatComponent::ServerAttack_Implementation(const FVector_NetQuantize& _traceHitTarget)
 {
-	MulticastAttack();
+	MulticastAttack(_traceHitTarget);
 }
 
-void UCombatComponent::MulticastAttack_Implementation()
+void UCombatComponent::MulticastAttack_Implementation(const FVector_NetQuantize& _traceHitTarget)
 {
 	if (!Character) return;
 	if (!EquippedWeapon) return;
 
-	GEngine->AddOnScreenDebugMessage(2, 0.1f, FColor::Blue, FString::Printf(TEXT("Attak called by combat")));
 	Character->PlayFireArmMontage(bIsADS);
-	EquippedWeapon->Fire(HitTarget);
+	EquippedWeapon->Fire(_traceHitTarget);
 }
 
 
