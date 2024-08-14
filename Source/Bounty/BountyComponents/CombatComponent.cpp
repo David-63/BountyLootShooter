@@ -8,10 +8,13 @@
 #include "Components/SphereComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
+
+#include "DrawDebugHelpers.h"
 
 UCombatComponent::UCombatComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 	BaseMoveSpeed = 550.f;
 	ADSMoveSpeed = 250.f;
 }
@@ -31,6 +34,39 @@ void UCombatComponent::BeginPlay()
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	FHitResult traceHitResult;
+	TraceUnderCrosshairs(traceHitResult);
+}
+
+void UCombatComponent::TraceUnderCrosshairs(FHitResult& _traceHitResult)
+{
+	if (!GEngine && !GEngine->GameViewport) return;
+
+	FVector2D viewportSize;
+	GEngine->GameViewport->GetViewportSize(viewportSize);
+
+	FVector2D crossHairLocation(viewportSize.X / 2.f, viewportSize.Y / 2.f);
+	FVector crossHairWorldPosition;
+	FVector crossHairWorldDirection;
+	bool isScreenToWorld = UGameplayStatics::DeprojectScreenToWorld
+		(UGameplayStatics::GetPlayerController(this, 0), crossHairLocation, crossHairWorldPosition, crossHairWorldDirection);
+
+	if (isScreenToWorld)
+	{
+		FVector begin = crossHairWorldPosition;
+		FVector end = begin + crossHairWorldDirection * TRACE_LENGTH;
+
+		GetWorld()->LineTraceSingleByChannel(_traceHitResult, begin, end, ECollisionChannel::ECC_Visibility);
+
+		if (!_traceHitResult.bBlockingHit)
+		{
+			_traceHitResult.ImpactPoint = end;
+		}
+		else
+		{
+			DrawDebugSphere(GetWorld(), _traceHitResult.ImpactPoint, 12.f, 6, FColor::Emerald);
+		}
+	}
 
 }
 

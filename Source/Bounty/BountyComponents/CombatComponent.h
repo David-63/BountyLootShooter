@@ -7,6 +7,8 @@
 #include "CombatComponent.generated.h"
 
 
+#define TRACE_LENGTH 10000.f
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BOUNTY_API UCombatComponent : public UActorComponent
 {
@@ -43,6 +45,7 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastAttack();
 
+	void TraceUnderCrosshairs(FHitResult& _traceHitResult);
 
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;	// Replaicate 변수 설정
