@@ -9,7 +9,6 @@
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
-// Sets default values for this component's properties
 UCombatComponent::UCombatComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -18,7 +17,6 @@ UCombatComponent::UCombatComponent()
 }
 
 
-// Called when the game starts
 void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -30,7 +28,6 @@ void UCombatComponent::BeginPlay()
 }
 
 
-// Called every frame
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -56,8 +53,26 @@ void UCombatComponent::OnRep_EquipWeapon()
 
 void UCombatComponent::Attack(bool _presseed)
 {
-	bIsAttacked = _presseed;
+	bIsAttackHold = _presseed;
+	if (!_presseed)
+	{
+		GEngine->AddOnScreenDebugMessage(4, 0.1f, FColor::Blue, FString::Printf(TEXT("공격 false 반환")));
+	}
 
+	if (bIsAttackHold)
+	{
+		ServerAttack();
+	}
+	
+}
+
+void UCombatComponent::ServerAttack_Implementation()
+{
+	MulticastAttack();
+}
+
+void UCombatComponent::MulticastAttack_Implementation()
+{
 	if (!Character) return;
 	if (!EquippedWeapon) return;
 
@@ -65,6 +80,8 @@ void UCombatComponent::Attack(bool _presseed)
 	Character->PlayFireArmMontage(bIsADS);
 	EquippedWeapon->Fire();
 }
+
+
 
 
 void UCombatComponent::EquipWeapon(ABaseWeapon* _weaponToEquip)

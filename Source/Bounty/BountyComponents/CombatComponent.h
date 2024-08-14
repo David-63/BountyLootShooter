@@ -25,7 +25,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	float ADSMoveSpeed;
 
-	bool bIsAttacked;
+	bool bIsAttackHold;
 
 protected:
 	void SetADS(bool _bIsADS);
@@ -35,6 +35,14 @@ protected:
 	void OnRep_EquipWeapon();
 
 	void Attack(bool _presseed);
+
+	UFUNCTION(Server, Reliable)
+	void ServerAttack();
+
+	// NetMulticast 옵션으로 서버에서 호출시 모든 클라이언트가 동일하게 작동함
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastAttack();
+
 
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;	// Replaicate 변수 설정
