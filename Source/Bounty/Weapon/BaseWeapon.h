@@ -53,7 +53,7 @@ public:
 	void SetWeaponState(EWeaponState _state);
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
-	void Fire();
+	virtual void Fire(const FVector& _hitTarget);
 	
 public:	
 	// Sets default values for this actor's properties

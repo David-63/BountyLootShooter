@@ -61,9 +61,11 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& _traceHitResult)
 		if (!_traceHitResult.bBlockingHit)
 		{
 			_traceHitResult.ImpactPoint = end;
+			HitTarget = end;
 		}
 		else
 		{
+			HitTarget = _traceHitResult.ImpactPoint;
 			DrawDebugSphere(GetWorld(), _traceHitResult.ImpactPoint, 12.f, 6, FColor::Emerald);
 		}
 	}
@@ -90,10 +92,6 @@ void UCombatComponent::OnRep_EquipWeapon()
 void UCombatComponent::Attack(bool _presseed)
 {
 	bIsAttackHold = _presseed;
-	if (!_presseed)
-	{
-		GEngine->AddOnScreenDebugMessage(4, 0.1f, FColor::Blue, FString::Printf(TEXT("공격 false 반환")));
-	}
 
 	if (bIsAttackHold)
 	{
@@ -114,7 +112,7 @@ void UCombatComponent::MulticastAttack_Implementation()
 
 	GEngine->AddOnScreenDebugMessage(2, 0.1f, FColor::Blue, FString::Printf(TEXT("Attak called by combat")));
 	Character->PlayFireArmMontage(bIsADS);
-	EquippedWeapon->Fire();
+	EquippedWeapon->Fire(HitTarget);
 }
 
 

@@ -14,4 +14,13 @@ class BOUNTY_API AProjectileWeapon : public ABaseWeapon
 {
 	GENERATED_BODY()
 	
+private:
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AProjectile> ProjectileClass;
+
+
+public:
+	virtual void Fire(const FVector& _hitTarget) override;
+
 };
+

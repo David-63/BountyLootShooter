@@ -29,6 +29,8 @@ private:
 
 	bool bIsAttackHold;
 
+	FVector HitTarget;
+
 protected:
 	void SetADS(bool _bIsADS);
 	UFUNCTION(Server, Reliable)

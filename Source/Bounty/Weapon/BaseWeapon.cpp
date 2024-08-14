@@ -95,7 +95,7 @@ void ABaseWeapon::SetWeaponState(EWeaponState _state)
 	}
 }
 
-void ABaseWeapon::Fire()
+void ABaseWeapon::Fire(const FVector& _hitTarget)
 {
 	if (!FireAnimation) return;
 	
