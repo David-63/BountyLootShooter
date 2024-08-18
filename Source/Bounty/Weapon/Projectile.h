@@ -20,19 +20,26 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* Tracer;
-
 	class UParticleSystemComponent* TracerComponent;
 
-public:	
-	// Sets default values for this actor's properties
-	AProjectile();
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* ImpactParticles;
+	UPROPERTY(EditAnywhere)
+	class USoundCue* ImpactSound;
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	UFUNCTION()
+	virtual void OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
+
+public:
+	virtual void Destroyed() override;
+
 
 public:	
-	// Called every frame
+	AProjectile();
+protected:
+	virtual void BeginPlay() override;
+public:	
 	virtual void Tick(float DeltaTime) override;
 
 };
