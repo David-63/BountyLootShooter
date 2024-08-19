@@ -38,14 +38,16 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 void UCombatComponent::TraceUnderCrosshairs(FHitResult& _traceHitResult)
 {
-	if (!GEngine && !GEngine->GameViewport) return;
+	if (!GEngine || !GEngine->GameViewport) return;
 
 	FVector2D viewportSize;
 	GEngine->GameViewport->GetViewportSize(viewportSize);
 
-	FVector2D crossHairLocation(viewportSize.X / 2.f, viewportSize.Y / 2.f);
 	FVector crossHairWorldPosition;
 	FVector crossHairWorldDirection;
+
+	FVector2D crossHairLocation(viewportSize.X / 2.f, viewportSize.Y / 2.f);
+
 	bool isScreenToWorld = UGameplayStatics::DeprojectScreenToWorld
 		(UGameplayStatics::GetPlayerController(this, 0), crossHairLocation, crossHairWorldPosition, crossHairWorldDirection);
 
@@ -55,6 +57,15 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& _traceHitResult)
 	FVector end = begin + crossHairWorldDirection * TRACE_LENGTH;
 
 	GetWorld()->LineTraceSingleByChannel(_traceHitResult, begin, end, ECollisionChannel::ECC_Visibility);
+
+	if (!_traceHitResult.bBlockingHit)
+	{
+		_traceHitResult.ImpactPoint = end;
+	}
+	else
+	{
+		DrawDebugSphere(GetWorld(), _traceHitResult.ImpactPoint, 12.f, 6, FColor::Emerald);
+	}
 }
 
 void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
