@@ -17,6 +17,9 @@ class BOUNTY_API UCombatComponent : public UActorComponent
 
 private:
 	class ABountyCharacter* Character;
+	class ABountyPlayerController* PlayerController;
+	class ABountyHUD* HUD;
+
 	UPROPERTY(ReplicatedUsing = OnRep_EquipWeapon)
 	class ABaseWeapon* EquippedWeapon;
 	UPROPERTY(Replicated)
@@ -46,6 +49,8 @@ protected:
 	void MulticastAttack(const FVector_NetQuantize& _traceHitTarget);
 
 	void TraceUnderCrosshairs(FHitResult& _traceHitResult);
+
+	void SetHUDCrosshairs(float _deltaTime);
 
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;	// Replaicate 변수 설정

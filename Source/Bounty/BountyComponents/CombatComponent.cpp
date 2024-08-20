@@ -11,6 +11,8 @@
 #include "Kismet/GameplayStatics.h"
 
 #include "DrawDebugHelpers.h"
+#include "Bounty/PlayerController/BountyPlayerController.h"
+#include "Bounty/HUD/BountyHUD.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -34,6 +36,7 @@ void UCombatComponent::BeginPlay()
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	SetHUDCrosshairs(DeltaTime);
 }
 
 void UCombatComponent::TraceUnderCrosshairs(FHitResult& _traceHitResult)
@@ -66,6 +69,38 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& _traceHitResult)
 	{
 		DrawDebugSphere(GetWorld(), _traceHitResult.ImpactPoint, 12.f, 6, FColor::Emerald);
 	}
+}
+
+void UCombatComponent::SetHUDCrosshairs(float _deltaTime)
+{
+	if (!Character || !Character->Controller) return;
+
+	PlayerController = PlayerController == nullptr ? Cast<ABountyPlayerController>(Character->Controller) : PlayerController;
+
+	HUD = HUD == nullptr ? Cast<ABountyHUD>(PlayerController->GetHUD()) : HUD;
+	
+	if (!HUD) return;
+
+	FHUDPackage hudPackage;
+	if (EquippedWeapon)
+	{
+		hudPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
+		hudPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;
+		hudPackage.CrosshairsRight = EquippedWeapon->CrosshairsRight;
+		hudPackage.CrosshairsTop = EquippedWeapon->CrosshairsTop;
+		hudPackage.CrosshairsBottom = EquippedWeapon->CrosshairsBottom;
+	}
+	else
+	{
+		hudPackage.CrosshairsCenter = nullptr;
+		hudPackage.CrosshairsLeft = nullptr;
+		hudPackage.CrosshairsRight = nullptr;
+		hudPackage.CrosshairsTop = nullptr;
+		hudPackage.CrosshairsBottom = nullptr;
+	}
+	
+	HUD->SetHUDPackage(hudPackage);
+
 }
 
 void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
