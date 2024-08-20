@@ -315,7 +315,8 @@ void ABountyCharacter::InputLook(const FInputActionValue& Value)
 {
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
-
+	InertiaValue = LookAxisVector * 0.25f;
+	
 	if (Controller != nullptr)
 	{
 		// add yaw and pitch input to controller

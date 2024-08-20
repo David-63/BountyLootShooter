@@ -36,6 +36,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = Combat)
 	class UAnimMontage* FireArmMontage;
 
+	// CrossHair Inertia
+	FVector2D InertiaValue;
+
 private:
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(ABaseWeapon* _lastWeapon); // 변동사항으로 인해 레플리케이트 변수가 null이 된 경우, null이 되기 전 값을 인자로 임시저장된 값을 받을 수 있음
@@ -55,6 +58,7 @@ public:
 	ABaseWeapon* GetEquippedWeapon() const;
 	FORCEINLINE ETurningInPlace GetTurningInPlace() const { return TurningInPlace; }
 	void PlayFireArmMontage(bool _bADS);
+	FORCEINLINE FVector2D GetInertiaValue() const { return InertiaValue; }
 
 private:
 	// components

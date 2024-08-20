@@ -11,8 +11,8 @@ void ABountyHUD::DrawHUD()
 
 	if (!GEngine) return;
 
+	// ºäÆ÷Æ® Áß¾ÓÁöÁ¡ Àü´Þ
 	FVector2D viewportSize;
-
 	GEngine->GameViewport->GetViewportSize(viewportSize);
 	const FVector2D viewportCencter(viewportSize.X / 2.f, viewportSize.Y / 2.f);
 
@@ -43,7 +43,8 @@ void ABountyHUD::DrawCrosshair(UTexture2D* _texture, FVector2D _viewportCenter)
 {
 	const float textureWidth = _texture->GetSizeX();
 	const float textureHeight = _texture->GetSizeY();
-
-	const FVector2D textureDrawPoint(_viewportCenter.X - (textureWidth / 2.f), _viewportCenter.Y - (textureHeight / 2.f));
+	
+	const FVector2D textureDrawPoint
+		(_viewportCenter.X - (textureWidth / 2.f) + (InertiaValue.X * 5.f), _viewportCenter.Y - (textureHeight / 2.f) + (InertiaValue.Y * 5.f));
 	DrawTexture(_texture, textureDrawPoint.X, textureDrawPoint.Y, textureWidth, textureHeight, 0.f, 0.f, 1.f, 1.f, FLinearColor::White);
 }

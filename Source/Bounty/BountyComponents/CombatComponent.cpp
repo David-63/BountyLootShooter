@@ -42,15 +42,20 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 void UCombatComponent::TraceUnderCrosshairs(FHitResult& _traceHitResult)
 {
 	if (!GEngine || !GEngine->GameViewport) return;
-
+	// 뷰포트 가져옴
 	FVector2D viewportSize;
 	GEngine->GameViewport->GetViewportSize(viewportSize);
 
 	FVector crossHairWorldPosition;
 	FVector crossHairWorldDirection;
 
+	// 화면 중앙 좌표
 	FVector2D crossHairLocation(viewportSize.X / 2.f, viewportSize.Y / 2.f);
+	FVector2D inertiaValue = Character->GetInertiaValue();
+	crossHairLocation.X += inertiaValue.X * 5.f;
+	crossHairLocation.Y += inertiaValue.Y * 5.f;
 
+	// 역행렬 계산으로 screen -> World 변환 (inout 변수 사용)
 	bool isScreenToWorld = UGameplayStatics::DeprojectScreenToWorld
 		(UGameplayStatics::GetPlayerController(this, 0), crossHairLocation, crossHairWorldPosition, crossHairWorldDirection);
 
@@ -58,17 +63,10 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& _traceHitResult)
 
 	FVector begin = crossHairWorldPosition;
 	FVector end = begin + crossHairWorldDirection * TRACE_LENGTH;
-
+	
+	// Ray 발사
 	GetWorld()->LineTraceSingleByChannel(_traceHitResult, begin, end, ECollisionChannel::ECC_Visibility);
 
-	if (!_traceHitResult.bBlockingHit)
-	{
-		_traceHitResult.ImpactPoint = end;
-	}
-	else
-	{
-		DrawDebugSphere(GetWorld(), _traceHitResult.ImpactPoint, 12.f, 6, FColor::Emerald);
-	}
 }
 
 void UCombatComponent::SetHUDCrosshairs(float _deltaTime)
@@ -99,7 +97,8 @@ void UCombatComponent::SetHUDCrosshairs(float _deltaTime)
 		hudPackage.CrosshairsBottom = nullptr;
 	}
 	
-	HUD->SetHUDPackage(hudPackage);
+	// 여기에서 Vector2로 Crosshair Inertia value 전달하면 될듯?
+	HUD->SetHUDPackage(hudPackage, Character->GetInertiaValue());
 
 }
 

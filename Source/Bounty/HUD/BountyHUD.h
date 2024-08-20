@@ -29,6 +29,7 @@ class BOUNTY_API ABountyHUD : public AHUD
 
 private:
 	FHUDPackage HUDPackage;
+	FVector2D InertiaValue;
 	
 private:
 	void DrawCrosshair(UTexture2D* _texture, FVector2D _viewportCenter);
@@ -36,5 +37,5 @@ private:
 public:
 	virtual void DrawHUD() override;
 
-	FORCEINLINE void SetHUDPackage(const FHUDPackage& _package) { HUDPackage = _package; }
+	FORCEINLINE void SetHUDPackage(const FHUDPackage& _package, const FVector2D& _inertiaValue) { HUDPackage = _package; InertiaValue = _inertiaValue; }
 };
