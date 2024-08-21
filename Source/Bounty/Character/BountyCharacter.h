@@ -59,6 +59,7 @@ public:
 	FORCEINLINE ETurningInPlace GetTurningInPlace() const { return TurningInPlace; }
 	void PlayFireArmMontage(bool _bADS);
 	FORCEINLINE FVector2D GetInertiaValue() const { return InertiaValue; }
+	FVector GetHitTarget() const;
 
 private:
 	// components

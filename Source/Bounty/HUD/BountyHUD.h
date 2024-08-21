@@ -16,7 +16,7 @@ public:
 	UTexture2D* CrosshairsRight;
 	UTexture2D* CrosshairsTop;
 	UTexture2D* CrosshairsBottom;
-
+	float SpreadFactor;
 };
 
 /**
@@ -30,9 +30,12 @@ class BOUNTY_API ABountyHUD : public AHUD
 private:
 	FHUDPackage HUDPackage;
 	FVector2D InertiaValue;
+
+	UPROPERTY(EditAnywhere)
+	float CrosshairSpreadMax = 16.f;
 	
 private:
-	void DrawCrosshair(UTexture2D* _texture, FVector2D _viewportCenter);
+	void DrawCrosshair(UTexture2D* _texture, FVector2D _viewportCenter, FVector2D _spread);
 
 public:
 	virtual void DrawHUD() override;

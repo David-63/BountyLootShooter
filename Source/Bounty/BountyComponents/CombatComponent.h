@@ -32,6 +32,16 @@ private:
 
 	bool bIsAttackHold;
 
+	// HUD and crosshair
+	UPROPERTY(EditAnywhere)
+	float InertiaMagnitude;
+
+	float CrosshairVelocityFactor;
+	float CrosshairInAirFactor;
+
+
+	FVector HitTarget;
+
 protected:
 	void SetADS(bool _bIsADS);
 	UFUNCTION(Server, Reliable)

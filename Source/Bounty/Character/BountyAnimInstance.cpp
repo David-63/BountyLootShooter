@@ -64,6 +64,25 @@ void UBountyAnimInstance::NativeUpdateAnimation(float _deltaTime)
 		BountyCharacter->GetMesh()->TransformToBoneSpace(FName("hand_r"), LeftHandTransform.GetLocation(), FRotator::ZeroRotator, outPosition, outRotation);
 		LeftHandTransform.SetLocation(outPosition);
 		LeftHandTransform.SetRotation(FQuat(outRotation));
+		
+		if (BountyCharacter->IsLocallyControlled())
+		{
+			bIsLocallyControlled = true;
+			FTransform rightHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("Hand_R"), ERelativeTransformSpace::RTS_World);
+			RightHandRotation = UKismetMathLibrary::FindLookAtRotation(rightHandTransform.GetLocation(), rightHandTransform.GetLocation() + (rightHandTransform.GetLocation() - BountyCharacter->GetHitTarget()));
+		}
+		else
+		{
+			bIsLocallyControlled = false;
+		}
+
+		// µð¹ö±ë¿ë
+		FTransform muzzleTipTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("MuzzleFlash"), ERelativeTransformSpace::RTS_World);
+		FVector muzzleX(FRotationMatrix(muzzleTipTransform.GetRotation().Rotator()).GetUnitAxis(EAxis::X));
+
+		DrawDebugLine(GetWorld(), muzzleTipTransform.GetLocation(), muzzleTipTransform.GetLocation() + muzzleX * 1000.f, FColor::Red);
+		DrawDebugLine(GetWorld(), muzzleTipTransform.GetLocation(), BountyCharacter->GetHitTarget(), FColor::Orange);
+		
 	}
 
 

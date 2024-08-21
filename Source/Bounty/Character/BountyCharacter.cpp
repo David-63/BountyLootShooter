@@ -256,6 +256,13 @@ void ABountyCharacter::PlayFireArmMontage(bool _bADS)
 	}
 }
 
+FVector ABountyCharacter::GetHitTarget() const
+{
+	if (!Combat) return FVector();
+
+	return Combat->HitTarget;
+}
+
 void ABountyCharacter::OnRep_OverlappingWeapon(ABaseWeapon* _lastWeapon)
 {
 	if (OverlappingWeapon)
@@ -365,7 +372,6 @@ void ABountyCharacter::InputFire()
 {
 	if (!Combat) return;
 
-	GEngine->AddOnScreenDebugMessage(1, 0.1f, FColor::Blue, FString::Printf(TEXT("Input Attack")));
 	Combat->Attack(true);
 }
 
