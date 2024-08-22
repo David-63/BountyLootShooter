@@ -13,13 +13,11 @@
 #include "DrawDebugHelpers.h"
 #include "Bounty/PlayerController/BountyPlayerController.h"
 #include "Bounty/HUD/BountyHUD.h"
+#include "Camera/CameraComponent.h"
 
 UCombatComponent::UCombatComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-	BaseMoveSpeed = 550.f;
-	ADSMoveSpeed = 250.f;
-	InertiaMagnitude = 10.f;
 }
 
 
@@ -27,9 +25,13 @@ void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if (Character)
+	if (!Character) return;
+	Character->GetCharacterMovement()->MaxWalkSpeed = BaseMoveSpeed;
+
+	if (Character->GetFollowCamera())
 	{
-		Character->GetCharacterMovement()->MaxWalkSpeed = BaseMoveSpeed;
+		DefaultFOV = Character->GetFollowCamera()->FieldOfView;
+		CurrentFOV = DefaultFOV;
 	}
 }
 
@@ -37,16 +39,17 @@ void UCombatComponent::BeginPlay()
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	SetHUDCrosshairs(DeltaTime);
 
 	if (Character && Character->IsLocallyControlled())
 	{
+		InterpFov(DeltaTime);
+		SetHUDCrosshairs(DeltaTime);
+
 		FHitResult result;
 		TraceUnderCrosshairs(result);
 		HitTarget = result.ImpactPoint;
 		
-	}
-	
+	}	
 }
 
 void UCombatComponent::TraceUnderCrosshairs(FHitResult& _traceHitResult)
@@ -170,7 +173,6 @@ void UCombatComponent::Attack(bool _presseed)
 	{
 		FHitResult traceHitResult;
 		TraceUnderCrosshairs(traceHitResult);
-		GEngine->AddOnScreenDebugMessage(5, 15.f, FColor::Red, FString::Printf(TEXT("attack called : %f, %f"), HitTarget.X, HitTarget.Y));
 
 		ServerAttack(traceHitResult.ImpactPoint);
 	}
@@ -217,6 +219,25 @@ void UCombatComponent::ServerSetADS_Implementation(bool _bIsADS)
 	if (Character)
 	{
 		Character->GetCharacterMovement()->MaxWalkSpeed = bIsADS ? ADSMoveSpeed : BaseMoveSpeed;
+	}
+}
+
+void UCombatComponent::InterpFov(float _deltaTime)
+{
+	if (!EquippedWeapon) return;
+
+	if (bIsADS)
+	{
+		CurrentFOV = FMath::FInterpTo(CurrentFOV, EquippedWeapon->GetZoomedFOV(), _deltaTime, EquippedWeapon->GetZoomInterpSpeed());
+	}
+	else
+	{
+		CurrentFOV = FMath::FInterpTo(CurrentFOV, DefaultFOV, _deltaTime, ZoomInterpSpeed);
+	}
+
+	if (Character && Character->GetFollowCamera())
+	{
+		Character->GetFollowCamera()->SetFieldOfView(CurrentFOV);
 	}
 }
 

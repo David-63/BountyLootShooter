@@ -25,22 +25,38 @@ private:
 	UPROPERTY(Replicated)
 	bool bIsADS;
 
-	UPROPERTY(EditAnywhere)
-	float BaseMoveSpeed;
-	UPROPERTY(EditAnywhere)
-	float ADSMoveSpeed;
+	UPROPERTY(EditAnywhere, Category = "Combat Movement")
+	float BaseMoveSpeed = 550.f;
+	UPROPERTY(EditAnywhere, Category = "Combat Movement")
+	float ADSMoveSpeed = 250.f;
 
 	bool bIsAttackHold;
 
 	// HUD and crosshair
-	UPROPERTY(EditAnywhere)
-	float InertiaMagnitude;
+	UPROPERTY(EditAnywhere, Category = Visual)
+	float InertiaMagnitude = 10.f;
 
 	float CrosshairVelocityFactor;
 	float CrosshairInAirFactor;
 
-
+	// for fabrik
 	FVector HitTarget;
+		
+	/*
+	*  ADS and FOV
+	*/
+
+	// Set to the camera's base FOV in BeginPlay
+	float DefaultFOV;
+	float CurrentFOV;
+
+	UPROPERTY(EditAnywhere, Category = Visual)
+	float ZoomedFOV = 45.f;
+	UPROPERTY(EditAnywhere, Category = Visual)
+	float ZoomInterpSpeed = 30.f;
+
+private:
+	void InterpFov(float _deltaTime);
 
 protected:
 	void SetADS(bool _bIsADS);

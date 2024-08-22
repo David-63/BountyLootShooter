@@ -41,10 +41,9 @@ private:
 	TSubclassOf<class ACasing> CasingClass;
 
 public:
-	/*
+/*
 * Textures for the weapon crosshair
 */
-
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
 	class UTexture2D* CrosshairsCenter;
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
@@ -55,6 +54,16 @@ public:
 	UTexture2D* CrosshairsTop;
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
 	UTexture2D* CrosshairsBottom;
+
+	/*
+	*  Zoomed FOV while ADS
+	*/
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	float ZoomedFOV = 45.f;
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	float ZoomInterpSpeed = 30.f;
+
+
 
 private:
 	UFUNCTION()
@@ -73,17 +82,16 @@ public:
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 	virtual void Fire(const FVector& _hitTarget);
-	
+	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
+	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
+
+
+	// default function
 public:	
-	// Sets default values for this actor's properties
 	ABaseWeapon();
-
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 };
