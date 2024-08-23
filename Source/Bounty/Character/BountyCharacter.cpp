@@ -18,7 +18,7 @@
 #include "Bounty/Weapon/BaseWeapon.h"
 #include "Bounty/BountyComponents/CombatComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-
+#include "Bounty/Bounty.h"
 
 
 ABountyCharacter::ABountyCharacter()
@@ -59,6 +59,7 @@ ABountyCharacter::ABountyCharacter()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
 
 	// ui
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
@@ -122,6 +123,15 @@ void ABountyCharacter::PostInitializeComponents()
 	{
 		Combat->Character = this;
 	}
+}
+
+void ABountyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	// DOREPLIFETIME(ABountyCharacter, OverlappingWeapon); 변경사항이 생기면 리플리케이트한다
+
+	DOREPLIFETIME_CONDITION(ABountyCharacter, OverlappingWeapon, COND_OwnerOnly); // 변동사항이 생기고, 조건에 해당하는 경우 리플리케이트한다
+
 }
 
 void ABountyCharacter::ADS_Offset(float _deltaTime)
@@ -207,14 +217,12 @@ void ABountyCharacter::HideCharacterMesh()
 	}
 }
 
-void ABountyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void ABountyCharacter::MultiCastHit_Implementation()
 {
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	// DOREPLIFETIME(ABountyCharacter, OverlappingWeapon); 변경사항이 생기면 리플리케이트한다
-
-	DOREPLIFETIME_CONDITION(ABountyCharacter, OverlappingWeapon, COND_OwnerOnly); // 변동사항이 생기고, 조건에 해당하는 경우 리플리케이트한다
-
+	PlayHitReactMontage();
 }
+
+
 
 
 void ABountyCharacter::SetOverlappingWeapon(ABaseWeapon* _weapon)
@@ -232,6 +240,7 @@ void ABountyCharacter::SetOverlappingWeapon(ABaseWeapon* _weapon)
 		}
 	}
 }
+
 bool ABountyCharacter::IsUsingGamepad() const
 {
 	UInputDeviceSubsystem* inputDeviceSubsystem = UInputDeviceSubsystem::Get();
@@ -273,10 +282,21 @@ void ABountyCharacter::PlayFireArmMontage(bool _bADS)
 
 	if (FireArmMontage)
 	{
-		GEngine->AddOnScreenDebugMessage(3, 0.1f, FColor::Blue, FString::Printf(TEXT("PlayMontage")));
 		FName sessionName;
 		sessionName = _bADS ? FName("RifleADS") : FName("RifleHip");
 		Super::PlayAnimMontage(FireArmMontage, 1.f, sessionName);
+	}
+}
+
+void ABountyCharacter::PlayHitReactMontage()
+{
+	if (nullptr == Combat || nullptr == Combat->EquippedWeapon) return;
+
+
+	if (HitReactMontage)
+	{
+		FName sessionName("FromFront");
+		Super::PlayAnimMontage(HitReactMontage, 1.f, sessionName);
 	}
 }
 

@@ -69,6 +69,8 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	class UAnimMontage* FireArmMontage;
+	UPROPERTY(EditAnywhere, Category = Combat)
+	class UAnimMontage* HitReactMontage;
 
 	// CrossHair Inertia
 	FVector2D InertiaValue;
@@ -82,7 +84,11 @@ private:
 	void TurnInPlace(float _deltaTime);
 	void HideCharacterMesh();
 	
+
 protected:
+	void PlayHitReactMontage();
+
+
 	// input controll
 	void InputMove(const FInputActionValue& Value);
 	void InputLook(const FInputActionValue& Value);
@@ -101,8 +107,12 @@ public:
 
 	ABaseWeapon* GetEquippedWeapon() const;
 	void PlayFireArmMontage(bool _bADS);
-	FVector GetHitTarget() const;
 
+	UFUNCTION(NetMulticast, Unreliable)
+	void MultiCastHit();
+
+
+	FVector GetHitTarget() const;
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE float GetAO_Yaw() const { return AO_Yaw; }
