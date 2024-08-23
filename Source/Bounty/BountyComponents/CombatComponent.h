@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Bounty/HUD/BountyHUD.h"
 #include "CombatComponent.generated.h"
 
 
@@ -33,11 +34,22 @@ private:
 	bool bIsAttackHold;
 
 	// HUD and crosshair
-	UPROPERTY(EditAnywhere, Category = Visual)
+	FHUDPackage HUDPackage;
+
+	UPROPERTY(EditAnywhere, Category = "CrossHair")
 	float InertiaMagnitude = 10.f;
 
-	float CrosshairVelocityFactor;
 	float CrosshairInAirFactor;
+	float CrosshairAimFactor;
+	float CrosshairAttackingFactor;
+
+	UPROPERTY(EditAnywhere, Category = "CrossHair")
+	float SpreadCorrection = 0.4f;				// 조준 보정
+
+	UPROPERTY(EditAnywhere, Category = "CrossHair")
+	float SpreadMOA = 1.6f;					// Minute Of Angle (사격 패널티 용어로 사용함)
+	UPROPERTY(EditAnywhere, Category = "CrossHair")
+	float RecoveryMOA = 10.f;				// Minute Of Angle (사격 패널티 용어로 사용함)
 
 	// for fabrik
 	FVector HitTarget;
@@ -50,9 +62,9 @@ private:
 	float DefaultFOV;
 	float CurrentFOV;
 
-	UPROPERTY(EditAnywhere, Category = Visual)
+	UPROPERTY(EditAnywhere, Category = "CrossHair")
 	float ZoomedFOV = 45.f;
-	UPROPERTY(EditAnywhere, Category = Visual)
+	UPROPERTY(EditAnywhere, Category = "CrossHair")
 	float ZoomInterpSpeed = 30.f;
 
 private:

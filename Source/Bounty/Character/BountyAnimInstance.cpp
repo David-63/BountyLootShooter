@@ -69,7 +69,9 @@ void UBountyAnimInstance::NativeUpdateAnimation(float _deltaTime)
 		{
 			bIsLocallyControlled = true;
 			FTransform rightHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("Hand_R"), ERelativeTransformSpace::RTS_World);
-			RightHandRotation = UKismetMathLibrary::FindLookAtRotation(rightHandTransform.GetLocation(), rightHandTransform.GetLocation() + (rightHandTransform.GetLocation() - BountyCharacter->GetHitTarget()));
+			// 오른손에서 HitTarget으로 향하는 벡터
+			FRotator lookAtRotation = UKismetMathLibrary::FindLookAtRotation(rightHandTransform.GetLocation(), rightHandTransform.GetLocation() + (rightHandTransform.GetLocation() - BountyCharacter->GetHitTarget()));
+			RightHandRotation = FMath::RInterpTo(RightHandRotation, lookAtRotation, _deltaTime, 20.f);
 		}
 		else
 		{
@@ -77,11 +79,10 @@ void UBountyAnimInstance::NativeUpdateAnimation(float _deltaTime)
 		}
 
 		// 디버깅용
-		FTransform muzzleTipTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("MuzzleFlash"), ERelativeTransformSpace::RTS_World);
-		FVector muzzleX(FRotationMatrix(muzzleTipTransform.GetRotation().Rotator()).GetUnitAxis(EAxis::X));
-
-		DrawDebugLine(GetWorld(), muzzleTipTransform.GetLocation(), muzzleTipTransform.GetLocation() + muzzleX * 1000.f, FColor::Red);
-		DrawDebugLine(GetWorld(), muzzleTipTransform.GetLocation(), BountyCharacter->GetHitTarget(), FColor::Orange);
+		//FTransform muzzleTipTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("MuzzleFlash"), ERelativeTransformSpace::RTS_World);
+		//FVector muzzleX(FRotationMatrix(muzzleTipTransform.GetRotation().Rotator()).GetUnitAxis(EAxis::X));
+		//DrawDebugLine(GetWorld(), muzzleTipTransform.GetLocation(), muzzleTipTransform.GetLocation() + muzzleX * 1000.f, FColor::Red);
+		//DrawDebugLine(GetWorld(), muzzleTipTransform.GetLocation(), BountyCharacter->GetHitTarget(), FColor::Orange);
 		
 	}
 

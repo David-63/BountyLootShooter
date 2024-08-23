@@ -12,7 +12,7 @@
 
 #include "DrawDebugHelpers.h"
 #include "Bounty/PlayerController/BountyPlayerController.h"
-#include "Bounty/HUD/BountyHUD.h"
+//#include "Bounty/HUD/BountyHUD.h"
 #include "Camera/CameraComponent.h"
 
 UCombatComponent::UCombatComponent()
@@ -54,25 +54,23 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 void UCombatComponent::TraceUnderCrosshairs(FHitResult& _traceHitResult)
 {
-	// 뷰포트 가져옴
 	FVector2D viewportSize;	
 	if (GEngine && GEngine->GameViewport)
 	{
 		GEngine->GameViewport->GetViewportSize(viewportSize);
 	}
 	
-	// 화면 중앙 좌표
+	// center location
 	FVector2D crossHairLocation(viewportSize.X / 2.f, viewportSize.Y / 2.f);
 
-	// 역행렬 계산으로 담을 조준점의 위치와 방향
 	FVector crossHairWorldPosition, crossHairWorldDirection;
 
-	// InertiaValue 값에 5.f 만큼 곱해서 관성의 크기를 키움
+	// Increase the size of inertia by multiplying inertiaMagnitude
 	FVector2D inertiaValue = Character->GetInertiaValue() * InertiaMagnitude;
 	crossHairLocation.X += inertiaValue.X;
 	crossHairLocation.Y += inertiaValue.Y;
 
-	// 관성이 적용된 조준점 위치로부터 역행렬 계산으로 screen -> World 변환
+	// Calculate inverse matrix from the crosshair position with inertia applied | screen -> World
 	bool isScreenToWorld = UGameplayStatics::DeprojectScreenToWorld
 		(UGameplayStatics::GetPlayerController(this, 0), crossHairLocation, crossHairWorldPosition, crossHairWorldDirection);
 
@@ -82,8 +80,17 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& _traceHitResult)
 	FVector end = begin + crossHairWorldDirection * TRACE_LENGTH;
 	
 
-	// Ray 결과 반환
+	// Ray result return
 	GetWorld()->LineTraceSingleByChannel(_traceHitResult, begin, end, ECollisionChannel::ECC_Visibility);
+
+	if (_traceHitResult.GetActor() && _traceHitResult.GetActor()->Implements<UCrosshairInteractor>())
+	{
+		HUDPackage.CrosshairsColor = FLinearColor::Yellow;
+	}
+	else
+	{
+		HUDPackage.CrosshairsColor = FLinearColor::White;
+	}
 
 	if (!_traceHitResult.bBlockingHit)
 	{
@@ -102,31 +109,48 @@ void UCombatComponent::SetHUDCrosshairs(float _deltaTime)
 	
 	if (!HUD) return;
 
-	FHUDPackage hudPackage;
 	if (EquippedWeapon)
 	{
-		hudPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
-		hudPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;
-		hudPackage.CrosshairsRight = EquippedWeapon->CrosshairsRight;
-		hudPackage.CrosshairsTop = EquippedWeapon->CrosshairsTop;
-		hudPackage.CrosshairsBottom = EquippedWeapon->CrosshairsBottom;
+		HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
+		HUDPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;
+		HUDPackage.CrosshairsRight = EquippedWeapon->CrosshairsRight;
+		HUDPackage.CrosshairsTop = EquippedWeapon->CrosshairsTop;
+		HUDPackage.CrosshairsBottom = EquippedWeapon->CrosshairsBottom;
 	}
 	else
 	{
-		hudPackage.CrosshairsCenter = nullptr;
-		hudPackage.CrosshairsLeft = nullptr;
-		hudPackage.CrosshairsRight = nullptr;
-		hudPackage.CrosshairsTop = nullptr;
-		hudPackage.CrosshairsBottom = nullptr;
+		HUDPackage.CrosshairsCenter = nullptr;
+		HUDPackage.CrosshairsLeft = nullptr;
+		HUDPackage.CrosshairsRight = nullptr;
+		HUDPackage.CrosshairsTop = nullptr;
+		HUDPackage.CrosshairsBottom = nullptr;
 	}
 	
 	// calculate crosshair spread
 
-	FVector2D moveSpeedRange(0.f, Character->GetCharacterMovement()->MaxWalkSpeed);
-	if (Character->bIsCrouched)
+	// movement spread
+	FVector2D maxSpeedRange(0.f, BaseMoveSpeed);
+	FVector2D velocityRatioRange(0.f, 1.f);
+	FVector currentVelocity = Character->GetVelocity();
+	currentVelocity.Z = 0.f;
+	float crosshairVelocityFactor = FMath::GetMappedRangeValueClamped(maxSpeedRange, velocityRatioRange, currentVelocity.Size());
+
+	// ADS spread
+	if (bIsADS)
 	{
-		moveSpeedRange.Y = Character->GetCharacterMovement()->MaxWalkSpeedCrouched;
+		// the last parameter must be set according to the weapon's ADS transition speed
+		CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, -SpreadCorrection, _deltaTime, 20.f);
 	}
+	else
+	{
+		// the last parameter must be set according to the weapon's ADS transition speed
+		CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.f, _deltaTime, 20.f);
+	}
+
+	// Fire spread
+	CrosshairAttackingFactor = FMath::FInterpTo(CrosshairAttackingFactor, 0.f, _deltaTime, RecoveryMOA);
+
+	// inAir spread
 	if (Character->GetCharacterMovement()->IsFalling())
 	{
 		CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 2.5f, _deltaTime, 2.5f);
@@ -136,15 +160,13 @@ void UCombatComponent::SetHUDCrosshairs(float _deltaTime)
 		CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 0.f, _deltaTime, 25.f);
 	}
 
-	FVector2D VelocityRatioRange(0.f, 1.f);
-	FVector Velocity = Character->GetVelocity();
-	Velocity.Z = 0.f;
-	CrosshairVelocityFactor = FMath::GetMappedRangeValueClamped(moveSpeedRange, VelocityRatioRange, Velocity.Size());
-	hudPackage.SpreadFactor = CrosshairVelocityFactor + CrosshairInAirFactor;
+	
 
+	// total spread (0.2f is default spread)
+	float baseSpread = 0.4f;
+	HUDPackage.SpreadFactor = baseSpread + crosshairVelocityFactor + CrosshairInAirFactor + CrosshairAimFactor + CrosshairAttackingFactor;
 
-	// 여기에서 Vector2로 Crosshair Inertia value 전달하면 될듯?
-	HUD->SetHUDPackage(hudPackage, Character->GetInertiaValue() * InertiaMagnitude);
+	HUD->SetHUDPackage(HUDPackage, Character->GetInertiaValue() * InertiaMagnitude);
 
 }
 
@@ -175,6 +197,11 @@ void UCombatComponent::Attack(bool _presseed)
 		TraceUnderCrosshairs(traceHitResult);
 
 		ServerAttack(traceHitResult.ImpactPoint);
+
+		if (EquippedWeapon)
+		{
+			CrosshairAttackingFactor = SpreadMOA;
+		}
 	}
 	
 }

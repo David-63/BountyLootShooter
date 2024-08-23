@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Bounty/BountyType/TurningInPlace.h"
+#include "Bounty/Interfaces/CrosshairInteractor.h"
 #include "BountyCharacter.generated.h"
 
 class USpringArmComponent;
@@ -14,7 +15,7 @@ class UInputAction;
 struct FInputActionValue;
 
 UCLASS()
-class BOUNTY_API ABountyCharacter : public ACharacter
+class BOUNTY_API ABountyCharacter : public ACharacter, public ICrosshairInteractor
 {
 	GENERATED_BODY()
 
