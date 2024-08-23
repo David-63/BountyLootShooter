@@ -77,6 +77,12 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& _traceHitResult)
 	if (!isScreenToWorld) return;
 
 	FVector begin = crossHairWorldPosition;
+
+	if (Character)
+	{
+		float distanceToCharacter = (Character->GetActorLocation() - begin).Size();
+		begin += crossHairWorldDirection * (distanceToCharacter + 100.f);
+	}
 	FVector end = begin + crossHairWorldDirection * TRACE_LENGTH;
 	
 

@@ -25,6 +25,8 @@ private:
 	USpringArmComponent* CameraBoom;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
+	UPROPERTY(EditAnywhere)
+	float CameraThreshold = 200.f;
 
 	// UI
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = HUD, meta = (AllowPrivateAccess = "true"))
@@ -78,6 +80,7 @@ private:
 	void ServerInputEquip();
 	void ADS_Offset(float _deltaTime);
 	void TurnInPlace(float _deltaTime);
+	void HideCharacterMesh();
 	
 protected:
 	// input controll
