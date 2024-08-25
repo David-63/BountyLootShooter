@@ -25,8 +25,7 @@ private:
 	USpringArmComponent* CameraBoom;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
-	UPROPERTY(EditAnywhere)
-	float CameraThreshold = 200.f;
+	
 
 	// UI
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = HUD, meta = (AllowPrivateAccess = "true"))
@@ -66,6 +65,16 @@ private:
 	float InterpAO_Yaw;
 	FRotator StartingAimRotation;
 	ETurningInPlace TurningInPlace;
+	UPROPERTY(EditAnywhere)
+	float CameraThreshold = 200.f;
+	bool bIsRotateRootBone;
+
+	FRotator ProxyRotationLastFrame;
+	FRotator ProxyRotation;
+	float ProxyYaw;
+	float TurnThreshold = 0.5f;
+	float TimeSinceLastMovementReplication;
+
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	class UAnimMontage* FireArmMontage;
@@ -81,9 +90,11 @@ private:
 	UFUNCTION(Server, Reliable)	// RPC 함수중에 Reliable 옵션은 코스트를 많이 먹기 때문에 중요한 경우가 아니면 되도록 사용하지 않는걸 권장
 	void ServerInputEquip();
 	void ADS_Offset(float _deltaTime);
+	void CalculateAO_Pitch();
 	void TurnInPlace(float _deltaTime);
+	void SimProxiesTurn();
 	void HideCharacterMesh();
-	
+	float CalculateSpeed() const;
 
 protected:
 	void PlayHitReactMontage();
@@ -95,7 +106,8 @@ protected:
 	void InputEquip(const FInputActionValue& Value);
 	void InputCrouch();
 	void InputADS();
-	void InputFire();
+	void InputFireDown(const FInputActionValue& Value);
+	void InputFireRelease(const FInputActionValue& Value);
 	virtual void Jump() override;
 
 public:
@@ -111,6 +123,7 @@ public:
 	UFUNCTION(NetMulticast, Unreliable)
 	void MultiCastHit();
 
+	virtual void OnRep_ReplicatedMovement() override;
 
 	FVector GetHitTarget() const;
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -119,6 +132,8 @@ public:
 	FORCEINLINE float GetAO_Pitch() const { return AO_Pitch; }
 	FORCEINLINE ETurningInPlace GetTurningInPlace() const { return TurningInPlace; }
 	FORCEINLINE FVector2D GetInertiaValue() const { return InertiaValue; }
+	FORCEINLINE bool ShouldRotateRootBone() const { return bIsRotateRootBone; }
+
 
 	// default function
 public:

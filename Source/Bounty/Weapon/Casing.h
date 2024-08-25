@@ -16,14 +16,21 @@ private:
 	UStaticMeshComponent* CasingMesh;
 
 	UPROPERTY(EditAnywhere)
-	float ShellEjectionImpulse;
+	float ShellEjectionImpulse = 5.f;
 	UPROPERTY(EditAnywhere)
 	class USoundCue* ShellSound;
 
 	FTimerHandle* DestroyTimerHandle;
+
+	FVector OwnerVelocity;
+
 protected:
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
+
+public:
+	void CasingImpulse();
+	FORCEINLINE void SetOwnerVelocity(const FVector _velocity) { OwnerVelocity = _velocity; }
 
 public:	
 	ACasing();

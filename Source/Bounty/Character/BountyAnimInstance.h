@@ -40,9 +40,9 @@ private:
 	FRotator CharacterRotation;
 	FRotator DeltaRotation;
 
-	UPROPERTY(BlueprintReadOnly, Category = Aim, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, Category = WeaponOffset, meta = (AllowPrivateAccess = "true"))
 	float AO_Yaw;
-	UPROPERTY(BlueprintReadOnly, Category = Aim, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, Category = WeaponOffset, meta = (AllowPrivateAccess = "true"))
 	float AO_Pitch;
 
 	class ABaseWeapon* EquippedWeapon;
@@ -52,11 +52,14 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	ETurningInPlace TurningInPlace;
 
-	UPROPERTY(BlueprintReadOnly, Category = Aim, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, Category = WeaponOffset, meta = (AllowPrivateAccess = "true"))
 	FRotator RightHandRotation;
 
-	UPROPERTY(BlueprintReadOnly, Category = Aim, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, Category = WeaponOffset, meta = (AllowPrivateAccess = "true"))
 	bool bIsLocallyControlled;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	bool bIsRotateRootBone;
 
 public:
 	virtual void NativeInitializeAnimation() override;

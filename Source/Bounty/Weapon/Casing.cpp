@@ -4,6 +4,7 @@
 #include "Casing.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
+#include "Bounty/Bounty.h"
 
 ACasing::ACasing()
 {
@@ -13,18 +14,16 @@ ACasing::ACasing()
 	SetRootComponent(CasingMesh);
 
 	CasingMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	CasingMesh->SetCollisionResponseToChannel(ECC_SkeletalMesh, ECollisionResponse::ECR_Ignore);
 	CasingMesh->SetSimulatePhysics(true);
 	CasingMesh->SetEnableGravity(true);
 	CasingMesh->SetNotifyRigidBodyCollision(true);
-	ShellEjectionImpulse = 3.f;
 }
 
 void ACasing::BeginPlay()
 {
 	Super::BeginPlay();
 	CasingMesh->OnComponentHit.AddDynamic(this, &ACasing::OnHit);
-	CasingMesh->AddImpulse(GetActorForwardVector() * ShellEjectionImpulse);
-
 	SetLifeSpan(2.f);
 
 }
@@ -37,4 +36,19 @@ void ACasing::OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimiti
 	}
 	CasingMesh->SetNotifyRigidBodyCollision(false);
 	
+}
+
+void ACasing::CasingImpulse()
+{
+	// 기본 이동량
+	FVector ejectionPower = GetActorForwardVector() * ShellEjectionImpulse;
+	//FVector velocity = OwnerVelocity;
+	//velocity.Z = 0;
+	//velocity.Normalize();
+	//
+	//float dotDiraction = FVector::DotProduct(GetActorForwardVector(), velocity);
+	//float impulseScalingFactor = FMath::Clamp(dotDiraction, 0.0f, 1.0f);
+	//ejectionPower += ejectionPower * dotDiraction * 2.f;
+
+	CasingMesh->AddImpulse(ejectionPower);
 }

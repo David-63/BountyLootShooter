@@ -14,6 +14,7 @@
 #include "Bounty/PlayerController/BountyPlayerController.h"
 //#include "Bounty/HUD/BountyHUD.h"
 #include "Camera/CameraComponent.h"
+#include "TimerManager.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -120,7 +121,8 @@ void UCombatComponent::SetHUDCrosshairs(float _deltaTime)
 		HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
 		HUDPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;
 		HUDPackage.CrosshairsRight = EquippedWeapon->CrosshairsRight;
-		HUDPackage.CrosshairsTop = EquippedWeapon->CrosshairsTop;
+		//HUDPackage.CrosshairsTop = EquippedWeapon->CrosshairsTop;
+		HUDPackage.CrosshairsTop = nullptr;
 		HUDPackage.CrosshairsBottom = EquippedWeapon->CrosshairsBottom;
 	}
 	else
@@ -169,8 +171,7 @@ void UCombatComponent::SetHUDCrosshairs(float _deltaTime)
 	
 
 	// total spread (0.2f is default spread)
-	float baseSpread = 0.4f;
-	HUDPackage.SpreadFactor = baseSpread + crosshairVelocityFactor + CrosshairInAirFactor + CrosshairAimFactor + CrosshairAttackingFactor;
+	HUDPackage.SpreadFactor = BaseSpread + crosshairVelocityFactor + CrosshairInAirFactor + CrosshairAimFactor + CrosshairAttackingFactor;
 
 	HUD->SetHUDPackage(HUDPackage, Character->GetInertiaValue() * InertiaMagnitude);
 
@@ -195,22 +196,14 @@ void UCombatComponent::OnRep_EquipWeapon()
 
 void UCombatComponent::Attack(bool _presseed)
 {
-	bIsAttackHold = _presseed;
+	bIsAttackDown = _presseed;
 
-	if (bIsAttackHold)
-	{
-		FHitResult traceHitResult;
-		TraceUnderCrosshairs(traceHitResult);
+	if (!bIsAttackDown) return;
 
-		ServerAttack(traceHitResult.ImpactPoint);
-
-		if (EquippedWeapon)
-		{
-			CrosshairAttackingFactor = SpreadMOA;
-		}
-	}
+	Fire();
 	
 }
+
 
 void UCombatComponent::ServerAttack_Implementation(const FVector_NetQuantize& _traceHitTarget)
 {
@@ -227,6 +220,32 @@ void UCombatComponent::MulticastAttack_Implementation(const FVector_NetQuantize&
 }
 
 
+void UCombatComponent::Fire()
+{
+	if (!bCanAttack) return;
+	if (!EquippedWeapon) return;
+
+	bCanAttack = false;
+	ServerAttack(HitTarget);
+	CrosshairAttackingFactor = SpreadMOA;
+	StartFireTimer();
+}
+
+
+void UCombatComponent::StartFireTimer()
+{
+	if (!EquippedWeapon || !Character) return;
+
+	Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, FireDelay);
+}
+
+void UCombatComponent::FireTimerFinished()
+{
+	bCanAttack = true;
+
+	if (!bIsAttackDown) return;
+	Fire();
+}
 
 
 void UCombatComponent::EquipWeapon(ABaseWeapon* _weaponToEquip)
@@ -273,6 +292,7 @@ void UCombatComponent::InterpFov(float _deltaTime)
 		Character->GetFollowCamera()->SetFieldOfView(CurrentFOV);
 	}
 }
+
 
 void UCombatComponent::SetADS(bool _bIsADS)
 {

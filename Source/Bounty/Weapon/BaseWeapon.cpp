@@ -113,9 +113,15 @@ void ABaseWeapon::Fire(const FVector& _hitTarget)
 	UWorld* world = GetWorld();
 	if (!world) return;
 	
-	world->SpawnActor<ACasing>(CasingClass, socketTransform.GetLocation(), socketTransform.GetRotation().Rotator());
+	ACasing* tanpi = world->SpawnActor<ACasing>(CasingClass, socketTransform.GetLocation(), socketTransform.GetRotation().Rotator());
+	;
+	ABountyCharacter* owner = Cast<ABountyCharacter>(GetOwner());
 
-
+	if (owner)
+	{
+		tanpi->SetOwnerVelocity(owner->GetVelocity());
+	}
+	tanpi->CasingImpulse();
 }
 
 void ABaseWeapon::OnRep_WeaponState()

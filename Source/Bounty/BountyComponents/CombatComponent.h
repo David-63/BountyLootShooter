@@ -31,25 +31,28 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Combat Movement")
 	float ADSMoveSpeed = 250.f;
 
-	bool bIsAttackHold;
+	bool bIsAttackDown;
 
 	// HUD and crosshair
 	FHUDPackage HUDPackage;
 
+
 	UPROPERTY(EditAnywhere, Category = "CrossHair")
-	float InertiaMagnitude = 10.f;
+	float BaseSpread = 0.5f;
+	UPROPERTY(EditAnywhere, Category = "CrossHair")
+	float InertiaMagnitude = 20.f;
 
 	float CrosshairInAirFactor;
 	float CrosshairAimFactor;
 	float CrosshairAttackingFactor;
 
 	UPROPERTY(EditAnywhere, Category = "CrossHair")
-	float SpreadCorrection = 0.4f;				// 조준 보정
+	float SpreadCorrection = 0.45f;				// 조준 보정
 
 	UPROPERTY(EditAnywhere, Category = "CrossHair")
-	float SpreadMOA = 1.6f;					// Minute Of Angle (사격 패널티 용어로 사용함)
+	float SpreadMOA = 1.8f;					// Minute Of Angle (사격 패널티 용어로 사용함)
 	UPROPERTY(EditAnywhere, Category = "CrossHair")
-	float RecoveryMOA = 10.f;				// Minute Of Angle (사격 패널티 용어로 사용함)
+	float RecoveryMOA = 10.f;				// 반동 회복속도
 
 	// for fabrik
 	FVector HitTarget;
@@ -67,8 +70,23 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CrossHair")
 	float ZoomInterpSpeed = 30.f;
 
+
+	/*
+	* Auto Fire
+	*/
+
+	FTimerHandle FireTimer;
+	UPROPERTY(EditAnywhere, Category = Combat)
+	float FireDelay = 0.08f;
+	bool bIsAutoAttack = true;
+	bool bCanAttack = true;
+
 private:
+
 	void InterpFov(float _deltaTime);
+	void StartFireTimer();
+	void FireTimerFinished();
+
 
 protected:
 	void SetADS(bool _bIsADS);
@@ -78,6 +96,8 @@ protected:
 	void OnRep_EquipWeapon();
 
 	void Attack(bool _presseed);
+
+	void Fire();
 
 	UFUNCTION(Server, Reliable)
 	void ServerAttack(const FVector_NetQuantize& _traceHitTarget);

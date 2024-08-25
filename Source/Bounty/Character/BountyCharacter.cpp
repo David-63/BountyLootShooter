@@ -83,7 +83,21 @@ void ABountyCharacter::BeginPlay()
 void ABountyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	ADS_Offset(DeltaTime);
+
+	if (ENetRole::ROLE_SimulatedProxy < GetLocalRole() && IsLocallyControlled())
+	{
+		ADS_Offset(DeltaTime);		
+	}
+	else
+	{
+		TimeSinceLastMovementReplication += DeltaTime;
+		if (0.25f < TimeSinceLastMovementReplication)
+		{
+			OnRep_ReplicatedMovement();
+		}
+		CalculateAO_Pitch();
+	}
+
 	HideCharacterMesh();
 }
 
@@ -111,7 +125,8 @@ void ABountyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 		EnhancedInputComponent->BindAction(IA_Equip, ETriggerEvent::Triggered, this, &ABountyCharacter::InputEquip);
 		EnhancedInputComponent->BindAction(IA_ADS, ETriggerEvent::Started, this, &ABountyCharacter::InputADS);
-		EnhancedInputComponent->BindAction(IA_Fire, ETriggerEvent::Started, this, &ABountyCharacter::InputFire);
+		EnhancedInputComponent->BindAction(IA_Fire, ETriggerEvent::Started, this, &ABountyCharacter::InputFireDown);
+		EnhancedInputComponent->BindAction(IA_Fire, ETriggerEvent::Completed, this, &ABountyCharacter::InputFireRelease);		
 		
 	}
 }
@@ -137,12 +152,12 @@ void ABountyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 void ABountyCharacter::ADS_Offset(float _deltaTime)
 {
 	if (Combat && nullptr == Combat->EquippedWeapon) return;
-	FVector velocity = GetVelocity();
-	velocity.Z = 0.f;
-	float moveSpeed = velocity.Size();
+	float moveSpeed = CalculateSpeed();
 	bool bIsInAir = GetCharacterMovement()->IsFalling();
 	if (0.f == moveSpeed && !bIsInAir) // standing still, not jumping
 	{
+		bIsRotateRootBone = true;
+
 		FRotator currentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		FRotator deltaRotation = UKismetMathLibrary::NormalizedDeltaRotator(currentAimRotation, StartingAimRotation);
 		AO_Yaw = deltaRotation.Yaw;
@@ -156,12 +171,19 @@ void ABountyCharacter::ADS_Offset(float _deltaTime)
 	}
 	if (0.f < moveSpeed || bIsInAir) // running, or jumping
 	{
+		bIsRotateRootBone = false;
 		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		AO_Yaw = 0.f;
 		bUseControllerRotationYaw = true;
 		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 	}
 
+	CalculateAO_Pitch();
+
+}
+
+void ABountyCharacter::CalculateAO_Pitch()
+{
 	AO_Pitch = GetBaseAimRotation().Pitch;
 	if (90.f < AO_Pitch && !IsLocallyControlled())
 	{
@@ -170,7 +192,6 @@ void ABountyCharacter::ADS_Offset(float _deltaTime)
 		FVector2D outRange(-90.f, 0.f);
 		AO_Pitch = FMath::GetMappedRangeValueClamped(inRange, outRange, AO_Pitch);
 	}
-
 }
 
 void ABountyCharacter::TurnInPlace(float _deltaTime)
@@ -195,6 +216,42 @@ void ABountyCharacter::TurnInPlace(float _deltaTime)
 	}
 }
 
+void ABountyCharacter::SimProxiesTurn()
+{
+	if (!Combat || !Combat->EquippedWeapon) return;
+
+	bIsRotateRootBone = false; 
+	float moveSpeed = CalculateSpeed();
+	if (0.f < moveSpeed)
+	{
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+		return;
+	}
+	
+	ProxyRotationLastFrame = ProxyRotation;
+	ProxyRotation = GetActorRotation();
+	ProxyYaw = UKismetMathLibrary::NormalizedDeltaRotator(ProxyRotation, ProxyRotationLastFrame).Yaw;
+
+	if (FMath::Abs(ProxyYaw) > TurnThreshold)
+	{
+		if (ProxyYaw > TurnThreshold)
+		{
+			TurningInPlace = ETurningInPlace::ETIP_Right;
+		}
+		else if (ProxyYaw < -TurnThreshold)
+		{
+			TurningInPlace = ETurningInPlace::ETIP_Left;
+		}
+		else
+		{
+			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+		}
+		return;
+	}
+	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+
+}
+
 void ABountyCharacter::HideCharacterMesh()
 {
 	if (!IsLocallyControlled()) return;
@@ -215,6 +272,13 @@ void ABountyCharacter::HideCharacterMesh()
 		//	Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
 		//}
 	}
+}
+
+float ABountyCharacter::CalculateSpeed() const
+{
+	FVector velocity = GetVelocity();
+	velocity.Z = 0.f;
+	return velocity.Size();
 }
 
 void ABountyCharacter::MultiCastHit_Implementation()
@@ -298,6 +362,14 @@ void ABountyCharacter::PlayHitReactMontage()
 		FName sessionName("FromFront");
 		Super::PlayAnimMontage(HitReactMontage, 1.f, sessionName);
 	}
+}
+
+void ABountyCharacter::OnRep_ReplicatedMovement()
+{
+	Super::OnRep_ReplicatedMovement();
+	SimProxiesTurn();
+	TimeSinceLastMovementReplication = 0.f;
+
 }
 
 FVector ABountyCharacter::GetHitTarget() const
@@ -412,11 +484,18 @@ void ABountyCharacter::InputADS()
 
 }
 
-void ABountyCharacter::InputFire()
+void ABountyCharacter::InputFireDown(const FInputActionValue& Value)
 {
 	if (!Combat) return;
 
 	Combat->Attack(true);
+}
+
+void ABountyCharacter::InputFireRelease(const FInputActionValue& Value)
+{
+	if (!Combat) return;
+	
+	Combat->Attack(false);
 }
 
 void ABountyCharacter::Jump()
