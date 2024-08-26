@@ -111,6 +111,7 @@ void UCombatComponent::SetHUDCrosshairs(float _deltaTime)
 	if (!Character || !Character->Controller) return;
 
 	PlayerController = PlayerController == nullptr ? Cast<ABountyPlayerController>(Character->Controller) : PlayerController;
+	if (!PlayerController) return;
 
 	HUD = HUD == nullptr ? Cast<ABountyHUD>(PlayerController->GetHUD()) : HUD;
 	
@@ -185,68 +186,6 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 }
 
 
-void UCombatComponent::OnRep_EquipWeapon()
-{
-	if (EquippedWeapon && Character)
-	{
-		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
-		Character->bUseControllerRotationYaw = true;
-	}
-}
-
-void UCombatComponent::Attack(bool _presseed)
-{
-	bIsAttackDown = _presseed;
-
-	if (!bIsAttackDown) return;
-
-	Fire();
-	
-}
-
-
-void UCombatComponent::ServerAttack_Implementation(const FVector_NetQuantize& _traceHitTarget)
-{
-	MulticastAttack(_traceHitTarget);
-}
-
-void UCombatComponent::MulticastAttack_Implementation(const FVector_NetQuantize& _traceHitTarget)
-{
-	if (!Character) return;
-	if (!EquippedWeapon) return;
-
-	Character->PlayFireArmMontage(bIsADS);
-	EquippedWeapon->Fire(_traceHitTarget);
-}
-
-
-void UCombatComponent::Fire()
-{
-	if (!bCanAttack) return;
-	if (!EquippedWeapon) return;
-
-	bCanAttack = false;
-	ServerAttack(HitTarget);
-	CrosshairAttackingFactor = SpreadMOA;
-	StartFireTimer();
-}
-
-
-void UCombatComponent::StartFireTimer()
-{
-	if (!EquippedWeapon || !Character) return;
-
-	Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, FireDelay);
-}
-
-void UCombatComponent::FireTimerFinished()
-{
-	bCanAttack = true;
-
-	if (!bIsAttackDown) return;
-	Fire();
-}
-
 
 void UCombatComponent::EquipWeapon(ABaseWeapon* _weaponToEquip)
 {
@@ -263,6 +202,79 @@ void UCombatComponent::EquipWeapon(ABaseWeapon* _weaponToEquip)
 
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
+}
+
+void UCombatComponent::OnRep_EquipWeapon()
+{
+	if (EquippedWeapon && Character)
+	{
+		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+		Character->bUseControllerRotationYaw = true;
+	}
+}
+
+
+
+void UCombatComponent::Attack(bool _presseed)
+{
+	bIsAttackDown = _presseed;
+
+	if (!bIsAttackDown) return;
+
+	Fire();
+	
+}
+
+void UCombatComponent::Fire()
+{
+	if (!bCanAttack) return;
+	if (!EquippedWeapon) return;
+
+	bCanAttack = false;
+	ServerAttack(HitTarget);
+	CrosshairAttackingFactor = SpreadMOA;
+	StartFireTimer();
+}
+
+void UCombatComponent::StartFireTimer()
+{
+	if (!EquippedWeapon || !Character) return;
+
+	Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, EquippedWeapon->FireDelay);
+}
+
+void UCombatComponent::FireTimerFinished()
+{
+	bCanAttack = true;
+
+	if (!bIsAttackDown || !EquippedWeapon->bIsAutoAttack) return;
+	Fire();
+}
+
+void UCombatComponent::ServerAttack_Implementation(const FVector_NetQuantize& _traceHitTarget)
+{
+	MulticastAttack(_traceHitTarget);
+}
+
+void UCombatComponent::MulticastAttack_Implementation(const FVector_NetQuantize& _traceHitTarget)
+{
+	if (!Character) return;
+	if (!EquippedWeapon) return;
+
+	Character->PlayFireArmMontage(bIsADS);
+	EquippedWeapon->Fire(_traceHitTarget);
+}
+
+
+
+void UCombatComponent::SetADS(bool _bIsADS)
+{
+	bIsADS = _bIsADS;
+	ServerSetADS(_bIsADS);
+	if (Character)
+	{
+		Character->GetCharacterMovement()->MaxWalkSpeed = bIsADS ? ADSMoveSpeed : BaseMoveSpeed;
+	}
 }
 
 void UCombatComponent::ServerSetADS_Implementation(bool _bIsADS)
@@ -290,16 +302,5 @@ void UCombatComponent::InterpFov(float _deltaTime)
 	if (Character && Character->GetFollowCamera())
 	{
 		Character->GetFollowCamera()->SetFieldOfView(CurrentFOV);
-	}
-}
-
-
-void UCombatComponent::SetADS(bool _bIsADS)
-{
-	bIsADS = _bIsADS;
-	ServerSetADS(_bIsADS);
-	if (Character)
-	{
-		Character->GetCharacterMovement()->MaxWalkSpeed = bIsADS ? ADSMoveSpeed : BaseMoveSpeed;
 	}
 }

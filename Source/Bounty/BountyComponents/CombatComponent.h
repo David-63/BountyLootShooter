@@ -74,11 +74,7 @@ private:
 	/*
 	* Auto Fire
 	*/
-
 	FTimerHandle FireTimer;
-	UPROPERTY(EditAnywhere, Category = Combat)
-	float FireDelay = 0.08f;
-	bool bIsAutoAttack = true;
 	bool bCanAttack = true;
 
 private:
