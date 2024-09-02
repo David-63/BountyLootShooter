@@ -2,8 +2,25 @@
 
 
 #include "BountyHUD.h"
+#include "GameFramework/PlayerController.h"
+#include "CharacterOverlay.h"
 
+void ABountyHUD::BeginPlay()
+{
+	Super::BeginPlay();
 
+	AddCharacterOverlay();
+}
+
+void ABountyHUD::AddCharacterOverlay()
+{
+	APlayerController* playerController = GetOwningPlayerController();
+	if (playerController && CharacterOverlayClass)
+	{
+		CharacterOverlay = CreateWidget<UCharacterOverlay>(playerController, CharacterOverlayClass);
+		CharacterOverlay->AddToViewport();
+	}
+}
 
 void ABountyHUD::DrawHUD()
 {
@@ -54,3 +71,6 @@ void ABountyHUD::DrawCrosshair(UTexture2D* _texture, FVector2D _viewportCenter, 
 		, _viewportCenter.Y - (textureHeight / 2.f) + InertiaValue.Y + _spread.Y);
 	DrawTexture(_texture, textureDrawPoint.X, textureDrawPoint.Y, textureWidth, textureHeight, 0.f, 0.f, 1.f, 1.f, _color);
 }
+
+
+

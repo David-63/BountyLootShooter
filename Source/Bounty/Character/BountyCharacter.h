@@ -38,25 +38,25 @@ private:
 	class UCombatComponent* Combat;			// 컴포넌트는 자체적으로 Replicate 설정하는 기능이 있음, 생성자에서 설정
 
 	// inputs
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction", meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* IMC_Character;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction", meta = (AllowPrivateAccess = "true"))
 	UInputAction* IA_Move;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction", meta = (AllowPrivateAccess = "true"))
 	UInputAction* IA_Look;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction", meta = (AllowPrivateAccess = "true"))
 	UInputAction* IA_JumpNDodge;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction", meta = (AllowPrivateAccess = "true"))
 	UInputAction* IA_Equip;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction", meta = (AllowPrivateAccess = "true"))
 	UInputAction* IA_Crouch;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction", meta = (AllowPrivateAccess = "true"))
 	UInputAction* IA_ADS;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction", meta = (AllowPrivateAccess = "true"))
 	UInputAction* IA_Fire;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction", meta = (AllowPrivateAccess = "true"))
 	UInputAction* IA_Sprint;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction", meta = (AllowPrivateAccess = "true"))
 	UInputAction* IA_ReloadNSwap;
 
 	// visual info
@@ -76,19 +76,36 @@ private:
 	float TimeSinceLastMovementReplication;
 
 
-	UPROPERTY(EditAnywhere, Category = Combat)
+	UPROPERTY(EditAnywhere, Category = "Montage")
 	class UAnimMontage* FireArmMontage;
-	UPROPERTY(EditAnywhere, Category = Combat)
+	UPROPERTY(EditAnywhere, Category = "Montage")
 	class UAnimMontage* HitReactMontage;
 
 	// CrossHair Inertia
 	FVector2D InertiaValue;
 
+	/*
+	* player Health
+	*/
+
+	class ABountyPlayerController* BountyPlayerController;
+
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	float Health_Max = 100.f;
+	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = "Player Stats")
+	float Health_Cur = 100.f;
+
+
+
 private:
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(ABaseWeapon* _lastWeapon); // 변동사항으로 인해 레플리케이트 변수가 null이 된 경우, null이 되기 전 값을 인자로 임시저장된 값을 받을 수 있음
+	UFUNCTION()
+	void OnRep_Health();									// 클라이언트에서 호출됨
+
 	UFUNCTION(Server, Reliable)	// RPC 함수중에 Reliable 옵션은 코스트를 많이 먹기 때문에 중요한 경우가 아니면 되도록 사용하지 않는걸 권장
 	void ServerInputEquip();
+
 	void ADS_Offset(float _deltaTime);
 	void CalculateAO_Pitch();
 	void TurnInPlace(float _deltaTime);
@@ -97,7 +114,12 @@ private:
 	float CalculateSpeed() const;
 
 protected:
+	UFUNCTION()
+	void ReceiveDamage(AActor* _damagedActor, float _damage, const UDamageType* _damageType, class AController* _instegatorController, AActor* _damageCauser); // 서버에서 호출됨
+
 	void PlayHitReactMontage();
+	void UpdateHUD_Health();
+
 
 
 	// input controll
@@ -113,19 +135,19 @@ protected:
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;	// Replaicate 변수 초기화
 	void SetOverlappingWeapon(ABaseWeapon* _weapon);
+	virtual void OnRep_ReplicatedMovement() override;
+
+
+
+	void PlayFireArmMontage(bool _bADS);
+
+
+
+	FVector GetHitTarget() const;
+	ABaseWeapon* GetEquippedWeapon() const;
 	bool IsUsingGamepad() const;
 	bool IsWeaponEquipped() const;
 	bool IsADS() const;
-
-	ABaseWeapon* GetEquippedWeapon() const;
-	void PlayFireArmMontage(bool _bADS);
-
-	UFUNCTION(NetMulticast, Unreliable)
-	void MultiCastHit();
-
-	virtual void OnRep_ReplicatedMovement() override;
-
-	FVector GetHitTarget() const;
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE float GetAO_Yaw() const { return AO_Yaw; }

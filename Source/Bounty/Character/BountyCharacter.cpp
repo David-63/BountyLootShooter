@@ -20,6 +20,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Bounty/Bounty.h"
 
+#include "Bounty/PlayerController/BountyPlayerController.h"
 
 ABountyCharacter::ABountyCharacter()
 {
@@ -73,11 +74,16 @@ ABountyCharacter::ABountyCharacter()
 	MinNetUpdateFrequency = 33.f;
 
 }
-
 void ABountyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	UpdateHUD_Health();
+
+	if (HasAuthority())
+	{
+		OnTakeAnyDamage.AddDynamic(this, &ABountyCharacter::ReceiveDamage);
+	}
 }
 
 void ABountyCharacter::Tick(float DeltaTime)
@@ -100,7 +106,6 @@ void ABountyCharacter::Tick(float DeltaTime)
 
 	HideCharacterMesh();
 }
-
 void ABountyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -130,7 +135,6 @@ void ABountyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		
 	}
 }
-
 void ABountyCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
@@ -140,15 +144,67 @@ void ABountyCharacter::PostInitializeComponents()
 	}
 }
 
+
+// rep function
 void ABountyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	// DOREPLIFETIME(ABountyCharacter, OverlappingWeapon); 변경사항이 생기면 리플리케이트한다
 
 	DOREPLIFETIME_CONDITION(ABountyCharacter, OverlappingWeapon, COND_OwnerOnly); // 변동사항이 생기고, 조건에 해당하는 경우 리플리케이트한다
+	DOREPLIFETIME(ABountyCharacter, Health_Cur);
 
 }
 
+void ABountyCharacter::ServerInputEquip_Implementation()
+{
+	if (Combat)
+	{
+		Combat->EquipWeapon(OverlappingWeapon);
+	}
+}
+void ABountyCharacter::SetOverlappingWeapon(ABaseWeapon* _weapon)
+{
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickupWidget(false);
+	}
+	OverlappingWeapon = _weapon;
+	if (IsLocallyControlled())
+	{
+		if (OverlappingWeapon)
+		{
+			OverlappingWeapon->ShowPickupWidget(true);
+		}
+	}
+}
+void ABountyCharacter::OnRep_OverlappingWeapon(ABaseWeapon* _lastWeapon)
+{
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickupWidget(true);
+	}
+	if (_lastWeapon)
+	{
+		_lastWeapon->ShowPickupWidget(false);
+	}
+}
+void ABountyCharacter::OnRep_ReplicatedMovement()
+{
+	Super::OnRep_ReplicatedMovement();
+	SimProxiesTurn();
+	TimeSinceLastMovementReplication = 0.f;
+
+}
+void ABountyCharacter::OnRep_Health()
+{
+	UpdateHUD_Health();
+	PlayHitReactMontage();
+}
+
+
+
+// private function
 void ABountyCharacter::ADS_Offset(float _deltaTime)
 {
 	if (Combat && nullptr == Combat->EquippedWeapon) return;
@@ -181,7 +237,6 @@ void ABountyCharacter::ADS_Offset(float _deltaTime)
 	CalculateAO_Pitch();
 
 }
-
 void ABountyCharacter::CalculateAO_Pitch()
 {
 	AO_Pitch = GetBaseAimRotation().Pitch;
@@ -193,7 +248,6 @@ void ABountyCharacter::CalculateAO_Pitch()
 		AO_Pitch = FMath::GetMappedRangeValueClamped(inRange, outRange, AO_Pitch);
 	}
 }
-
 void ABountyCharacter::TurnInPlace(float _deltaTime)
 {
 	if (90.f < AO_Yaw)
@@ -215,7 +269,6 @@ void ABountyCharacter::TurnInPlace(float _deltaTime)
 		}
 	}
 }
-
 void ABountyCharacter::SimProxiesTurn()
 {
 	if (!Combat || !Combat->EquippedWeapon) return;
@@ -251,7 +304,6 @@ void ABountyCharacter::SimProxiesTurn()
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 
 }
-
 void ABountyCharacter::HideCharacterMesh()
 {
 	if (!IsLocallyControlled()) return;
@@ -273,7 +325,6 @@ void ABountyCharacter::HideCharacterMesh()
 		//}
 	}
 }
-
 float ABountyCharacter::CalculateSpeed() const
 {
 	FVector velocity = GetVelocity();
@@ -281,30 +332,63 @@ float ABountyCharacter::CalculateSpeed() const
 	return velocity.Size();
 }
 
-void ABountyCharacter::MultiCastHit_Implementation()
+
+// protected function
+void ABountyCharacter::PlayFireArmMontage(bool _bADS)
 {
+	if (nullptr == Combat || nullptr == Combat->EquippedWeapon) return;
+
+
+	if (FireArmMontage)
+	{
+		FName sessionName;
+		sessionName = _bADS ? FName("RifleADS") : FName("RifleHip");
+		Super::PlayAnimMontage(FireArmMontage, 1.f, sessionName);
+	}
+}
+void ABountyCharacter::PlayHitReactMontage()
+{
+	if (nullptr == Combat || nullptr == Combat->EquippedWeapon) return;
+
+
+	if (HitReactMontage)
+	{
+		FName sessionName("FromFront");
+		Super::PlayAnimMontage(HitReactMontage, 1.f, sessionName);
+	}
+}
+
+void ABountyCharacter::UpdateHUD_Health()
+{
+	BountyPlayerController = nullptr == BountyPlayerController ? Cast<ABountyPlayerController>(Controller) : BountyPlayerController;
+	if (BountyPlayerController)
+	{
+		BountyPlayerController->SetHUD_Health(Health_Cur, Health_Max);
+	}
+}
+
+void ABountyCharacter::ReceiveDamage(AActor* _damagedActor, float _damage, const UDamageType* _damageType, AController* _instegatorController, AActor* _damageCauser)
+{
+	Health_Cur = FMath::Clamp(Health_Cur - _damage, 0.f, Health_Max);
+	UpdateHUD_Health();
 	PlayHitReactMontage();
+
 }
 
 
 
-
-void ABountyCharacter::SetOverlappingWeapon(ABaseWeapon* _weapon)
+// get function
+ABaseWeapon* ABountyCharacter::GetEquippedWeapon() const
 {
-	if (OverlappingWeapon)
-	{
-		OverlappingWeapon->ShowPickupWidget(false);
-	}
-	OverlappingWeapon = _weapon;
-	if (IsLocallyControlled())
-	{
-		if (OverlappingWeapon)
-		{
-			OverlappingWeapon->ShowPickupWidget(true);
-		}
-	}
+	if (nullptr == Combat) return nullptr;
+	return Combat->EquippedWeapon;
 }
+FVector ABountyCharacter::GetHitTarget() const
+{
+	if (!Combat) return FVector();
 
+	return Combat->HitTarget;
+}
 bool ABountyCharacter::IsUsingGamepad() const
 {
 	UInputDeviceSubsystem* inputDeviceSubsystem = UInputDeviceSubsystem::Get();
@@ -322,85 +406,18 @@ bool ABountyCharacter::IsUsingGamepad() const
 	}
 	return false;
 }
-
 bool ABountyCharacter::IsWeaponEquipped() const
 {
 	return (Combat && Combat->EquippedWeapon);
 }
-
 bool ABountyCharacter::IsADS() const
 {
 	return (Combat && Combat->bIsADS);
 }
 
-ABaseWeapon* ABountyCharacter::GetEquippedWeapon() const
-{
-	if (nullptr == Combat) return nullptr;
-	return Combat->EquippedWeapon;
-}
-
-void ABountyCharacter::PlayFireArmMontage(bool _bADS)
-{
-	if (nullptr == Combat || nullptr == Combat->EquippedWeapon) return;
 
 
-	if (FireArmMontage)
-	{
-		FName sessionName;
-		sessionName = _bADS ? FName("RifleADS") : FName("RifleHip");
-		Super::PlayAnimMontage(FireArmMontage, 1.f, sessionName);
-	}
-}
-
-void ABountyCharacter::PlayHitReactMontage()
-{
-	if (nullptr == Combat || nullptr == Combat->EquippedWeapon) return;
-
-
-	if (HitReactMontage)
-	{
-		FName sessionName("FromFront");
-		Super::PlayAnimMontage(HitReactMontage, 1.f, sessionName);
-	}
-}
-
-void ABountyCharacter::OnRep_ReplicatedMovement()
-{
-	Super::OnRep_ReplicatedMovement();
-	SimProxiesTurn();
-	TimeSinceLastMovementReplication = 0.f;
-
-}
-
-FVector ABountyCharacter::GetHitTarget() const
-{
-	if (!Combat) return FVector();
-
-	return Combat->HitTarget;
-}
-
-void ABountyCharacter::OnRep_OverlappingWeapon(ABaseWeapon* _lastWeapon)
-{
-	if (OverlappingWeapon)
-	{
-		OverlappingWeapon->ShowPickupWidget(true);
-	}
-	if (_lastWeapon)
-	{
-		_lastWeapon->ShowPickupWidget(false);
-	}
-}
-
-void ABountyCharacter::ServerInputEquip_Implementation()
-{
-	if (Combat)
-	{
-		Combat->EquipWeapon(OverlappingWeapon);
-	}
-}
-
-
-
+// controll function
 void ABountyCharacter::InputMove(const FInputActionValue& Value)
 {
 	// input is a Vector2D
@@ -433,7 +450,6 @@ void ABountyCharacter::InputMove(const FInputActionValue& Value)
 		}
 	}
 }
-
 void ABountyCharacter::InputLook(const FInputActionValue& Value)
 {
 	// input is a Vector2D
@@ -447,7 +463,6 @@ void ABountyCharacter::InputLook(const FInputActionValue& Value)
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
-
 void ABountyCharacter::InputEquip(const FInputActionValue& Value)
 {
 	if (Combat)
@@ -462,7 +477,6 @@ void ABountyCharacter::InputEquip(const FInputActionValue& Value)
 		}
 	}
 }
-
 void ABountyCharacter::InputCrouch()
 {
 	if (!IsWeaponEquipped()) return;
@@ -475,7 +489,6 @@ void ABountyCharacter::InputCrouch()
 		ACharacter::Crouch();
 	}
 }
-
 void ABountyCharacter::InputADS()
 {
 	if (!Combat) return;
@@ -483,21 +496,18 @@ void ABountyCharacter::InputADS()
 	Combat->bIsADS ? Combat->SetADS(false) : Combat->SetADS(true);
 
 }
-
 void ABountyCharacter::InputFireDown(const FInputActionValue& Value)
 {
 	if (!Combat) return;
 
 	Combat->Attack(true);
 }
-
 void ABountyCharacter::InputFireRelease(const FInputActionValue& Value)
 {
 	if (!Combat) return;
 	
 	Combat->Attack(false);
 }
-
 void ABountyCharacter::Jump()
 {
 	if (bIsCrouched)
