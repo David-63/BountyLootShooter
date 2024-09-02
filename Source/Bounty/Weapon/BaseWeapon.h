@@ -63,13 +63,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	float ZoomInterpSpeed = 30.f;
 
-	/*
-	* Automatic fire
-	*/
-	UPROPERTY(EditAnywhere, Category = Weapon)
-	float FireDelay = 0.08f;
-	UPROPERTY(EditAnywhere, Category = Weapon)
-	bool bIsAutoAttack = true;
 
 
 private:
