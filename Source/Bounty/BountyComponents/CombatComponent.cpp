@@ -215,7 +215,7 @@ void UCombatComponent::MulticastAttack_Implementation(const FVector_NetQuantize&
 	if (!Character) return;
 	if (!EquippedWeapon) return;
 
-	Character->PlayFireArmMontage(bIsADS);
+	Character->PlayFireMontage(bIsADS);
 	EquippedWeapon->Fire(_traceHitTarget);
 }
 

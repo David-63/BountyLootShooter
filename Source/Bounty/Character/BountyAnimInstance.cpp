@@ -36,7 +36,7 @@ void UBountyAnimInstance::NativeUpdateAnimation(float _deltaTime)
 	bIsCrouched = BountyCharacter->bIsCrouched;
 	bIsADS = BountyCharacter->IsADS();
 	bIsRotateRootBone = BountyCharacter->ShouldRotateRootBone();
-
+	bIsElimmed = BountyCharacter->IsElimmed();
 	// for strafing
 	FRotator deltaMovementDirection = UKismetMathLibrary::NormalizedDeltaRotator(movementRotation, aimRotation);
 	DeltaRotation = FMath::RInterpTo(DeltaRotation, deltaMovementDirection, _deltaTime, 6.f);

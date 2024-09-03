@@ -80,6 +80,8 @@ private:
 	class UAnimMontage* FireArmMontage;
 	UPROPERTY(EditAnywhere, Category = "Montage")
 	class UAnimMontage* HitReactMontage;
+	UPROPERTY(EditAnywhere, Category = "Montage")
+	class UAnimMontage* ElimMontage;
 
 	// CrossHair Inertia
 	FVector2D InertiaValue;
@@ -95,7 +97,7 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = "Player Stats")
 	float Health_Cur = 100.f;
 
-
+	bool bIsElimmed = false;
 
 private:
 	UFUNCTION()
@@ -137,9 +139,11 @@ public:
 	void SetOverlappingWeapon(ABaseWeapon* _weapon);
 	virtual void OnRep_ReplicatedMovement() override;
 
+	UFUNCTION(NetMulticast, Reliable)
+	void Elim();
 
-
-	void PlayFireArmMontage(bool _bADS);
+	void PlayFireMontage(bool _bADS);
+	void PlayElimMontage();
 
 
 
@@ -155,6 +159,7 @@ public:
 	FORCEINLINE ETurningInPlace GetTurningInPlace() const { return TurningInPlace; }
 	FORCEINLINE FVector2D GetInertiaValue() const { return InertiaValue; }
 	FORCEINLINE bool ShouldRotateRootBone() const { return bIsRotateRootBone; }
+	FORCEINLINE bool IsElimmed() const { return bIsElimmed; }
 
 
 	// default function

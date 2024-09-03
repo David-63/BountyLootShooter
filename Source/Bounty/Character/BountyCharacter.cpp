@@ -21,6 +21,7 @@
 #include "Bounty/Bounty.h"
 
 #include "Bounty/PlayerController/BountyPlayerController.h"
+#include "Bounty/GameMode/BountyGameMode.h"
 
 ABountyCharacter::ABountyCharacter()
 {
@@ -334,18 +335,6 @@ float ABountyCharacter::CalculateSpeed() const
 
 
 // protected function
-void ABountyCharacter::PlayFireArmMontage(bool _bADS)
-{
-	if (nullptr == Combat || nullptr == Combat->EquippedWeapon) return;
-
-
-	if (FireArmMontage)
-	{
-		FName sessionName;
-		sessionName = _bADS ? FName("RifleADS") : FName("RifleHip");
-		Super::PlayAnimMontage(FireArmMontage, 1.f, sessionName);
-	}
-}
 void ABountyCharacter::PlayHitReactMontage()
 {
 	if (nullptr == Combat || nullptr == Combat->EquippedWeapon) return;
@@ -373,8 +362,45 @@ void ABountyCharacter::ReceiveDamage(AActor* _damagedActor, float _damage, const
 	UpdateHUD_Health();
 	PlayHitReactMontage();
 
+	if (0.f >= Health_Cur)
+	{
+		ABountyGameMode* bountyGamemode = GetWorld()->GetAuthGameMode<ABountyGameMode>();
+		if (bountyGamemode)
+		{
+			BountyPlayerController = nullptr == BountyPlayerController ? Cast<ABountyPlayerController>(Controller) : BountyPlayerController;
+			ABountyPlayerController* attackerController = Cast<ABountyPlayerController>(_instegatorController);
+			bountyGamemode->PlayerEliminated(this, BountyPlayerController, attackerController);
+		}
+	}
+	
 }
 
+
+// public function
+void ABountyCharacter::Elim_Implementation()
+{
+	bIsElimmed = true;
+	PlayElimMontage();
+}
+void ABountyCharacter::PlayFireMontage(bool _bADS)
+{
+	if (nullptr == Combat || nullptr == Combat->EquippedWeapon) return;
+
+
+	if (FireArmMontage)
+	{
+		FName sessionName;
+		sessionName = _bADS ? FName("RifleADS") : FName("RifleHip");
+		Super::PlayAnimMontage(FireArmMontage, 1.f, sessionName);
+	}
+}
+void ABountyCharacter::PlayElimMontage()
+{
+	if (ElimMontage)
+	{
+		Super::PlayAnimMontage(ElimMontage);
+	}
+}
 
 
 // get function
