@@ -15,4 +15,5 @@ class BOUNTY_API ABountyGameMode : public AGameMode
 	GENERATED_BODY()
 public:
 	virtual void PlayerEliminated(class ABountyCharacter* _elimmedCharacter, class ABountyPlayerController* _victimController, ABountyPlayerController* _attackerController);
+	virtual void RequestRespawn(ACharacter* _elimmedCharacter, AController* _elimmedController);
 };

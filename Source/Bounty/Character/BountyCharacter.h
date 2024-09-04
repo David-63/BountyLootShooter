@@ -98,6 +98,9 @@ private:
 	float Health_Cur = 100.f;
 
 	bool bIsElimmed = false;
+	FTimerHandle ElimTimer;
+	UPROPERTY(EditDefaultsOnly)
+	float ElimDelay = 3.f;
 
 private:
 	UFUNCTION()
@@ -114,7 +117,7 @@ private:
 	void SimProxiesTurn();
 	void HideCharacterMesh();
 	float CalculateSpeed() const;
-
+	void ElimTimerFinished();
 protected:
 	UFUNCTION()
 	void ReceiveDamage(AActor* _damagedActor, float _damage, const UDamageType* _damageType, class AController* _instegatorController, AActor* _damageCauser); // 서버에서 호출됨
@@ -140,6 +143,7 @@ public:
 	virtual void OnRep_ReplicatedMovement() override;
 
 	UFUNCTION(NetMulticast, Reliable)
+	void MulticastElim();
 	void Elim();
 
 	void PlayFireMontage(bool _bADS);

@@ -22,10 +22,13 @@
 
 #include "Bounty/PlayerController/BountyPlayerController.h"
 #include "Bounty/GameMode/BountyGameMode.h"
+#include "TimerManager.h"
 
 ABountyCharacter::ABountyCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
 	GetCapsuleComponent()->InitCapsuleSize(34.f, 88.0f);
 
@@ -205,7 +208,7 @@ void ABountyCharacter::OnRep_Health()
 
 
 
-// private function
+// update function
 void ABountyCharacter::ADS_Offset(float _deltaTime)
 {
 	if (Combat && nullptr == Combat->EquippedWeapon) return;
@@ -334,7 +337,9 @@ float ABountyCharacter::CalculateSpeed() const
 }
 
 
-// protected function
+
+
+// Player stats
 void ABountyCharacter::PlayHitReactMontage()
 {
 	if (nullptr == Combat || nullptr == Combat->EquippedWeapon) return;
@@ -376,12 +381,26 @@ void ABountyCharacter::ReceiveDamage(AActor* _damagedActor, float _damage, const
 }
 
 
-// public function
-void ABountyCharacter::Elim_Implementation()
+// Elim function
+void ABountyCharacter::MulticastElim_Implementation()
 {
 	bIsElimmed = true;
 	PlayElimMontage();
 }
+void ABountyCharacter::Elim()
+{
+	MulticastElim();
+	GetWorldTimerManager().SetTimer(ElimTimer, this, &ABountyCharacter::ElimTimerFinished, ElimDelay);
+}
+void ABountyCharacter::ElimTimerFinished()
+{
+	ABountyGameMode* bountyGamemode = GetWorld()->GetAuthGameMode<ABountyGameMode>();
+	if (bountyGamemode)
+	{		
+		bountyGamemode->RequestRespawn(this, Controller);
+	}
+}
+
 void ABountyCharacter::PlayFireMontage(bool _bADS)
 {
 	if (nullptr == Combat || nullptr == Combat->EquippedWeapon) return;
