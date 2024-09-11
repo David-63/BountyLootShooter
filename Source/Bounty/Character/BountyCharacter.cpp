@@ -210,24 +210,7 @@ void ABountyCharacter::OnRep_Health()
 	PlayHitReactMontage();
 }
 
-void ABountyCharacter::UpdateDissolveMaterial(float _dissolveValue)
-{
-	if (!DynamicDissolveMaterialInstanceA || !DynamicDissolveMaterialInstanceB || !DissolveTimeline) return;
 
-	DynamicDissolveMaterialInstanceA->SetScalarParameterValue(TEXT("Dissolve"), _dissolveValue);
-	DynamicDissolveMaterialInstanceB->SetScalarParameterValue(TEXT("Dissolve"), _dissolveValue);
-
-}
-
-void ABountyCharacter::StartDissolve()
-{
-	DissolveTrack.BindDynamic(this, &ABountyCharacter::UpdateDissolveMaterial);
-	if (DissolveCurve)
-	{
-		DissolveTimeline->AddInterpFloat(DissolveCurve, DissolveTrack);
-		DissolveTimeline->Play();
-	}
-}
 
 
 
@@ -404,39 +387,6 @@ void ABountyCharacter::ReceiveDamage(AActor* _damagedActor, float _damage, const
 }
 
 
-// Elim function
-void ABountyCharacter::MulticastElim_Implementation()
-{
-	bIsElimmed = true;
-	PlayElimMontage();
-
-	if (!DissolveMaterialInstanceA || !DissolveMaterialInstanceB) return;
-
-	DynamicDissolveMaterialInstanceA = UMaterialInstanceDynamic::Create(DissolveMaterialInstanceA, this);
-	GetMesh()->SetMaterial(0, DynamicDissolveMaterialInstanceA);
-	DynamicDissolveMaterialInstanceB = UMaterialInstanceDynamic::Create(DissolveMaterialInstanceB, this);
-	GetMesh()->SetMaterial(1, DynamicDissolveMaterialInstanceB);
-
-	DynamicDissolveMaterialInstanceA->SetScalarParameterValue(TEXT("Dissolve"), 0.6f);
-	DynamicDissolveMaterialInstanceA->SetScalarParameterValue(TEXT("Glow"), 300.f);
-	DynamicDissolveMaterialInstanceB->SetScalarParameterValue(TEXT("Dissolve"), 0.6f);
-	DynamicDissolveMaterialInstanceB->SetScalarParameterValue(TEXT("Glow"), 300.f);
-
-	StartDissolve();
-}
-void ABountyCharacter::Elim()
-{
-	MulticastElim();
-	GetWorldTimerManager().SetTimer(ElimTimer, this, &ABountyCharacter::ElimTimerFinished, ElimDelay);
-}
-void ABountyCharacter::ElimTimerFinished()
-{
-	ABountyGameMode* bountyGamemode = GetWorld()->GetAuthGameMode<ABountyGameMode>();
-	if (bountyGamemode)
-	{		
-		bountyGamemode->RequestRespawn(this, Controller);
-	}
-}
 
 void ABountyCharacter::PlayFireMontage(bool _bADS)
 {
@@ -450,6 +400,77 @@ void ABountyCharacter::PlayFireMontage(bool _bADS)
 		Super::PlayAnimMontage(FireArmMontage, 1.f, sessionName);
 	}
 }
+
+
+// Elim function
+void ABountyCharacter::MulticastElim_Implementation()
+{
+	bIsElimmed = true;
+	PlayElimMontage();
+
+	// Start dissolve effect
+	if (DissolveMaterialInstanceA && DissolveMaterialInstanceB)
+	{
+		DynamicDissolveMaterialInstanceA = UMaterialInstanceDynamic::Create(DissolveMaterialInstanceA, this);
+		GetMesh()->SetMaterial(0, DynamicDissolveMaterialInstanceA);
+		DynamicDissolveMaterialInstanceB = UMaterialInstanceDynamic::Create(DissolveMaterialInstanceB, this);
+		GetMesh()->SetMaterial(1, DynamicDissolveMaterialInstanceB);
+		DynamicDissolveMaterialInstanceA->SetScalarParameterValue(TEXT("Dissolve"), 0.6f);
+		DynamicDissolveMaterialInstanceA->SetScalarParameterValue(TEXT("Glow"), 300.f);
+		DynamicDissolveMaterialInstanceB->SetScalarParameterValue(TEXT("Dissolve"), 0.6f);
+		DynamicDissolveMaterialInstanceB->SetScalarParameterValue(TEXT("Glow"), 300.f);
+	}
+	StartDissolve();
+
+	// Disable character
+	GetCharacterMovement()->DisableMovement();
+	GetCharacterMovement()->StopMovementImmediately();
+	if (BountyPlayerController)
+	{
+		DisableInput(BountyPlayerController);
+	}
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+}
+void ABountyCharacter::Elim()
+{
+	if (Combat && Combat->EquippedWeapon)
+	{
+		Combat->EquippedWeapon->Dropped();
+	}
+
+	MulticastElim();
+	GetWorldTimerManager().SetTimer(ElimTimer, this, &ABountyCharacter::ElimTimerFinished, ElimDelay);
+}
+void ABountyCharacter::ElimTimerFinished()
+{
+	ABountyGameMode* bountyGamemode = GetWorld()->GetAuthGameMode<ABountyGameMode>();
+	if (bountyGamemode)
+	{		
+		bountyGamemode->RequestRespawn(this, Controller);
+	}
+}
+
+void ABountyCharacter::UpdateDissolveMaterial(float _dissolveValue)
+{
+	if (!DynamicDissolveMaterialInstanceA || !DynamicDissolveMaterialInstanceB || !DissolveTimeline) return;
+
+	DynamicDissolveMaterialInstanceA->SetScalarParameterValue(TEXT("Dissolve"), _dissolveValue);
+	DynamicDissolveMaterialInstanceB->SetScalarParameterValue(TEXT("Dissolve"), _dissolveValue);
+
+}
+
+void ABountyCharacter::StartDissolve()
+{
+	DissolveTrack.BindDynamic(this, &ABountyCharacter::UpdateDissolveMaterial);
+	if (DissolveCurve)
+	{
+		DissolveTimeline->AddInterpFloat(DissolveCurve, DissolveTrack);
+		DissolveTimeline->Play();
+	}
+}
+
 void ABountyCharacter::PlayElimMontage()
 {
 	if (ElimMontage)

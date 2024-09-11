@@ -79,6 +79,10 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;	// Replaicate 변수 초기화
 	void ShowPickupWidget(bool _showWidget);
 	void SetWeaponState(EWeaponState _state);
+
+	void Dropped();
+
+
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 	virtual void Fire(const FVector& _hitTarget);

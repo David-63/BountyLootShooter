@@ -10,6 +10,9 @@
 
 #define TRACE_LENGTH 10000.f
 
+
+// #접근제한자와 변수 함수로 구분하는게 아니라 기능별 묶음으로 분류함
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BOUNTY_API UCombatComponent : public UActorComponent
 {
@@ -21,30 +24,31 @@ private:
 	class ABountyPlayerController* PlayerController;
 	class ABountyHUD* HUD;
 
+	/*
+	* Equipped weapon
+	*/
+private:
 	UPROPERTY(ReplicatedUsing = OnRep_EquipWeapon)
 	class ABaseWeapon* EquippedWeapon;
-	UPROPERTY(Replicated)
-	bool bIsADS;
+protected:
+	UFUNCTION()
+	void OnRep_EquipWeapon();
+public:
+	void EquipWeapon(ABaseWeapon* _weaponToEquip);
 
-	UPROPERTY(EditAnywhere, Category = "Combat Movement")
-	float BaseMoveSpeed = 550.f;
-	UPROPERTY(EditAnywhere, Category = "Combat Movement")
-	float ADSMoveSpeed = 250.f;
-
-	bool bIsAttackDown;
-
-	// HUD and crosshair
+	/*
+	*  HUD and crosshair
+	*/
+private:
 	FHUDPackage HUDPackage;
-
-
 	UPROPERTY(EditAnywhere, Category = "CrossHair")
 	float BaseSpread = 0.5f;
 	UPROPERTY(EditAnywhere, Category = "CrossHair")
 	float InertiaMagnitude = 20.f;
 
-	float CrosshairInAirFactor;
-	float CrosshairAimFactor;
-	float CrosshairAttackingFactor;
+	float CrosshairInAirFactor;		// 반동 요소
+	float CrosshairAimFactor;		// 반동 요소
+	float CrosshairAttackingFactor;	// 반동 요소
 
 	UPROPERTY(EditAnywhere, Category = "CrossHair")
 	float SpreadCorrection = 0.45f;				// 조준 보정
@@ -54,13 +58,26 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CrossHair")
 	float RecoveryMOA = 10.f;				// 반동 회복속도
 
+protected:
+	void SetHUDCrosshairs(float _deltaTime);
+	void TraceUnderCrosshairs(FHitResult& _traceHitResult);
+
+
 	// for fabrik
+private:
 	FVector HitTarget;
 		
 	/*
 	*  ADS and FOV
 	*/
 
+private:
+	UPROPERTY(Replicated)
+	bool bIsADS;
+	UPROPERTY(EditAnywhere, Category = "Combat Movement")
+	float ADSMoveSpeed = 250.f;
+	UPROPERTY(EditAnywhere, Category = "Combat Movement")
+	float BaseMoveSpeed = 550.f;
 	// Set to the camera's base FOV in BeginPlay
 	float DefaultFOV;
 	float CurrentFOV;
@@ -70,49 +87,38 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CrossHair")
 	float ZoomInterpSpeed = 30.f;
 
+	void InterpFov(float _deltaTime);	// aim 상태에 따라 fov 변경해주는 함수
+protected:
+	void SetADS(bool _bIsADS);
+	UFUNCTION(Server, Reliable)
+	void ServerSetADS(bool _bIsADS);
+
+
+
+
 
 	/*
 	* Auto Fire
 	*/
 
+private:
 	FTimerHandle FireTimer;
 	UPROPERTY(EditAnywhere, Category = Combat)
 	float FireDelay = 0.08f;
 	bool bIsAutoAttack = true;
 	bool bCanAttack = true;
+	bool bIsAttackDown;
 
-private:
-
-	void InterpFov(float _deltaTime);
 	void StartFireTimer();
 	void FireTimerFinished();
-
-
 protected:
-	void SetADS(bool _bIsADS);
+	void Attack(bool _presseed); // input
+	void Fire();				// do attack
 	UFUNCTION(Server, Reliable)
-	void ServerSetADS(bool _bIsADS);
-	UFUNCTION()
-	void OnRep_EquipWeapon();
-
-	void Attack(bool _presseed);
-
-	void Fire();
-
-	UFUNCTION(Server, Reliable)
-	void ServerAttack(const FVector_NetQuantize& _traceHitTarget);
-
-	// NetMulticast 옵션으로 서버에서 호출시 모든 클라이언트가 동일하게 작동함
-	UFUNCTION(NetMulticast, Reliable)
+	void ServerAttack(const FVector_NetQuantize& _traceHitTarget);	
+	UFUNCTION(NetMulticast, Reliable)	// NetMulticast 옵션으로 서버에서 호출시 모든 클라이언트가 동일하게 작동함
 	void MulticastAttack(const FVector_NetQuantize& _traceHitTarget);
 
-	void TraceUnderCrosshairs(FHitResult& _traceHitResult);
-
-	void SetHUDCrosshairs(float _deltaTime);
-
-public:
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;	// Replaicate 변수 설정
-	void EquipWeapon(ABaseWeapon* _weaponToEquip);
 
 public:	
 	UCombatComponent();
@@ -120,6 +126,7 @@ protected:
 	virtual void BeginPlay() override;
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;	// Replaicate 변수 설정
 
 		
 };
