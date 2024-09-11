@@ -77,6 +77,10 @@ ABountyCharacter::ABountyCharacter()
 	NetUpdateFrequency = 66.f;
 	MinNetUpdateFrequency = 33.f;
 
+
+	// Elim Effect
+	DissolveTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DissolveTimelineComponent"));
+
 }
 void ABountyCharacter::BeginPlay()
 {
@@ -204,6 +208,25 @@ void ABountyCharacter::OnRep_Health()
 {
 	UpdateHUD_Health();
 	PlayHitReactMontage();
+}
+
+void ABountyCharacter::UpdateDissolveMaterial(float _dissolveValue)
+{
+	if (!DynamicDissolveMaterialInstanceA || !DynamicDissolveMaterialInstanceB || !DissolveTimeline) return;
+
+	DynamicDissolveMaterialInstanceA->SetScalarParameterValue(TEXT("Dissolve"), _dissolveValue);
+	DynamicDissolveMaterialInstanceB->SetScalarParameterValue(TEXT("Dissolve"), _dissolveValue);
+
+}
+
+void ABountyCharacter::StartDissolve()
+{
+	DissolveTrack.BindDynamic(this, &ABountyCharacter::UpdateDissolveMaterial);
+	if (DissolveCurve)
+	{
+		DissolveTimeline->AddInterpFloat(DissolveCurve, DissolveTrack);
+		DissolveTimeline->Play();
+	}
 }
 
 
@@ -386,6 +409,20 @@ void ABountyCharacter::MulticastElim_Implementation()
 {
 	bIsElimmed = true;
 	PlayElimMontage();
+
+	if (!DissolveMaterialInstanceA || !DissolveMaterialInstanceB) return;
+
+	DynamicDissolveMaterialInstanceA = UMaterialInstanceDynamic::Create(DissolveMaterialInstanceA, this);
+	GetMesh()->SetMaterial(0, DynamicDissolveMaterialInstanceA);
+	DynamicDissolveMaterialInstanceB = UMaterialInstanceDynamic::Create(DissolveMaterialInstanceB, this);
+	GetMesh()->SetMaterial(1, DynamicDissolveMaterialInstanceB);
+
+	DynamicDissolveMaterialInstanceA->SetScalarParameterValue(TEXT("Dissolve"), 0.6f);
+	DynamicDissolveMaterialInstanceA->SetScalarParameterValue(TEXT("Glow"), 300.f);
+	DynamicDissolveMaterialInstanceB->SetScalarParameterValue(TEXT("Dissolve"), 0.6f);
+	DynamicDissolveMaterialInstanceB->SetScalarParameterValue(TEXT("Glow"), 300.f);
+
+	StartDissolve();
 }
 void ABountyCharacter::Elim()
 {
