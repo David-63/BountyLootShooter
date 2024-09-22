@@ -45,6 +45,7 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = WeaponOffset, meta = (AllowPrivateAccess = "true"))
 	float AO_Pitch;
 
+	UPROPERTY()
 	class ABaseWeapon* EquippedWeapon;
 	UPROPERTY(BlueprintReadOnly, Category = WeaponOffset, meta = (AllowPrivateAccess = "true"))
 	FTransform LeftHandTransform;

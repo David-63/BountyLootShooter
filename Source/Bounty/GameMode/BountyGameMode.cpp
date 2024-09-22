@@ -17,6 +17,10 @@ void ABountyGameMode::PlayerEliminated(ABountyCharacter* _elimmedCharacter, ABou
 	{
 		attackerState->AddToScore(1.f);
 	}
+	if (victimState)
+	{
+		victimState->AddToLifeLoss(1);
+	}
 
 	if (_elimmedCharacter)
 	{

@@ -15,6 +15,7 @@ class BOUNTY_API ABountyPlayerController : public APlayerController
 	GENERATED_BODY()
 	
 private:
+	UPROPERTY()
 	class ABountyHUD* BountyHUD;
 
 private:
@@ -24,5 +25,6 @@ public:
 	virtual void OnPossess(APawn* _inPawn) override;
 	void SetHUD_Health(float _healthCur, float _healthMax);
 	void SetHUD_Score(float _score);
+	void SetHUD_LifeLoss(int32 _count);
 
 };

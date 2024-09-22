@@ -20,8 +20,11 @@ class BOUNTY_API UCombatComponent : public UActorComponent
 	friend class ABountyCharacter;
 
 private:
+	UPROPERTY()
 	class ABountyCharacter* Character;
+	UPROPERTY()
 	class ABountyPlayerController* PlayerController;
+	UPROPERTY()
 	class ABountyHUD* HUD;
 
 

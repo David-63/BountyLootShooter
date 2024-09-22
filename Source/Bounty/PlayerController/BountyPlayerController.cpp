@@ -58,3 +58,16 @@ void ABountyPlayerController::SetHUD_Score(float _score)
 	}
 
 }
+
+void ABountyPlayerController::SetHUD_LifeLoss(int32 _count)
+{
+	BountyHUD = nullptr == BountyHUD ? Cast<ABountyHUD>(GetHUD()) : BountyHUD;
+	bool isValidHUD =
+		BountyHUD && BountyHUD->CharacterOverlay && BountyHUD->CharacterOverlay->LifeLossAmount;
+
+	if (isValidHUD)
+	{
+		FString lifeLossText = FString::Printf(TEXT("%d"), _count);
+		BountyHUD->CharacterOverlay->LifeLossAmount->SetText(FText::FromString(lifeLossText));
+	}
+}

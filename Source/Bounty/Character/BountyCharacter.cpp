@@ -381,6 +381,7 @@ void ABountyCharacter::PollInit()
 		if (BountyPlayerState)
 		{
 			BountyPlayerState->AddToScore(0.f);
+			BountyPlayerState->AddToLifeLoss(0);
 		}
 	}
 

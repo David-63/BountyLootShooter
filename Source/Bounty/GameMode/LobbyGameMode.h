@@ -14,7 +14,6 @@ class BOUNTY_API ALobbyGameMode : public AGameMode
 {
 	GENERATED_BODY()
 	
-
 public:
 	virtual void PostLogin(APlayerController* _newPlayer) override;
 	virtual void Logout(AController* _exiting) override;

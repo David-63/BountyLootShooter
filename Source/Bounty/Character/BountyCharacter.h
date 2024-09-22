@@ -157,7 +157,9 @@ public:
 	* hud
 	*/
 private:
+	UPROPERTY()
 	class ABountyPlayerController* BountyPlayerController;
+	UPROPERTY()
 	class ABountyPlayerState* BountyPlayerState;
 
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
