@@ -6,6 +6,7 @@
 #include "Bounty/HUD/CharacterOverlay.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+#include "Bounty/Character/BountyCharacter.h"
 
 void ABountyPlayerController::BeginPlay()
 {
@@ -14,6 +15,17 @@ void ABountyPlayerController::BeginPlay()
 	BountyHUD = Cast<ABountyHUD>(GetHUD());
 
 
+}
+
+void ABountyPlayerController::OnPossess(APawn* _inPawn)
+{
+	Super::OnPossess(_inPawn);
+
+	ABountyCharacter* bountyCharacter = Cast<ABountyCharacter>(_inPawn);
+	if (bountyCharacter)
+	{		
+		SetHUD_Health(bountyCharacter->GetHealth_Cur(), bountyCharacter->GetHealth_Max());
+	}
 }
 
 void ABountyPlayerController::SetHUD_Health(float _healthCur, float _healthMax)

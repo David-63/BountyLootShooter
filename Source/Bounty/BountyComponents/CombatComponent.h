@@ -24,6 +24,7 @@ private:
 	class ABountyPlayerController* PlayerController;
 	class ABountyHUD* HUD;
 
+
 	/*
 	* Equipped weapon
 	*/
@@ -35,6 +36,8 @@ protected:
 	void OnRep_EquipWeapon();
 public:
 	void EquipWeapon(ABaseWeapon* _weaponToEquip);
+
+
 
 	/*
 	*  HUD and crosshair
@@ -66,6 +69,8 @@ protected:
 	// for fabrik
 private:
 	FVector HitTarget;
+
+
 		
 	/*
 	*  ADS and FOV
@@ -92,9 +97,6 @@ protected:
 	void SetADS(bool _bIsADS);
 	UFUNCTION(Server, Reliable)
 	void ServerSetADS(bool _bIsADS);
-
-
-
 
 
 	/*

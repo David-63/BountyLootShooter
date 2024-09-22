@@ -22,6 +22,6 @@ private:
 
 public:
 	void SetHUD_Health(float _healthCur, float _healthMax);
-
+	virtual void OnPossess(APawn* _inPawn) override;
 
 };

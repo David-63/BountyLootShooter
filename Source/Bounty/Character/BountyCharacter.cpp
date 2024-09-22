@@ -23,6 +23,9 @@
 #include "Bounty/PlayerController/BountyPlayerController.h"
 #include "Bounty/GameMode/BountyGameMode.h"
 #include "TimerManager.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
+#include "Particles/ParticleSystemComponent.h"
 
 ABountyCharacter::ABountyCharacter()
 {
@@ -162,6 +165,15 @@ void ABountyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME_CONDITION(ABountyCharacter, OverlappingWeapon, COND_OwnerOnly); // 변동사항이 생기고, 조건에 해당하는 경우 리플리케이트한다
 	DOREPLIFETIME(ABountyCharacter, Health_Cur);
 
+}
+
+void ABountyCharacter::Destroyed()
+{
+	Super::Destroyed();
+	if (ElimBotComponent)
+	{
+		ElimBotComponent->DestroyComponent();
+	}
 }
 
 void ABountyCharacter::ServerInputEquip_Implementation()
@@ -403,6 +415,16 @@ void ABountyCharacter::PlayFireMontage(bool _bADS)
 
 
 // Elim function
+void ABountyCharacter::Elim()
+{
+	if (Combat && Combat->EquippedWeapon)
+	{
+		Combat->EquippedWeapon->Dropped();
+	}
+
+	MulticastElim();
+	GetWorldTimerManager().SetTimer(ElimTimer, this, &ABountyCharacter::ElimTimerFinished, ElimDelay);
+}
 void ABountyCharacter::MulticastElim_Implementation()
 {
 	bIsElimmed = true;
@@ -432,16 +454,16 @@ void ABountyCharacter::MulticastElim_Implementation()
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-}
-void ABountyCharacter::Elim()
-{
-	if (Combat && Combat->EquippedWeapon)
+	// Spawn elim bot
+	if (ElimBotEffect)
 	{
-		Combat->EquippedWeapon->Dropped();
+		FVector elimBotSpawnPoint(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z + 200.f);
+		ElimBotComponent = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ElimBotEffect, elimBotSpawnPoint, GetActorRotation());
 	}
-
-	MulticastElim();
-	GetWorldTimerManager().SetTimer(ElimTimer, this, &ABountyCharacter::ElimTimerFinished, ElimDelay);
+	if (ElimBotSound)
+	{
+		UGameplayStatics::SpawnSoundAtLocation(this, ElimBotSound, GetActorLocation());
+	}
 }
 void ABountyCharacter::ElimTimerFinished()
 {
@@ -450,6 +472,7 @@ void ABountyCharacter::ElimTimerFinished()
 	{		
 		bountyGamemode->RequestRespawn(this, Controller);
 	}
+	
 }
 
 void ABountyCharacter::UpdateDissolveMaterial(float _dissolveValue)
@@ -460,7 +483,6 @@ void ABountyCharacter::UpdateDissolveMaterial(float _dissolveValue)
 	DynamicDissolveMaterialInstanceB->SetScalarParameterValue(TEXT("Dissolve"), _dissolveValue);
 
 }
-
 void ABountyCharacter::StartDissolve()
 {
 	DissolveTrack.BindDynamic(this, &ABountyCharacter::UpdateDissolveMaterial);
@@ -470,7 +492,6 @@ void ABountyCharacter::StartDissolve()
 		DissolveTimeline->Play();
 	}
 }
-
 void ABountyCharacter::PlayElimMontage()
 {
 	if (ElimMontage)
