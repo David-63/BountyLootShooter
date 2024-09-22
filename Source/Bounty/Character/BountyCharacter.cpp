@@ -26,6 +26,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Bounty/PlayerState/BountyPlayerState.h"
+
 
 ABountyCharacter::ABountyCharacter()
 {
@@ -116,6 +118,7 @@ void ABountyCharacter::Tick(float DeltaTime)
 	}
 
 	HideCharacterMesh();
+	PollInit();
 }
 void ABountyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -368,6 +371,19 @@ void ABountyCharacter::PlayHitReactMontage()
 		FName sessionName("FromFront");
 		Super::PlayAnimMontage(HitReactMontage, 1.f, sessionName);
 	}
+}
+
+void ABountyCharacter::PollInit()
+{
+	if (nullptr == BountyPlayerState)
+	{
+		BountyPlayerState = GetPlayerState<ABountyPlayerState>();
+		if (BountyPlayerState)
+		{
+			BountyPlayerState->AddToScore(0.f);
+		}
+	}
+
 }
 
 void ABountyCharacter::UpdateHUD_Health()

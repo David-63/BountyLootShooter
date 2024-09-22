@@ -21,7 +21,8 @@ private:
 	virtual void BeginPlay() override;
 
 public:
-	void SetHUD_Health(float _healthCur, float _healthMax);
 	virtual void OnPossess(APawn* _inPawn) override;
+	void SetHUD_Health(float _healthCur, float _healthMax);
+	void SetHUD_Score(float _score);
 
 };

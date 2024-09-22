@@ -44,3 +44,17 @@ void ABountyPlayerController::SetHUD_Health(float _healthCur, float _healthMax)
 		BountyHUD->CharacterOverlay->HealthText->SetText(FText::FromString(healthText));
 	}
 }
+
+void ABountyPlayerController::SetHUD_Score(float _score)
+{
+	BountyHUD = nullptr == BountyHUD ? Cast<ABountyHUD>(GetHUD()) : BountyHUD;
+	bool isValidHUD =
+		BountyHUD && BountyHUD->CharacterOverlay && BountyHUD->CharacterOverlay->ScoreAmount;
+
+	if (isValidHUD)
+	{
+		FString scoreText = FString::Printf(TEXT("%d"), FMath::FloorToInt(_score));
+		BountyHUD->CharacterOverlay->ScoreAmount->SetText(FText::FromString(scoreText));
+	}
+
+}

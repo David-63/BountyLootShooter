@@ -120,8 +120,7 @@ private:
 	float TurnThreshold = 0.5f;
 	float TimeSinceLastMovementReplication;
 
-	// CrossHair Inertia
-	FVector2D InertiaValue;
+
 
 	UPROPERTY(EditAnywhere, Category = "Montage")
 	class UAnimMontage* FireArmMontage;
@@ -151,22 +150,48 @@ public:
 	FORCEINLINE float GetAO_Yaw() const { return AO_Yaw; }
 	FORCEINLINE float GetAO_Pitch() const { return AO_Pitch; }
 	FORCEINLINE ETurningInPlace GetTurningInPlace() const { return TurningInPlace; }
-	FORCEINLINE FVector2D GetInertiaValue() const { return InertiaValue; }
 	FORCEINLINE bool ShouldRotateRootBone() const { return bIsRotateRootBone; }
 
 
-private:
-
 	/*
-	* player Health & elim
+	* hud
 	*/
 private:
 	class ABountyPlayerController* BountyPlayerController;
+	class ABountyPlayerState* BountyPlayerState;
 
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	float Health_Max = 100.f;
 	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = "Player Stats")
 	float Health_Cur = 100.f;
+
+	FVector2D InertiaValue;		// for crosshair
+
+private:
+	UFUNCTION()
+	void OnRep_Health(); // 클라이언트에서 호출됨	
+
+protected:
+	void PollInit();	// Poll for any relelvant classes and initialize our HUD
+	void UpdateHUD_Health();
+
+public:
+	FORCEINLINE float GetHealth_Max() const { return Health_Max; }
+	FORCEINLINE float GetHealth_Cur() const { return Health_Cur; }
+	FORCEINLINE FVector2D GetInertiaValue() const { return InertiaValue; }
+
+
+
+
+
+
+
+
+	/*
+	* elim
+	*/
+private:
+
 
 	bool bIsElimmed = false;
 	FTimerHandle ElimTimer;
@@ -204,15 +229,13 @@ private:
 	class USoundCue* ElimBotSound;
 
 private:
-	UFUNCTION()
-	void OnRep_Health(); // 클라이언트에서 호출됨	
+
 	void ElimTimerFinished();
 	UFUNCTION()
 	void UpdateDissolveMaterial(float _dissolveValue);
 	void StartDissolve();
 
 protected:
-	void UpdateHUD_Health();
 
 public:
 	void Elim();
@@ -221,8 +244,7 @@ public:
 	void PlayElimMontage();
 
 	FORCEINLINE bool IsElimmed() const { return bIsElimmed; }
-	FORCEINLINE float GetHealth_Max() const { return Health_Max; }
-	FORCEINLINE float GetHealth_Cur() const { return Health_Cur; }
+
 
 
 
