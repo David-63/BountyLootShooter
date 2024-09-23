@@ -4,12 +4,13 @@
 #include "BaseWeapon.h"
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
-#include "Bounty/Character/BountyCharacter.h"
 #include "Net/UnrealNetwork.h"
 #include "Animation/AnimationAsset.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "Casing.h"
+#include "Bounty/Character/BountyCharacter.h"
+#include "Bounty/PlayerController/BountyPlayerController.h"
 #include "Engine/SkeletalMeshSocket.h"
+#include "Casing.h"
 
 // Sets default values
 ABaseWeapon::ABaseWeapon()
@@ -71,8 +72,25 @@ void ABaseWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ABaseWeapon, WeaponState);
+	DOREPLIFETIME(ABaseWeapon, Ammo);
 }
 
+void ABaseWeapon::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	ABountyCharacter* playerCharacter = Cast<ABountyCharacter>(OtherActor);
+	if (playerCharacter)
+	{
+		playerCharacter->SetOverlappingWeapon(this);
+	}
+}
+void ABaseWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	ABountyCharacter* playerCharacter = Cast<ABountyCharacter>(OtherActor);
+	if (playerCharacter)
+	{
+		playerCharacter->SetOverlappingWeapon(nullptr);
+	}
+}
 void ABaseWeapon::ShowPickupWidget(bool _showWidget)
 {
 	if (PickupWidget)
@@ -80,7 +98,67 @@ void ABaseWeapon::ShowPickupWidget(bool _showWidget)
 		PickupWidget->SetVisibility(_showWidget);
 	}
 }
+void ABaseWeapon::Dropped()
+{
+	SetWeaponState(EWeaponState::EWS_Dropped);
+	FDetachmentTransformRules detachRules(EDetachmentRule::KeepWorld, true);
+	WeaponMesh->DetachFromComponent(detachRules);
+	SetOwner(nullptr);
+	BountyOwnerCharacter = nullptr;
+	BountyOwnerController = nullptr;
+}
 
+void ABaseWeapon::Fire(const FVector& _hitTarget)
+{
+	if (!FireAnimation) return;
+	
+	WeaponMesh->PlayAnimation(FireAnimation, false);
+
+	if (!CasingClass) return;
+	USkeletalMeshComponent* weaponMesh = GetWeaponMesh();
+	const USkeletalMeshSocket* ejectSocket = weaponMesh->GetSocketByName(FName("AmmoEject"));
+	if (!ejectSocket) return;
+
+	FTransform socketTransform = ejectSocket->GetSocketTransform(weaponMesh);
+
+	UWorld* world = GetWorld();
+	if (!world) return;
+	
+	ACasing* tanpi = world->SpawnActor<ACasing>(CasingClass, socketTransform.GetLocation(), socketTransform.GetRotation().Rotator());
+	
+	ABountyCharacter* owner = Cast<ABountyCharacter>(GetOwner());
+
+	if (owner)
+	{
+		tanpi->SetOwnerVelocity(owner->GetVelocity());
+	}
+	tanpi->CasingImpulse();
+
+	SpendRound();
+}
+
+
+void ABaseWeapon::OnRep_WeaponState()
+{
+	switch (WeaponState)
+	{
+	case EWeaponState::EWS_Initial:
+		break;
+	case EWeaponState::EWS_Equipped:
+		ShowPickupWidget(false);
+		WeaponMesh->SetSimulatePhysics(false);
+		WeaponMesh->SetEnableGravity(false);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+	case EWeaponState::EWS_Dropped:
+		WeaponMesh->SetSimulatePhysics(true);
+		WeaponMesh->SetEnableGravity(true);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		break;
+	default:
+		break;
+	}
+}
 void ABaseWeapon::SetWeaponState(EWeaponState _state)
 {
 	WeaponState = _state;
@@ -106,78 +184,42 @@ void ABaseWeapon::SetWeaponState(EWeaponState _state)
 		break;
 	}
 }
-
-void ABaseWeapon::Dropped()
+void ABaseWeapon::OnRep_Owner()
 {
-	SetWeaponState(EWeaponState::EWS_Dropped);
-	FDetachmentTransformRules detachRules(EDetachmentRule::KeepWorld, true);
-	WeaponMesh->DetachFromComponent(detachRules);
-	SetOwner(nullptr);
-}
+	Super::OnRep_Owner();
 
-void ABaseWeapon::Fire(const FVector& _hitTarget)
-{
-	if (!FireAnimation) return;
-	
-	WeaponMesh->PlayAnimation(FireAnimation, false);
-
-	if (!CasingClass) return;
-	USkeletalMeshComponent* weaponMesh = GetWeaponMesh();
-	const USkeletalMeshSocket* ejectSocket = weaponMesh->GetSocketByName(FName("AmmoEject"));
-	if (!ejectSocket) return;
-
-	FTransform socketTransform = ejectSocket->GetSocketTransform(weaponMesh);
-
-	UWorld* world = GetWorld();
-	if (!world) return;
-	
-	ACasing* tanpi = world->SpawnActor<ACasing>(CasingClass, socketTransform.GetLocation(), socketTransform.GetRotation().Rotator());
-	;
-	ABountyCharacter* owner = Cast<ABountyCharacter>(GetOwner());
-
-	if (owner)
+	if (nullptr == Owner)
 	{
-		tanpi->SetOwnerVelocity(owner->GetVelocity());
+		BountyOwnerCharacter = nullptr;
+		BountyOwnerController = nullptr;
 	}
-	tanpi->CasingImpulse();
-}
-
-void ABaseWeapon::OnRep_WeaponState()
-{
-	switch (WeaponState)
+	else
 	{
-	case EWeaponState::EWS_Initial:
-		break;
-	case EWeaponState::EWS_Equipped:
-		ShowPickupWidget(false);
-		WeaponMesh->SetSimulatePhysics(false);
-		WeaponMesh->SetEnableGravity(false);
-		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		break;
-	case EWeaponState::EWS_Dropped:
-		WeaponMesh->SetSimulatePhysics(true);
-		WeaponMesh->SetEnableGravity(true);
-		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		break;
-	default:
-		break;
+		SetHUDAmmo();
+	}	
+}
+void ABaseWeapon::OnRep_Ammo()
+{
+	BountyOwnerCharacter = nullptr == BountyOwnerCharacter ? Cast<ABountyCharacter>(GetOwner()) : BountyOwnerCharacter;
+	SetHUDAmmo();
+}
+void ABaseWeapon::SpendRound()
+{
+	--Ammo;
+	SetHUDAmmo();
+}
+void ABaseWeapon::SetHUDAmmo()
+{
+	BountyOwnerCharacter = nullptr == BountyOwnerCharacter ? Cast<ABountyCharacter>(GetOwner()) : BountyOwnerCharacter;
+	if (BountyOwnerCharacter)
+	{
+		BountyOwnerController = nullptr == BountyOwnerController ? Cast<ABountyPlayerController>(BountyOwnerCharacter->Controller) : BountyOwnerController;
+		if (BountyOwnerController)
+		{
+			BountyOwnerController->SetHUD_Ammo(Ammo);
+		}
 	}
 }
 
-void ABaseWeapon::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	ABountyCharacter* playerCharacter = Cast<ABountyCharacter>(OtherActor);
-	if (playerCharacter)
-	{
-		playerCharacter->SetOverlappingWeapon(this);
-	}
-}
 
-void ABaseWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	ABountyCharacter* playerCharacter = Cast<ABountyCharacter>(OtherActor);
-	if (playerCharacter)
-	{
-		playerCharacter->SetOverlappingWeapon(nullptr);
-	}
-}
+

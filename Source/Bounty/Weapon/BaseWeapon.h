@@ -24,26 +24,67 @@ class BOUNTY_API ABaseWeapon : public AActor
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	USkeletalMeshComponent* WeaponMesh;
-
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	class USphereComponent* AreaSphere;
+	
+protected:
+	UFUNCTION()
+	virtual void OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	virtual void OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+public:
+	void ShowPickupWidget(bool _showWidget);
+	void Dropped();
 
-	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties", ReplicatedUsing = OnRep_WeaponState)	// 엑터는 replicate를 사용하려면 생성자에서 bReplicates = true 선언해줘야함
-	EWeaponState WeaponState;
+	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
+	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 
-	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-	class UWidgetComponent* PickupWidget;
 
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+
+
+private:
+	UPROPERTY(EditAnywhere, Category = "Fire")
 	class UAnimationAsset* FireAnimation;
-
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ACasing> CasingClass;
-
 public:
+	virtual void Fire(const FVector& _hitTarget);
+
+
+
+
+	/*
+	* 
+	*/
+
+private:
+	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties", ReplicatedUsing = OnRep_WeaponState)	// 엑터는 replicate를 사용하려면 생성자에서 bReplicates = true 선언해줘야함
+	EWeaponState WeaponState;
+	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
+	class UWidgetComponent* PickupWidget;
+	UPROPERTY()
+	class ABountyCharacter* BountyOwnerCharacter;
+	UPROPERTY()
+	class ABountyPlayerController* BountyOwnerController;	
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo)
+	int32 Ammo;
+	UPROPERTY(EditAnywhere)
+	int32 MagCapacity;
+private:
+	UFUNCTION()
+	void OnRep_WeaponState();
+	UFUNCTION()
+	void OnRep_Ammo();
+	void SpendRound();
+public:
+	void SetWeaponState(EWeaponState _state);
+	virtual void OnRep_Owner() override;
+	void SetHUDAmmo();
+
 /*
 * Textures for the weapon crosshair
 */
+public:
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
 	class UTexture2D* CrosshairsCenter;
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
@@ -62,40 +103,23 @@ public:
 	float ZoomedFOV = 45.f;
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	float ZoomInterpSpeed = 30.f;
-
-
-
-private:
-	UFUNCTION()
-	void OnRep_WeaponState();
-
-protected:
-	UFUNCTION()
-	virtual void OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-	UFUNCTION()
-	virtual void OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
+	
 public:
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;	// Replaicate 변수 초기화
-	void ShowPickupWidget(bool _showWidget);
-	void SetWeaponState(EWeaponState _state);
-
-	void Dropped();
-
-
-	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
-	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
-	virtual void Fire(const FVector& _hitTarget);
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
 
 
-	// default function
+
+
+
+	
+
+
 public:	
 	ABaseWeapon();
 protected:
 	virtual void BeginPlay() override;
 public:	
 	virtual void Tick(float DeltaTime) override;
-
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;	// Replaicate 변수 초기화
 };
