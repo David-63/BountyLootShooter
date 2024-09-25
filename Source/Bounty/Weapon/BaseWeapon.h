@@ -80,7 +80,7 @@ public:
 	void SetWeaponState(EWeaponState _state);
 	virtual void OnRep_Owner() override;
 	void SetHUDAmmo();
-
+	bool IsMagEmpty();
 /*
 * Textures for the weapon crosshair
 */

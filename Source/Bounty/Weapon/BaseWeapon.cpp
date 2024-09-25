@@ -205,7 +205,7 @@ void ABaseWeapon::OnRep_Ammo()
 }
 void ABaseWeapon::SpendRound()
 {
-	--Ammo;
+	Ammo = FMath::Clamp(Ammo -1, 0, MagCapacity);
 	SetHUDAmmo();
 }
 void ABaseWeapon::SetHUDAmmo()
@@ -219,6 +219,11 @@ void ABaseWeapon::SetHUDAmmo()
 			BountyOwnerController->SetHUD_Ammo(Ammo);
 		}
 	}
+}
+
+bool ABaseWeapon::IsMagEmpty()
+{
+	return 0 >= Ammo;
 }
 
 

@@ -114,8 +114,11 @@ private:
 	bool bCanAttack = true;
 	bool bIsAttackDown;
 
+private:
 	void StartFireTimer();
 	void FireTimerFinished();
+	bool CanFire();
+
 protected:
 	void Attack(bool _presseed); // input
 	void Fire();				// do attack

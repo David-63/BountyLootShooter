@@ -218,14 +218,17 @@ void UCombatComponent::OnRep_EquipWeapon()
 
 
 void UCombatComponent::Fire()
-{
-	if (!bCanAttack) return;
+{	
 	if (!EquippedWeapon) return;
-
-	bCanAttack = false;
-	ServerAttack(HitTarget);
-	CrosshairAttackingFactor = SpreadMOA;
-	StartFireTimer();
+	UE_LOG(LogTemp, Warning, TEXT("out Fire"));
+	if (CanFire())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("in Fire"));
+		bCanAttack = false;
+		ServerAttack(HitTarget);
+		CrosshairAttackingFactor = SpreadMOA;
+		StartFireTimer();
+	}	
 }
 void UCombatComponent::StartFireTimer()
 {
@@ -239,6 +242,13 @@ void UCombatComponent::FireTimerFinished()
 
 	if (!bIsAttackDown) return;
 	Fire();
+}
+
+bool UCombatComponent::CanFire()
+{
+	if (!EquippedWeapon) return false;
+	
+	return !EquippedWeapon->IsMagEmpty() || !bCanAttack;
 }
 
 
