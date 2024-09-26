@@ -72,6 +72,19 @@ void ABountyPlayerController::SetHUD_LifeLoss(int32 _count)
 	}
 }
 
+void ABountyPlayerController::SetHUD_Mag(int32 _count)
+{
+	BountyHUD = nullptr == BountyHUD ? Cast<ABountyHUD>(GetHUD()) : BountyHUD;
+	bool isValidHUD =
+		BountyHUD && BountyHUD->CharacterOverlay && BountyHUD->CharacterOverlay->MagAmount;
+
+	if (isValidHUD)
+	{
+		FString magAmountText = FString::Printf(TEXT("%d"), _count);
+		BountyHUD->CharacterOverlay->MagAmount->SetText(FText::FromString(magAmountText));
+	}
+}
+
 void ABountyPlayerController::SetHUD_Ammo(int32 _count)
 {
 	BountyHUD = nullptr == BountyHUD ? Cast<ABountyHUD>(GetHUD()) : BountyHUD;

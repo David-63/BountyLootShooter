@@ -65,6 +65,9 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	bool bIsElimmed;
 
+	UPROPERTY(BlueprintReadOnly, Category = WeaponOffset, meta = (AllowPrivateAccess = "true"))
+	bool bUseFabrik;
+
 public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float _deltaTime) override;

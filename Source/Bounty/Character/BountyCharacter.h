@@ -4,9 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Bounty/BountyType/TurningInPlace.h"
-#include "Bounty/Interfaces/CrosshairInteractor.h"
 #include "Components/TimelineComponent.h"
+#include "Bounty/Interfaces/CrosshairInteractor.h"
+#include "Bounty/BountyType/TurningInPlace.h"
+#include "Bounty/BountyType/CombatState.h"
 #include "BountyCharacter.generated.h"
 
 class USpringArmComponent;
@@ -40,8 +41,16 @@ private:
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon) // ReplicatedUsing 프로퍼티로 RepNotify함수를 연결하면, 복사되는 대상에게만 호출되는 함수가 연결된다
 	class ABaseWeapon* OverlappingWeapon;	// 변경사항이 생길 경우에만, Replicated 전달
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UCombatComponent* Combat;			// 컴포넌트는 자체적으로 Replicate 설정하는 기능이 있음, 생성자에서 설정
+
+	UPROPERTY(EditAnywhere, Category = "Montage")
+	class UAnimMontage* FireArmMontage;
+	UPROPERTY(EditAnywhere, Category = "Montage")
+	class UAnimMontage* HitReactMontage;
+	UPROPERTY(EditAnywhere, Category = "Montage")
+	class UAnimMontage* ReloadMontage;
+
 private:
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(ABaseWeapon* _lastWeapon); // 변동사항으로 인해 레플리케이트 변수가 null이 된 경우, null이 되기 전 값을 인자로 임시저장된 값을 받을 수 있음
@@ -57,8 +66,10 @@ protected:
 
 public:
 	void PlayFireMontage(bool _bADS);
+	void PlayReloadMontage();
 	void SetOverlappingWeapon(ABaseWeapon* _weapon);
 
+	ECombatState GetCombatState() const;
 
 
 	/*
@@ -96,7 +107,7 @@ protected:
 	void InputFireDown(const FInputActionValue& Value);
 	void InputFireRelease(const FInputActionValue& Value);
 	virtual void Jump() override;
-
+	void InputReload();
 	
 
 
@@ -120,13 +131,7 @@ private:
 	float TurnThreshold = 0.5f;
 	float TimeSinceLastMovementReplication;
 
-
-
-	UPROPERTY(EditAnywhere, Category = "Montage")
-	class UAnimMontage* FireArmMontage;
-	UPROPERTY(EditAnywhere, Category = "Montage")
-	class UAnimMontage* HitReactMontage;
-
+	
 	
 private:
 	void ADS_Offset(float _deltaTime);

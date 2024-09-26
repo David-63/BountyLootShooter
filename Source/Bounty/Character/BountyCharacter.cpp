@@ -27,6 +27,7 @@
 #include "Sound/SoundCue.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Bounty/PlayerState/BountyPlayerState.h"
+#include "Bounty/Weapon/WeaponTypes.h"
 
 
 ABountyCharacter::ABountyCharacter()
@@ -145,8 +146,9 @@ void ABountyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(IA_Equip, ETriggerEvent::Triggered, this, &ABountyCharacter::InputEquip);
 		EnhancedInputComponent->BindAction(IA_ADS, ETriggerEvent::Started, this, &ABountyCharacter::InputADS);
 		EnhancedInputComponent->BindAction(IA_Fire, ETriggerEvent::Started, this, &ABountyCharacter::InputFireDown);
-		EnhancedInputComponent->BindAction(IA_Fire, ETriggerEvent::Completed, this, &ABountyCharacter::InputFireRelease);		
-		
+		EnhancedInputComponent->BindAction(IA_Fire, ETriggerEvent::Completed, this, &ABountyCharacter::InputFireRelease);
+		EnhancedInputComponent->BindAction(IA_ReloadNSwap, ETriggerEvent::Triggered, this, &ABountyCharacter::InputReload);
+
 	}
 }
 void ABountyCharacter::PostInitializeComponents()
@@ -201,6 +203,7 @@ void ABountyCharacter::SetOverlappingWeapon(ABaseWeapon* _weapon)
 		}
 	}
 }
+
 void ABountyCharacter::OnRep_OverlappingWeapon(ABaseWeapon* _lastWeapon)
 {
 	if (OverlappingWeapon)
@@ -430,6 +433,26 @@ void ABountyCharacter::PlayFireMontage(bool _bADS)
 	}
 }
 
+void ABountyCharacter::PlayReloadMontage()
+{
+	if (nullptr == Combat || nullptr == Combat->EquippedWeapon) return;
+
+
+	if (ReloadMontage)
+	{
+		FName sessionName;
+		switch (Combat->EquippedWeapon->GetWeaponType())
+		{
+		case EWeaponType::EWT_AssaultRifle:
+			sessionName = FName("Rifle");
+		default:
+			break;
+		}
+
+		Super::PlayAnimMontage(ReloadMontage, 1.f, sessionName);
+	}
+}
+
 
 // Elim function
 void ABountyCharacter::Elim()
@@ -559,7 +582,12 @@ bool ABountyCharacter::IsADS() const
 {
 	return (Combat && Combat->bIsADS);
 }
+ECombatState ABountyCharacter::GetCombatState() const
+{
+	if (!Combat) return ECombatState::ECS_MAX;
 
+	return Combat->CombatState;
+}
 
 
 // controll function
@@ -662,5 +690,13 @@ void ABountyCharacter::Jump()
 	else
 	{
 		Super::Jump();
+	}
+}
+
+void ABountyCharacter::InputReload()
+{
+	if (Combat)
+	{
+		Combat->WeaponReload();
 	}
 }

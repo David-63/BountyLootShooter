@@ -6,6 +6,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Bounty/Weapon/BaseWeapon.h"
+#include "Bounty/BountyType/CombatState.h"
 
 void UBountyAnimInstance::NativeInitializeAnimation()
 {
@@ -89,4 +90,6 @@ void UBountyAnimInstance::NativeUpdateAnimation(float _deltaTime)
 
 	// for turning movement
 	TurningInPlace = BountyCharacter->GetTurningInPlace();
+
+	bUseFabrik = BountyCharacter->GetCombatState() != ECombatState::ECS_Reloading;
 }

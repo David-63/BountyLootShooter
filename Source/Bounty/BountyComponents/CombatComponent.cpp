@@ -12,7 +12,6 @@
 
 #include "DrawDebugHelpers.h"
 #include "Bounty/PlayerController/BountyPlayerController.h"
-//#include "Bounty/HUD/BountyHUD.h"
 #include "Camera/CameraComponent.h"
 #include "TimerManager.h"
 
@@ -31,6 +30,10 @@ void UCombatComponent::BeginPlay()
 	{
 		DefaultFOV = Character->GetFollowCamera()->FieldOfView;
 		CurrentFOV = DefaultFOV;
+	}
+	if (Character->HasAuthority())
+	{
+		InitializeCarriedAmmo();
 	}
 }
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -53,6 +56,8 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
 	DOREPLIFETIME(UCombatComponent, bIsADS);
+	DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly);
+	DOREPLIFETIME(UCombatComponent, CombatState);
 }
 
 
@@ -198,6 +203,18 @@ void UCombatComponent::EquipWeapon(ABaseWeapon* _weaponToEquip)
 	}
 	EquippedWeapon->SetOwner(Character);
 	EquippedWeapon->SetHUDAmmo();
+
+	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+	{
+		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+	}
+
+	PlayerController = nullptr == PlayerController ? Cast<ABountyPlayerController>(Character->Controller) : PlayerController;
+	if (PlayerController)
+	{
+		PlayerController->SetHUD_Ammo(CarriedAmmo);
+	}
+
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
 }
@@ -230,6 +247,47 @@ void UCombatComponent::Fire()
 		StartFireTimer();
 	}	
 }
+void UCombatComponent::WeaponReload()
+{
+	if (0 < CarriedAmmo && ECombatState::ECS_Reloading != CombatState)
+	{
+		ServerWeaponReload();
+	}
+}
+
+void UCombatComponent::WeaponReloadFinish()
+{
+	if (!Character) return;
+	if (Character->HasAuthority())
+	{
+		CombatState = ECombatState::ECS_Unoccupied;
+	}
+}
+
+void UCombatComponent::ServerWeaponReload_Implementation()
+{
+	if (!Character) return;
+	CombatState = ECombatState::ECS_Reloading;
+	HandleReload();
+}
+void UCombatComponent::HandleReload()
+{
+	Character->PlayReloadMontage();
+}
+
+
+void UCombatComponent::OnRep_CombatState()
+{
+	switch (CombatState)
+	{
+	case ECombatState::ECS_Unoccupied:
+		break;
+	case ECombatState::ECS_Reloading:
+		HandleReload();
+		break;
+	}
+}
+
 void UCombatComponent::StartFireTimer()
 {
 	if (!EquippedWeapon || !Character) return;
@@ -249,6 +307,20 @@ bool UCombatComponent::CanFire()
 	if (!EquippedWeapon) return false;
 	
 	return !EquippedWeapon->IsMagEmpty() || !bCanAttack;
+}
+
+void UCombatComponent::OnRep_CarriedAmmo()
+{
+	PlayerController = nullptr == PlayerController ? Cast<ABountyPlayerController>(Character->Controller) : PlayerController;
+	if (PlayerController)
+	{
+		PlayerController->SetHUD_Ammo(CarriedAmmo);
+	}
+}
+
+void UCombatComponent::InitializeCarriedAmmo()
+{
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingAmmo);
 }
 
 

@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Bounty/HUD/BountyHUD.h"
+#include "Bounty/Weapon/WeaponTypes.h"
+#include "Bounty/BountyType/CombatState.h"
 #include "CombatComponent.generated.h"
 
 
@@ -114,10 +116,25 @@ private:
 	bool bCanAttack = true;
 	bool bIsAttackDown;
 
+	UPROPERTY(ReplicatedUsing = OnRep_CarriedAmmo)
+	int32 CarriedAmmo;
+	TMap<EWeaponType, int32> CarriedAmmoMap;
+
+	UPROPERTY(EditAnywhere)
+	int32 StartingAmmo = 30;
+
+	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
+	ECombatState CombatState = ECombatState::ECS_Unoccupied;
+
 private:
+	void InitializeCarriedAmmo();
 	void StartFireTimer();
 	void FireTimerFinished();
 	bool CanFire();
+	UFUNCTION()
+	void OnRep_CarriedAmmo();
+	UFUNCTION()
+	void OnRep_CombatState();
 
 protected:
 	void Attack(bool _presseed); // input
@@ -126,6 +143,16 @@ protected:
 	void ServerAttack(const FVector_NetQuantize& _traceHitTarget);	
 	UFUNCTION(NetMulticast, Reliable)	// NetMulticast 옵션으로 서버에서 호출시 모든 클라이언트가 동일하게 작동함
 	void MulticastAttack(const FVector_NetQuantize& _traceHitTarget);
+	UFUNCTION(Server, Reliable)
+	void ServerWeaponReload();
+
+	void HandleReload();
+
+public:
+	void WeaponReload();
+	UFUNCTION(BlueprintCallable)
+	void WeaponReloadFinish();
+
 
 
 public:	

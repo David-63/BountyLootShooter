@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "WeaponTypes.h"
 #include "BaseWeapon.generated.h"
 
 UENUM(BlueprintType)
@@ -21,6 +22,9 @@ class BOUNTY_API ABaseWeapon : public AActor
 {
 	GENERATED_BODY()
 	
+	/*
+	* Actor setting
+	*/
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	USkeletalMeshComponent* WeaponMesh;
@@ -40,7 +44,9 @@ public:
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 
 
-
+	/*
+	* visual
+	*/
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Fire")
@@ -54,7 +60,7 @@ public:
 
 
 	/*
-	* 
+	* properties
 	*/
 
 private:
@@ -70,6 +76,8 @@ private:
 	int32 Ammo;
 	UPROPERTY(EditAnywhere)
 	int32 MagCapacity;
+	UPROPERTY(EditAnywhere)
+	EWeaponType WeaponType;
 private:
 	UFUNCTION()
 	void OnRep_WeaponState();
@@ -81,6 +89,12 @@ public:
 	virtual void OnRep_Owner() override;
 	void SetHUDAmmo();
 	bool IsMagEmpty();
+
+	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
+
+
+
+
 /*
 * Textures for the weapon crosshair
 */
