@@ -33,7 +33,7 @@ void UCombatComponent::BeginPlay()
 	}
 	if (Character->HasAuthority())
 	{
-		InitializeCarriedAmmo();
+		InitializeExtraAmmo();
 	}
 }
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -56,7 +56,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
 	DOREPLIFETIME(UCombatComponent, bIsADS);
-	DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(UCombatComponent, ExtraAmmo, COND_OwnerOnly);
 	DOREPLIFETIME(UCombatComponent, CombatState);
 }
 
@@ -202,17 +202,19 @@ void UCombatComponent::EquipWeapon(ABaseWeapon* _weaponToEquip)
 		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
 	}
 	EquippedWeapon->SetOwner(Character);
-	EquippedWeapon->SetHUDAmmo();
+	EquippedWeapon->SetHUDCurrentAmmo();
 
-	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+	// update weapon types
+	if (ExtraAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
 	{
-		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+		ExtraAmmo = ExtraAmmoMap[EquippedWeapon->GetWeaponType()];
 	}
 
+	// display weapon ammo
 	PlayerController = nullptr == PlayerController ? Cast<ABountyPlayerController>(Character->Controller) : PlayerController;
 	if (PlayerController)
 	{
-		PlayerController->SetHUD_Ammo(CarriedAmmo);
+		PlayerController->SetHUD_ExtraAmmo(ExtraAmmo);
 	}
 
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
@@ -249,7 +251,7 @@ void UCombatComponent::Fire()
 }
 void UCombatComponent::WeaponReload()
 {
-	if (0 < CarriedAmmo && ECombatState::ECS_Reloading != CombatState)
+	if (0 < ExtraAmmo && ECombatState::ECS_Reloading != CombatState)
 	{
 		ServerWeaponReload();
 	}
@@ -261,26 +263,101 @@ void UCombatComponent::WeaponReloadFinish()
 	if (Character->HasAuthority())
 	{
 		CombatState = ECombatState::ECS_Unoccupied;
+		UpdateAmmoValue();
+	}
+	if (bIsAttackDown)
+	{
+		Fire();
 	}
 }
 
 void UCombatComponent::ServerWeaponReload_Implementation()
 {
-	if (!Character) return;
+	if (!Character || !EquippedWeapon) return;
+	
 	CombatState = ECombatState::ECS_Reloading;
 	HandleReload();
 }
+
 void UCombatComponent::HandleReload()
 {
 	Character->PlayReloadMontage();
 }
 
+int32 UCombatComponent::AmountToReload()
+{
+	if (!EquippedWeapon) return 0;
+
+	int32 roomInMag = EquippedWeapon->GetMagCapacity() - EquippedWeapon->GetAmmo();
+	if (ExtraAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+	{
+		int32 amountCarried = ExtraAmmoMap[EquippedWeapon->GetWeaponType()];
+		int32 least = FMath::Min(roomInMag, amountCarried);
+		return FMath::Clamp(roomInMag, 0, least);
+	}
+
+	return 0;
+}
+
+void UCombatComponent::OnRep_ExtraAmmo()
+{
+	PlayerController = nullptr == PlayerController ? Cast<ABountyPlayerController>(Character->Controller) : PlayerController;
+	if (PlayerController)
+	{
+		PlayerController->SetHUD_ExtraAmmo(ExtraAmmo);
+	}
+}
+void UCombatComponent::InitializeExtraAmmo()
+{
+	ExtraAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingAmmo);
+}
+void UCombatComponent::UpdateAmmoValue()
+{
+	if (!Character || !EquippedWeapon) return;
+
+	// weapontype : not using magazine
+	if (EWeaponType::EWT_MAX == EquippedWeapon->GetWeaponType())
+	{
+		int32 reloadAmount = AmountToReload();
+		if (ExtraAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+		{
+			ExtraAmmoMap[EquippedWeapon->GetWeaponType()] -= reloadAmount;
+			ExtraAmmo = ExtraAmmoMap[EquippedWeapon->GetWeaponType()];
+		}
+		PlayerController = nullptr == PlayerController ? Cast<ABountyPlayerController>(Character->Controller) : PlayerController;
+		if (PlayerController)
+		{
+			PlayerController->SetHUD_ExtraAmmo(ExtraAmmo);
+		}
+		EquippedWeapon->AddAmmo(-reloadAmount);
+	}
+	else if (EWeaponType::EWT_AssaultRifle == EquippedWeapon->GetWeaponType())
+	{
+		if (ExtraAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+		{
+			ExtraAmmoMap[EquippedWeapon->GetWeaponType()] -= 1;
+			ExtraAmmo = ExtraAmmoMap[EquippedWeapon->GetWeaponType()];
+		}
+
+		PlayerController = nullptr == PlayerController ? Cast<ABountyPlayerController>(Character->Controller) : PlayerController;
+		if (PlayerController)
+		{
+			PlayerController->SetHUD_ExtraAmmo(ExtraAmmo);
+		}
+		// add max capacity
+		EquippedWeapon->AddAmmo(-EquippedWeapon->GetMagCapacity());
+	}
+}
 
 void UCombatComponent::OnRep_CombatState()
 {
 	switch (CombatState)
 	{
 	case ECombatState::ECS_Unoccupied:
+		if (bIsAttackDown)
+		{
+			Fire();
+		}
 		break;
 	case ECombatState::ECS_Reloading:
 		HandleReload();
@@ -306,22 +383,9 @@ bool UCombatComponent::CanFire()
 {
 	if (!EquippedWeapon) return false;
 	
-	return !EquippedWeapon->IsMagEmpty() || !bCanAttack;
+	return !EquippedWeapon->IsMagEmpty() && bCanAttack && ECombatState::ECS_Unoccupied == CombatState;
 }
 
-void UCombatComponent::OnRep_CarriedAmmo()
-{
-	PlayerController = nullptr == PlayerController ? Cast<ABountyPlayerController>(Character->Controller) : PlayerController;
-	if (PlayerController)
-	{
-		PlayerController->SetHUD_Ammo(CarriedAmmo);
-	}
-}
-
-void UCombatComponent::InitializeCarriedAmmo()
-{
-	CarriedAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingAmmo);
-}
 
 
 void UCombatComponent::Attack(bool _presseed)
@@ -342,8 +406,11 @@ void UCombatComponent::MulticastAttack_Implementation(const FVector_NetQuantize&
 	if (!Character) return;
 	if (!EquippedWeapon) return;
 
-	Character->PlayFireMontage(bIsADS);
-	EquippedWeapon->Fire(_traceHitTarget);
+	if (ECombatState::ECS_Unoccupied == CombatState)
+	{
+		Character->PlayFireMontage(bIsADS);
+		EquippedWeapon->Fire(_traceHitTarget);
+	}
 }
 
 

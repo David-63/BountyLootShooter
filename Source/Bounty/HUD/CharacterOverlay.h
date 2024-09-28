@@ -24,7 +24,7 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* LifeLossAmount;
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* MagAmount;
+	UTextBlock* ExtraAmmoAmount;
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* AmmoAmount;
+	UTextBlock* CurrentAmmoAmount;
 };

@@ -73,9 +73,9 @@ private:
 	UPROPERTY()
 	class ABountyPlayerController* BountyOwnerController;	
 	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo)
-	int32 Ammo;
+	int32 Ammo;				// ÇöÀç Åº
 	UPROPERTY(EditAnywhere)
-	int32 MagCapacity;
+	int32 MagCapacity;		// ÅºÃ¢ ¿ë·®
 	UPROPERTY(EditAnywhere)
 	EWeaponType WeaponType;
 private:
@@ -87,10 +87,13 @@ private:
 public:
 	void SetWeaponState(EWeaponState _state);
 	virtual void OnRep_Owner() override;
-	void SetHUDAmmo();
+	void SetHUDCurrentAmmo();
 	bool IsMagEmpty();
+	void AddAmmo(int32 _ammoToAdd);
 
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
+	FORCEINLINE int32 GetAmmo() const { return Ammo; }
+	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
 
 
 

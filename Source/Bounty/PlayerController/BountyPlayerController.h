@@ -26,7 +26,7 @@ public:
 	void SetHUD_Health(float _healthCur, float _healthMax);
 	void SetHUD_Score(float _score);
 	void SetHUD_LifeLoss(int32 _count);
-	void SetHUD_Mag(int32 _count);
-	void SetHUD_Ammo(int32 _count);
+	void SetHUD_ExtraAmmo(int32 _count);
+	void SetHUD_CurrentAmmo(int32 _count);
 
 };

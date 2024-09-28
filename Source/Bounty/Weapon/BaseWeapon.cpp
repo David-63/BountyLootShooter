@@ -195,20 +195,20 @@ void ABaseWeapon::OnRep_Owner()
 	}
 	else
 	{
-		SetHUDAmmo();
+		SetHUDCurrentAmmo();
 	}	
 }
 void ABaseWeapon::OnRep_Ammo()
 {
 	BountyOwnerCharacter = nullptr == BountyOwnerCharacter ? Cast<ABountyCharacter>(GetOwner()) : BountyOwnerCharacter;
-	SetHUDAmmo();
+	SetHUDCurrentAmmo();
 }
 void ABaseWeapon::SpendRound()
 {
 	Ammo = FMath::Clamp(Ammo -1, 0, MagCapacity);
-	SetHUDAmmo();
+	SetHUDCurrentAmmo();
 }
-void ABaseWeapon::SetHUDAmmo()
+void ABaseWeapon::SetHUDCurrentAmmo()
 {
 	BountyOwnerCharacter = nullptr == BountyOwnerCharacter ? Cast<ABountyCharacter>(GetOwner()) : BountyOwnerCharacter;
 	if (BountyOwnerCharacter)
@@ -216,7 +216,7 @@ void ABaseWeapon::SetHUDAmmo()
 		BountyOwnerController = nullptr == BountyOwnerController ? Cast<ABountyPlayerController>(BountyOwnerCharacter->Controller) : BountyOwnerController;
 		if (BountyOwnerController)
 		{
-			BountyOwnerController->SetHUD_Ammo(Ammo);
+			BountyOwnerController->SetHUD_CurrentAmmo(Ammo);
 		}
 	}
 }
@@ -226,5 +226,9 @@ bool ABaseWeapon::IsMagEmpty()
 	return 0 >= Ammo;
 }
 
+void ABaseWeapon::AddAmmo(int32 _ammoToAdd)
+{
+	Ammo = FMath::Clamp(Ammo - _ammoToAdd, 0, MagCapacity);
 
-
+	SetHUDCurrentAmmo();
+}

@@ -72,28 +72,28 @@ void ABountyPlayerController::SetHUD_LifeLoss(int32 _count)
 	}
 }
 
-void ABountyPlayerController::SetHUD_Mag(int32 _count)
+void ABountyPlayerController::SetHUD_ExtraAmmo(int32 _count)
 {
 	BountyHUD = nullptr == BountyHUD ? Cast<ABountyHUD>(GetHUD()) : BountyHUD;
 	bool isValidHUD =
-		BountyHUD && BountyHUD->CharacterOverlay && BountyHUD->CharacterOverlay->MagAmount;
+		BountyHUD && BountyHUD->CharacterOverlay && BountyHUD->CharacterOverlay->ExtraAmmoAmount;
 
 	if (isValidHUD)
 	{
-		FString magAmountText = FString::Printf(TEXT("%d"), _count);
-		BountyHUD->CharacterOverlay->MagAmount->SetText(FText::FromString(magAmountText));
+		FString extraAmmoText = FString::Printf(TEXT("%d"), _count);
+		BountyHUD->CharacterOverlay->ExtraAmmoAmount->SetText(FText::FromString(extraAmmoText));
 	}
 }
 
-void ABountyPlayerController::SetHUD_Ammo(int32 _count)
+void ABountyPlayerController::SetHUD_CurrentAmmo(int32 _count)
 {
 	BountyHUD = nullptr == BountyHUD ? Cast<ABountyHUD>(GetHUD()) : BountyHUD;
 	bool isValidHUD =
-		BountyHUD && BountyHUD->CharacterOverlay && BountyHUD->CharacterOverlay->AmmoAmount;
+		BountyHUD && BountyHUD->CharacterOverlay && BountyHUD->CharacterOverlay->CurrentAmmoAmount;
 
 	if (isValidHUD)
 	{
-		FString ammoAmountText = FString::Printf(TEXT("%d"), _count);
-		BountyHUD->CharacterOverlay->AmmoAmount->SetText(FText::FromString(ammoAmountText));
+		FString currentAmmoText = FString::Printf(TEXT("%d"), _count);
+		BountyHUD->CharacterOverlay->CurrentAmmoAmount->SetText(FText::FromString(currentAmmoText));
 	}
 }

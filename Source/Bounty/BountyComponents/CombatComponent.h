@@ -116,25 +116,26 @@ private:
 	bool bCanAttack = true;
 	bool bIsAttackDown;
 
-	UPROPERTY(ReplicatedUsing = OnRep_CarriedAmmo)
-	int32 CarriedAmmo;
-	TMap<EWeaponType, int32> CarriedAmmoMap;
+	UPROPERTY(ReplicatedUsing = OnRep_ExtraAmmo)
+	int32 ExtraAmmo;
+	TMap<EWeaponType, int32> ExtraAmmoMap;
 
 	UPROPERTY(EditAnywhere)
-	int32 StartingAmmo = 30;
+	int32 StartingAmmo = 3;
 
 	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
 	ECombatState CombatState = ECombatState::ECS_Unoccupied;
 
 private:
-	void InitializeCarriedAmmo();
+	void InitializeExtraAmmo();
 	void StartFireTimer();
 	void FireTimerFinished();
 	bool CanFire();
 	UFUNCTION()
-	void OnRep_CarriedAmmo();
+	void OnRep_ExtraAmmo();
 	UFUNCTION()
 	void OnRep_CombatState();
+	void UpdateAmmoValue();
 
 protected:
 	void Attack(bool _presseed); // input
@@ -147,6 +148,8 @@ protected:
 	void ServerWeaponReload();
 
 	void HandleReload();
+	int32 AmountToReload();
+
 
 public:
 	void WeaponReload();

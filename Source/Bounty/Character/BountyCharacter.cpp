@@ -469,7 +469,7 @@ void ABountyCharacter::MulticastElim_Implementation()
 {
 	if (BountyPlayerController)
 	{
-		BountyPlayerController->SetHUD_Ammo(0);
+		BountyPlayerController->SetHUD_CurrentAmmo(0);
 	}
 	bIsElimmed = true;
 	PlayElimMontage();
