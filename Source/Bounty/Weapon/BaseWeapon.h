@@ -49,18 +49,19 @@ public:
 	*/
 
 private:
-	UPROPERTY(EditAnywhere, Category = "Fire")
-	class UAnimationAsset* FireAnimation;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class ACasing> CasingClass;
+
+
 public:
-	virtual void Fire(const FVector& _hitTarget);
+
+
+public:
+
 
 
 
 
 	/*
-	* properties
+	* weapon function
 	*/
 
 private:
@@ -71,7 +72,13 @@ private:
 	UPROPERTY()
 	class ABountyCharacter* BountyOwnerCharacter;
 	UPROPERTY()
-	class ABountyPlayerController* BountyOwnerController;	
+	class ABountyPlayerController* BountyOwnerController;
+
+	UPROPERTY(EditAnywhere, Category = "Fire")
+	class UAnimationAsset* FireAnimation;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class ACasing> CasingClass;
+
 	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo)
 	int32 Ammo;				// ÇöÀç Åº
 	UPROPERTY(EditAnywhere)
@@ -84,9 +91,19 @@ private:
 	UFUNCTION()
 	void OnRep_Ammo();
 	void SpendRound();
+
+public:
+	UPROPERTY(EditAnywhere, Category = Combat)
+	float FireDelay = 0.12f;
+	UPROPERTY(EditAnywhere, Category = Combat)
+	bool bUseAutoAttack = true;
+	UPROPERTY(EditAnywhere)
+	class USoundCue* EquipSound;
+
 public:
 	void SetWeaponState(EWeaponState _state);
 	virtual void OnRep_Owner() override;
+	virtual void Fire(const FVector& _hitTarget);
 	void SetHUDCurrentAmmo();
 	bool IsMagEmpty();
 	void AddAmmo(int32 _ammoToAdd);

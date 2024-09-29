@@ -14,6 +14,7 @@
 #include "Bounty/PlayerController/BountyPlayerController.h"
 #include "Camera/CameraComponent.h"
 #include "TimerManager.h"
+#include "Sound/SoundCue.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -217,6 +218,15 @@ void UCombatComponent::EquipWeapon(ABaseWeapon* _weaponToEquip)
 		PlayerController->SetHUD_ExtraAmmo(ExtraAmmo);
 	}
 
+	if (EquippedWeapon->EquipSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->EquipSound, Character->GetActorLocation());
+	}
+	if (EquippedWeapon->IsMagEmpty())
+	{
+		WeaponReload();
+	}
+
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
 }
@@ -232,23 +242,51 @@ void UCombatComponent::OnRep_EquipWeapon()
 		}
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 		Character->bUseControllerRotationYaw = true;
-	}
+
+		if (EquippedWeapon->EquipSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->EquipSound, Character->GetActorLocation());
+		}
+	}	
 }
 
 
 void UCombatComponent::Fire()
 {	
 	if (!EquippedWeapon) return;
-	UE_LOG(LogTemp, Warning, TEXT("out Fire"));
 	if (CanFire())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("in Fire"));
+	{		
 		bCanAttack = false;
 		ServerAttack(HitTarget);
 		CrosshairAttackingFactor = SpreadMOA;
 		StartFireTimer();
 	}	
 }
+void UCombatComponent::StartFireTimer()
+{
+	if (!EquippedWeapon || !Character) return;
+
+	Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, EquippedWeapon->FireDelay);
+}
+void UCombatComponent::FireTimerFinished()
+{
+	bCanAttack = true;
+	if (bIsAttackDown && EquippedWeapon->bUseAutoAttack)
+	{
+		Fire();
+	}
+	if (EquippedWeapon->IsMagEmpty())
+	{
+		WeaponReload();
+	}
+}
+bool UCombatComponent::CanFire()
+{
+	if (!EquippedWeapon) return false;
+
+	return !EquippedWeapon->IsMagEmpty() && bCanAttack && ECombatState::ECS_Unoccupied == CombatState;
+}
+
 void UCombatComponent::WeaponReload()
 {
 	if (0 < ExtraAmmo && ECombatState::ECS_Reloading != CombatState)
@@ -256,7 +294,6 @@ void UCombatComponent::WeaponReload()
 		ServerWeaponReload();
 	}
 }
-
 void UCombatComponent::WeaponReloadFinish()
 {
 	if (!Character) return;
@@ -270,7 +307,6 @@ void UCombatComponent::WeaponReloadFinish()
 		Fire();
 	}
 }
-
 void UCombatComponent::ServerWeaponReload_Implementation()
 {
 	if (!Character || !EquippedWeapon) return;
@@ -278,12 +314,10 @@ void UCombatComponent::ServerWeaponReload_Implementation()
 	CombatState = ECombatState::ECS_Reloading;
 	HandleReload();
 }
-
 void UCombatComponent::HandleReload()
 {
 	Character->PlayReloadMontage();
 }
-
 int32 UCombatComponent::AmountToReload()
 {
 	if (!EquippedWeapon) return 0;
@@ -298,6 +332,7 @@ int32 UCombatComponent::AmountToReload()
 
 	return 0;
 }
+
 
 void UCombatComponent::OnRep_ExtraAmmo()
 {
@@ -318,6 +353,7 @@ void UCombatComponent::UpdateAmmoValue()
 	// weapontype : not using magazine
 	if (EWeaponType::EWT_MAX == EquippedWeapon->GetWeaponType())
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Weapon Type is error"));
 		int32 reloadAmount = AmountToReload();
 		if (ExtraAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
 		{
@@ -335,6 +371,7 @@ void UCombatComponent::UpdateAmmoValue()
 	{
 		if (ExtraAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
 		{
+			UE_LOG(LogTemp, Warning, TEXT("extra Ammo changed"));
 			ExtraAmmoMap[EquippedWeapon->GetWeaponType()] -= 1;
 			ExtraAmmo = ExtraAmmoMap[EquippedWeapon->GetWeaponType()];
 		}
@@ -365,26 +402,6 @@ void UCombatComponent::OnRep_CombatState()
 	}
 }
 
-void UCombatComponent::StartFireTimer()
-{
-	if (!EquippedWeapon || !Character) return;
-
-	Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, FireDelay);
-}
-void UCombatComponent::FireTimerFinished()
-{
-	bCanAttack = true;
-
-	if (!bIsAttackDown) return;
-	Fire();
-}
-
-bool UCombatComponent::CanFire()
-{
-	if (!EquippedWeapon) return false;
-	
-	return !EquippedWeapon->IsMagEmpty() && bCanAttack && ECombatState::ECS_Unoccupied == CombatState;
-}
 
 
 

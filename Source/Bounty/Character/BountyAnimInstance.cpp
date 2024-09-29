@@ -92,4 +92,6 @@ void UBountyAnimInstance::NativeUpdateAnimation(float _deltaTime)
 	TurningInPlace = BountyCharacter->GetTurningInPlace();
 
 	bUseFabrik = BountyCharacter->GetCombatState() != ECombatState::ECS_Reloading;
+	bUseAO = BountyCharacter->GetCombatState() != ECombatState::ECS_Reloading;
+	bUseTransformRightHand = BountyCharacter->GetCombatState() != ECombatState::ECS_Reloading;
 }
