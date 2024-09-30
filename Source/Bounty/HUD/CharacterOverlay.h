@@ -27,4 +27,6 @@ public:
 	UTextBlock* ExtraAmmoAmount;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* CurrentAmmoAmount;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* MatchCountText;
 };

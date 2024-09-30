@@ -17,6 +17,16 @@ void ABountyPlayerController::BeginPlay()
 
 }
 
+
+
+void ABountyPlayerController::Tick(float _deltaTime)
+{
+	Super::Tick(_deltaTime);
+
+	SetHUDTime();
+	CheckTimeSync(_deltaTime);	
+}
+
 void ABountyPlayerController::OnPossess(APawn* _inPawn)
 {
 	Super::OnPossess(_inPawn);
@@ -27,6 +37,47 @@ void ABountyPlayerController::OnPossess(APawn* _inPawn)
 		SetHUD_Health(bountyCharacter->GetHealth_Cur(), bountyCharacter->GetHealth_Max());
 	}
 }
+
+void ABountyPlayerController::ReceivedPlayer()
+{
+	Super::ReceivedPlayer();
+
+	if (IsLocalController())
+	{
+		ServerRequestServerTime(GetWorld()->GetTimeSeconds());
+	}
+}
+
+void ABountyPlayerController::CheckTimeSync(float _deltaTime)
+{
+	TimeSyncRunningTime += _deltaTime;
+	if (IsLocalController() && TimeSyncFrequency < TimeSyncRunningTime)
+	{
+		ServerRequestServerTime(GetWorld()->GetTimeSeconds());
+		TimeSyncRunningTime = 0.f;
+	}
+}
+
+float ABountyPlayerController::GetServerTime()
+{
+	if (HasAuthority()) return GetWorld()->GetTimeSeconds();
+	else return GetWorld()->GetTimeSeconds() + ClientSeverDelta;
+}
+
+void ABountyPlayerController::ServerRequestServerTime_Implementation(float _timeOfClientRequest)
+{
+	float serverTimeOfReceipt = GetWorld()->GetTimeSeconds();
+	ClientReportServerTime(_timeOfClientRequest, serverTimeOfReceipt);
+
+}
+
+void ABountyPlayerController::ClientReportServerTime_Implementation(float _timeOfClientRequest, float _timeServerReceivedClientRequest)
+{
+	float roundTripTime = GetWorld()->GetTimeSeconds() - _timeOfClientRequest;
+	float currentServerTime = _timeServerReceivedClientRequest + (0.5f * roundTripTime);
+	ClientSeverDelta = currentServerTime - GetWorld()->GetTimeSeconds();
+}
+
 
 void ABountyPlayerController::SetHUD_Health(float _healthCur, float _healthMax)
 {
@@ -97,3 +148,31 @@ void ABountyPlayerController::SetHUD_CurrentAmmo(int32 _count)
 		BountyHUD->CharacterOverlay->CurrentAmmoAmount->SetText(FText::FromString(currentAmmoText));
 	}
 }
+
+void ABountyPlayerController::SetHUD_MatchCount(float _time)
+{
+	BountyHUD = nullptr == BountyHUD ? Cast<ABountyHUD>(GetHUD()) : BountyHUD;
+	bool isValidHUD =
+		BountyHUD && BountyHUD->CharacterOverlay && BountyHUD->CharacterOverlay->MatchCountText;
+
+	if (isValidHUD)
+	{
+		int32 minutes = FMath::FloorToInt(_time / 60.f);
+		int32 seconds = _time - (minutes * 60);
+
+		FString matchCountText = FString::Printf(TEXT("%02d : %02d"), minutes, seconds);
+		BountyHUD->CharacterOverlay->MatchCountText->SetText(FText::FromString(matchCountText));
+	}
+}
+
+void ABountyPlayerController::SetHUDTime()
+{
+	uint32 secondsLeft = FMath::CeilToInt(MatchTime - GetServerTime());
+	// 1초에한번만 호출되게 제한
+	if (secondsLeft != CountdownInt)
+	{
+		SetHUD_MatchCount(MatchTime - GetServerTime());
+	}
+	CountdownInt = secondsLeft;
+}
+
