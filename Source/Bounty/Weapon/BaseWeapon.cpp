@@ -228,7 +228,7 @@ bool ABaseWeapon::IsMagEmpty()
 
 void ABaseWeapon::AddAmmo(int32 _ammoToAdd)
 {
-	Ammo = FMath::Clamp(Ammo - _ammoToAdd, 0, MagCapacity);
+	Ammo = FMath::Clamp(Ammo + _ammoToAdd, 0, MagCapacity);
 
 	SetHUDCurrentAmmo();
 }

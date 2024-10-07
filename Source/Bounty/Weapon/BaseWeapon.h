@@ -44,20 +44,6 @@ public:
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 
 
-	/*
-	* visual
-	*/
-
-private:
-
-
-public:
-
-
-public:
-
-
-
 
 
 	/*
