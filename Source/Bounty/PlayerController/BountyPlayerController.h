@@ -25,6 +25,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Sync")
 	float TimeSyncFrequency = 5.f;
 	float TimeSyncRunningTime = 0.f;
+
 protected:
 	void SetHUDTime();
 	// Requests the current server time, passing in the client's time when the request was sent
@@ -34,8 +35,24 @@ protected:
 	UFUNCTION(Client, Reliable)
 	void ClientReportServerTime(float _timeOfClientRequest, float _timeServerReceivedClientRequest);
 	void CheckTimeSync(float _deltaTime);
+	void PollInit();
 public:
 	virtual float GetServerTime();	// Synced with server world clock
+
+
+
+
+	/*
+	* Match state controll
+	*/
+private:
+	UPROPERTY(ReplicatedUsing = OnRep_MatchState)
+	FName BountyMatchState;
+private:
+	UFUNCTION()
+	void OnRep_MatchState();
+public:
+	void OnMatchStateSet(FName _state);
 
 
 
@@ -47,9 +64,15 @@ public:
 private:
 	UPROPERTY()
 	class ABountyHUD* BountyHUD;
-public:
-	virtual void OnPossess(APawn* _inPawn) override;
+	UPROPERTY()
+	class UCharacterOverlay* CharacterOverlay;
+	bool bIsInitializeOverlay = false;
+	float HUD_HealthCur;
+	float HUD_HealthMax;
+	float HUD_Score;
+	float HUD_LifeLoss;
 
+public:
 	void SetHUD_Health(float _healthCur, float _healthMax);
 	void SetHUD_Score(float _score);
 	void SetHUD_LifeLoss(int32 _count);
@@ -67,5 +90,6 @@ protected:
 public:
 	virtual void Tick(float _deltaTime) override;
 	virtual void ReceivedPlayer() override; // Sync with server clock as soon as possible
-
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void OnPossess(APawn* _inPawn) override;
 };

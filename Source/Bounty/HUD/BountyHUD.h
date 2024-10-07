@@ -39,6 +39,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	TSubclassOf<class UUserWidget> CharacterOverlayClass;
 
+	UPROPERTY()
 	class UCharacterOverlay* CharacterOverlay;
 
 private:
@@ -46,9 +47,9 @@ private:
 
 protected:
 	virtual void BeginPlay() override;
-	void AddCharacterOverlay();
 
 public:
+	void AddCharacterOverlay();
 	virtual void DrawHUD() override;
 
 	FORCEINLINE void SetHUDPackage(const FHUDPackage& _package, const FVector2D& _inertiaValue) { HUDPackage = _package; InertiaValue = _inertiaValue; }

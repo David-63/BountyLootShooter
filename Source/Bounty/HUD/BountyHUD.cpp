@@ -9,7 +9,6 @@ void ABountyHUD::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AddCharacterOverlay();
 }
 
 void ABountyHUD::AddCharacterOverlay()
