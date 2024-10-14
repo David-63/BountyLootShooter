@@ -54,6 +54,8 @@ private:
 public:
 	void OnMatchStateSet(FName _state);
 
+	void HandleMatchHasStarted();
+
 
 
 

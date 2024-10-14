@@ -4,6 +4,7 @@
 #include "BountyHUD.h"
 #include "GameFramework/PlayerController.h"
 #include "CharacterOverlay.h"
+#include "Announcement.h"
 
 void ABountyHUD::BeginPlay()
 {
@@ -18,6 +19,16 @@ void ABountyHUD::AddCharacterOverlay()
 	{
 		CharacterOverlay = CreateWidget<UCharacterOverlay>(playerController, CharacterOverlayClass);
 		CharacterOverlay->AddToViewport();
+	}
+}
+
+void ABountyHUD::AddAnnouncement()
+{
+	APlayerController* playerController = GetOwningPlayerController();
+	if (playerController && AnnouncementClass)
+	{
+		Announcement = CreateWidget<UAnnouncement>(playerController, AnnouncementClass);
+		Announcement->AddToViewport();
 	}
 }
 

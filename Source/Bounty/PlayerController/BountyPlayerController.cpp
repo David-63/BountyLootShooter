@@ -2,12 +2,13 @@
 
 
 #include "BountyPlayerController.h"
-#include "Bounty/HUD/BountyHUD.h"
-#include "Bounty/HUD/CharacterOverlay.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
-#include "Bounty/Character/BountyCharacter.h"
 #include "Net/UnrealNetwork.h"
+#include "Bounty/HUD/BountyHUD.h"
+#include "Bounty/HUD/CharacterOverlay.h"
+#include "Bounty/HUD/Announcement.h"
+#include "Bounty/Character/BountyCharacter.h"
 #include "Bounty/GameMode/BountyGameMode.h"
 
 void ABountyPlayerController::BeginPlay()
@@ -16,6 +17,10 @@ void ABountyPlayerController::BeginPlay()
 
 	BountyHUD = Cast<ABountyHUD>(GetHUD());
 
+	if (BountyHUD)
+	{
+		BountyHUD->AddAnnouncement();
+	}
 
 }
 void ABountyPlayerController::Tick(float _deltaTime)
@@ -107,31 +112,46 @@ void ABountyPlayerController::ClientReportServerTime_Implementation(float _timeO
 
 
 
-void ABountyPlayerController::OnRep_MatchState()
-{
-	if (BountyMatchState == MatchState::InProgress)
-	{
-		BountyHUD = nullptr == BountyHUD ? Cast<ABountyHUD>(GetHUD()) : BountyHUD;
-		if (BountyHUD)
-		{
-			BountyHUD->AddCharacterOverlay();
-		}
-	}
-}
-
 void ABountyPlayerController::OnMatchStateSet(FName _state)
 {
 	BountyMatchState = _state;
 
-	if (BountyMatchState == MatchState::InProgress)
+	/*if (BountyMatchState == MatchState::WaitingToStart)
 	{
 		BountyHUD = nullptr == BountyHUD ? Cast<ABountyHUD>(GetHUD()) : BountyHUD;
 		if (BountyHUD)
 		{
 			BountyHUD->AddCharacterOverlay();
 		}
+		
+	}*/
+
+	if (BountyMatchState == MatchState::InProgress)
+	{
+		HandleMatchHasStarted();
 	}
 }
+void ABountyPlayerController::OnRep_MatchState()
+{
+	if (BountyMatchState == MatchState::InProgress)
+	{
+		HandleMatchHasStarted();
+	}
+}
+void ABountyPlayerController::HandleMatchHasStarted()
+{
+	BountyHUD = nullptr == BountyHUD ? Cast<ABountyHUD>(GetHUD()) : BountyHUD;
+	if (BountyHUD)
+	{
+		BountyHUD->AddCharacterOverlay();
+		if (BountyHUD->Announcement)
+		{
+			BountyHUD->Announcement->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+}
+
+
 
 
 
