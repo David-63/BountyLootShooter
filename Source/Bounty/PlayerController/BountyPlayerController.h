@@ -14,84 +14,19 @@ class BOUNTY_API ABountyPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 	
-	/*
-	* sync time between client and server
-	*/
-private:
-	float MatchTime = 135.f;
-	uint32 CountdownInt;
-protected:
-	float ClientSeverDelta = 0.f; // difference between client and server time
-	UPROPERTY(EditAnywhere, Category = "Sync")
-	float TimeSyncFrequency = 5.f;
-	float TimeSyncRunningTime = 0.f;
-
-protected:
-	void SetHUDTime();
-	// Requests the current server time, passing in the client's time when the request was sent
-	UFUNCTION(Server, Reliable)
-	void ServerRequestServerTime(float _timeOfClientRequest);
-	// Reports the current server time to the client in response to ServerRquestServerTime
-	UFUNCTION(Client, Reliable)
-	void ClientReportServerTime(float _timeOfClientRequest, float _timeServerReceivedClientRequest);
-	void CheckTimeSync(float _deltaTime);
-	void PollInit();
-public:
-	virtual float GetServerTime();	// Synced with server world clock
-
-
-
-
-	/*
-	* Match state controll
-	*/
-private:
-	UPROPERTY(ReplicatedUsing = OnRep_MatchState)
-	FName BountyMatchState;
-private:
-	UFUNCTION()
-	void OnRep_MatchState();
-public:
-	void OnMatchStateSet(FName _state);
-
-	void HandleMatchHasStarted();
-
-
-
-
-
-	/*
-	* HUD controll
-	*/
 private:
 	UPROPERTY()
 	class ABountyHUD* BountyHUD;
-	UPROPERTY()
-	class UCharacterOverlay* CharacterOverlay;
-	bool bIsInitializeOverlay = false;
-	float HUD_HealthCur;
-	float HUD_HealthMax;
-	float HUD_Score;
-	float HUD_LifeLoss;
+
+private:
+	virtual void BeginPlay() override;
 
 public:
+	virtual void OnPossess(APawn* _inPawn) override;
 	void SetHUD_Health(float _healthCur, float _healthMax);
 	void SetHUD_Score(float _score);
 	void SetHUD_LifeLoss(int32 _count);
 	void SetHUD_ExtraAmmo(int32 _count);
 	void SetHUD_CurrentAmmo(int32 _count);
-	void SetHUD_MatchCount(float _time);
 
-	
-
-	/*
-	* basic
-	*/
-protected:
-	virtual void BeginPlay() override;
-public:
-	virtual void Tick(float _deltaTime) override;
-	virtual void ReceivedPlayer() override; // Sync with server clock as soon as possible
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	virtual void OnPossess(APawn* _inPawn) override;
 };

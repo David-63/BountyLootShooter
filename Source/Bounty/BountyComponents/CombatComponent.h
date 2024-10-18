@@ -114,17 +114,15 @@ private:
 	bool bCanAttack = true;
 	bool bIsAttackDown;
 
-	// 각 무기군별 탄약 량 (탄창 개수)
-	TMap<EWeaponType, int32> ExtraAmmoMap;
 	UPROPERTY(ReplicatedUsing = OnRep_ExtraAmmo)
 	int32 ExtraAmmo;
+	TMap<EWeaponType, int32> ExtraAmmoMap;
 
 	UPROPERTY(EditAnywhere)
-	int32 StartingAmmo = 30;
+	int32 StartingAmmo = 3;
 
 	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
 	ECombatState CombatState = ECombatState::ECS_Unoccupied;
-
 
 private:
 	void InitializeExtraAmmo();
@@ -144,7 +142,6 @@ protected:
 	void ServerAttack(const FVector_NetQuantize& _traceHitTarget);	
 	UFUNCTION(NetMulticast, Reliable)	// NetMulticast 옵션으로 서버에서 호출시 모든 클라이언트가 동일하게 작동함
 	void MulticastAttack(const FVector_NetQuantize& _traceHitTarget);
-
 	UFUNCTION(Server, Reliable)
 	void ServerWeaponReload();
 

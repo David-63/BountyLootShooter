@@ -50,7 +50,7 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 		TraceUnderCrosshairs(result);
 		HitTarget = result.ImpactPoint;
 		
-	}
+	}	
 }
 void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -232,21 +232,22 @@ void UCombatComponent::EquipWeapon(ABaseWeapon* _weaponToEquip)
 }
 void UCombatComponent::OnRep_EquipWeapon()
 {
-	if (!EquippedWeapon || !Character) return;
-
-	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
-	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
-	if (HandSocket)
+	if (EquippedWeapon && Character)
 	{
-		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
-	}
-	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
-	Character->bUseControllerRotationYaw = true;
+		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+		const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
+		if (HandSocket)
+		{
+			HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
+		}
+		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+		Character->bUseControllerRotationYaw = true;
 
-	if (EquippedWeapon->EquipSound)
-	{
-		UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->EquipSound, Character->GetActorLocation());
-	}
+		if (EquippedWeapon->EquipSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->EquipSound, Character->GetActorLocation());
+		}
+	}	
 }
 
 
@@ -286,44 +287,35 @@ bool UCombatComponent::CanFire()
 	return !EquippedWeapon->IsMagEmpty() && bCanAttack && ECombatState::ECS_Unoccupied == CombatState;
 }
 
+void UCombatComponent::WeaponReload()
+{
+	if (0 < ExtraAmmo && ECombatState::ECS_Reloading != CombatState)
+	{
+		ServerWeaponReload();
+	}
+}
 void UCombatComponent::WeaponReloadFinish()
 {
 	if (!Character) return;
-
 	if (Character->HasAuthority())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("reload called by server"));
-		// 서버에서만 호출됨
 		CombatState = ECombatState::ECS_Unoccupied;
 		UpdateAmmoValue();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("reload called by client"));
 	}
 	if (bIsAttackDown)
 	{
 		Fire();
 	}
 }
-void UCombatComponent::WeaponReload()
-{
-	UE_LOG(LogTemp, Warning, TEXT("reload call"));
-	if (0 < ExtraAmmo && ECombatState::ECS_Reloading != CombatState)
-	{
-		ServerWeaponReload();
-	}
-}
 void UCombatComponent::ServerWeaponReload_Implementation()
 {
-	UE_LOG(LogTemp, Warning, TEXT("reload servercall"));
 	if (!Character || !EquippedWeapon) return;
+	
 	CombatState = ECombatState::ECS_Reloading;
 	HandleReload();
 }
 void UCombatComponent::HandleReload()
 {
-	UE_LOG(LogTemp, Warning, TEXT("play reload"));
 	Character->PlayReloadMontage();
 }
 int32 UCombatComponent::AmountToReload()
@@ -370,6 +362,7 @@ void UCombatComponent::UpdateAmmoValue()
 		PlayerController->SetHUD_ExtraAmmo(ExtraAmmo);
 	}
 	EquippedWeapon->AddAmmo(reloadAmount);
+	}
 }
 
 void UCombatComponent::OnRep_CombatState()

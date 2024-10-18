@@ -39,23 +39,16 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	TSubclassOf<class UUserWidget> CharacterOverlayClass;
 
-	UPROPERTY()
 	class UCharacterOverlay* CharacterOverlay;
-
-	UPROPERTY(EditAnywhere, Category = "Announcements")
-	TSubclassOf<class UUserWidget> AnnouncementClass;
-	
-	class UAnnouncement* Announcement;
 
 private:
 	void DrawCrosshair(UTexture2D* _texture, FVector2D _viewportCenter, FVector2D _spread, FLinearColor _color);
 
 protected:
 	virtual void BeginPlay() override;
+	void AddCharacterOverlay();
 
 public:
-	void AddCharacterOverlay();
-	void AddAnnouncement();
 	virtual void DrawHUD() override;
 
 	FORCEINLINE void SetHUDPackage(const FHUDPackage& _package, const FVector2D& _inertiaValue) { HUDPackage = _package; InertiaValue = _inertiaValue; }
