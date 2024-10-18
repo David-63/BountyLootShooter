@@ -50,7 +50,7 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 		TraceUnderCrosshairs(result);
 		HitTarget = result.ImpactPoint;
 		
-	}	
+	}
 }
 void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -119,10 +119,8 @@ void UCombatComponent::SetHUDCrosshairs(float _deltaTime)
 	if (!Character || !Character->Controller) return;
 
 	PlayerController = PlayerController == nullptr ? Cast<ABountyPlayerController>(Character->Controller) : PlayerController;
-
+	if (!PlayerController) return;
 	HUD = HUD == nullptr ? Cast<ABountyHUD>(PlayerController->GetHUD()) : HUD;
-	
-	if (!HUD) return;
 
 	if (EquippedWeapon)
 	{
@@ -141,9 +139,8 @@ void UCombatComponent::SetHUDCrosshairs(float _deltaTime)
 		HUDPackage.CrosshairsTop = nullptr;
 		HUDPackage.CrosshairsBottom = nullptr;
 	}
-	
-	// calculate crosshair spread
 
+	// calculate crosshair spread
 	// movement spread
 	FVector2D maxSpeedRange(0.f, BaseMoveSpeed);
 	FVector2D velocityRatioRange(0.f, 1.f);
@@ -176,13 +173,10 @@ void UCombatComponent::SetHUDCrosshairs(float _deltaTime)
 		CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 0.f, _deltaTime, 25.f);
 	}
 
-	
-
 	// total spread (0.2f is default spread)
 	HUDPackage.SpreadFactor = BaseSpread + crosshairVelocityFactor + CrosshairInAirFactor + CrosshairAimFactor + CrosshairAttackingFactor;
 
 	HUD->SetHUDPackage(HUDPackage, Character->GetInertiaValue() * InertiaMagnitude);
-
 }
 
 
@@ -362,7 +356,7 @@ void UCombatComponent::UpdateAmmoValue()
 		PlayerController->SetHUD_ExtraAmmo(ExtraAmmo);
 	}
 	EquippedWeapon->AddAmmo(reloadAmount);
-	}
+	
 }
 
 void UCombatComponent::OnRep_CombatState()

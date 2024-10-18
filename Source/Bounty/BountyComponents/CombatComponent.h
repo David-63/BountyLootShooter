@@ -119,7 +119,7 @@ private:
 	TMap<EWeaponType, int32> ExtraAmmoMap;
 
 	UPROPERTY(EditAnywhere)
-	int32 StartingAmmo = 3;
+	int32 StartingAmmo = 60;
 
 	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
 	ECombatState CombatState = ECombatState::ECS_Unoccupied;
