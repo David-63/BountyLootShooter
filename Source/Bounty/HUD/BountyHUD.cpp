@@ -8,18 +8,17 @@
 void ABountyHUD::BeginPlay()
 {
 	Super::BeginPlay();
-
-	AddCharacterOverlay();
-}
-
-void ABountyHUD::AddCharacterOverlay()
-{
 	APlayerController* playerController = GetOwningPlayerController();
 	if (playerController && CharacterOverlayClass)
 	{
 		CharacterOverlay = CreateWidget<UCharacterOverlay>(playerController, CharacterOverlayClass);
-		CharacterOverlay->AddToViewport();
+		
 	}
+}
+
+void ABountyHUD::AddCharacterOverlay()
+{
+	CharacterOverlay->AddToViewport();
 }
 
 void ABountyHUD::DrawHUD()

@@ -8,6 +8,30 @@
 #include "GameFramework/PlayerStart.h"
 #include "Bounty/PlayerState/BountyPlayerState.h"
 
+ABountyGameMode::ABountyGameMode()
+{
+	bDelayedStart = true;
+}
+void ABountyGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+	LevelStartingTime = GetWorld()->GetTimeSeconds();
+}
+
+void ABountyGameMode::Tick(float _deltaTime)
+{
+	Super::Tick(_deltaTime);
+
+	if (MatchState == MatchState::WaitingToStart)
+	{
+		CountdownTime = LevelStartingTime + WarmupTime - GetWorld()->GetTimeSeconds();
+		if (0.f >= CountdownTime)
+		{
+			StartMatch();
+		}
+	}
+}
+
 void ABountyGameMode::PlayerEliminated(ABountyCharacter* _elimmedCharacter, ABountyPlayerController* _victimController, ABountyPlayerController* _attackerController)
 {
 	ABountyPlayerState* attackerState = _attackerController ? Cast<ABountyPlayerState>(_attackerController->PlayerState) : nullptr;
@@ -42,5 +66,20 @@ void ABountyGameMode::RequestRespawn(ACharacter* _elimmedCharacter, AController*
 		UGameplayStatics::GetAllActorsOfClass(this, APlayerStart::StaticClass(), playerStarts);
 		int32 selection = FMath::RandRange(0, playerStarts.Num() - 1);
 		RestartPlayerAtPlayerStart(_elimmedController, playerStarts[selection]);
+	}
+}
+
+
+void ABountyGameMode::OnMatchStateSet()
+{
+	Super::OnMatchStateSet();
+	
+	for (FConstPlayerControllerIterator playerCtrl = GetWorld()->GetPlayerControllerIterator(); playerCtrl; ++playerCtrl)
+	{
+		ABountyPlayerController* bountyPlayer = Cast<ABountyPlayerController>(*playerCtrl);
+		if (bountyPlayer)
+		{
+			bountyPlayer->OnMatchStateSet(MatchState);
+		}
 	}
 }
