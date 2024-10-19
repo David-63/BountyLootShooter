@@ -11,8 +11,7 @@ void ABountyHUD::BeginPlay()
 	APlayerController* playerController = GetOwningPlayerController();
 	if (playerController && CharacterOverlayClass)
 	{
-		CharacterOverlay = CreateWidget<UCharacterOverlay>(playerController, CharacterOverlayClass);
-		
+		CharacterOverlay = CreateWidget<UCharacterOverlay>(playerController, CharacterOverlayClass);		
 	}
 }
 
