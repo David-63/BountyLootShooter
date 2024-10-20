@@ -48,7 +48,7 @@ public:
 	*  HUD and crosshair
 	*/
 private:
-	FHUDPackage HUDPackage;
+	FCrosshairPackage CrosshairPackage;
 	UPROPERTY(EditAnywhere, Category = "CrossHair")
 	float BaseSpread = 0.5f;
 	UPROPERTY(EditAnywhere, Category = "CrossHair")

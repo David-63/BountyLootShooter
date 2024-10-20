@@ -101,11 +101,11 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& _traceHitResult)
 
 	if (_traceHitResult.GetActor() && _traceHitResult.GetActor()->Implements<UCrosshairInteractor>())
 	{
-		HUDPackage.CrosshairsColor = FLinearColor::Yellow;
+		CrosshairPackage.CrosshairsColor = FLinearColor::Yellow;
 	}
 	else
 	{
-		HUDPackage.CrosshairsColor = FLinearColor::White;
+		CrosshairPackage.CrosshairsColor = FLinearColor::White;
 	}
 
 	if (!_traceHitResult.bBlockingHit)
@@ -124,20 +124,20 @@ void UCombatComponent::SetHUDCrosshairs(float _deltaTime)
 
 	if (EquippedWeapon)
 	{
-		HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
-		HUDPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;
-		HUDPackage.CrosshairsRight = EquippedWeapon->CrosshairsRight;
-		//HUDPackage.CrosshairsTop = EquippedWeapon->CrosshairsTop;
-		HUDPackage.CrosshairsTop = nullptr;
-		HUDPackage.CrosshairsBottom = EquippedWeapon->CrosshairsBottom;
+		CrosshairPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
+		CrosshairPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;
+		CrosshairPackage.CrosshairsRight = EquippedWeapon->CrosshairsRight;
+		//CrosshairPackage.CrosshairsTop = EquippedWeapon->CrosshairsTop;
+		CrosshairPackage.CrosshairsTop = nullptr;
+		CrosshairPackage.CrosshairsBottom = EquippedWeapon->CrosshairsBottom;
 	}
 	else
 	{
-		HUDPackage.CrosshairsCenter = nullptr;
-		HUDPackage.CrosshairsLeft = nullptr;
-		HUDPackage.CrosshairsRight = nullptr;
-		HUDPackage.CrosshairsTop = nullptr;
-		HUDPackage.CrosshairsBottom = nullptr;
+		CrosshairPackage.CrosshairsCenter = nullptr;
+		CrosshairPackage.CrosshairsLeft = nullptr;
+		CrosshairPackage.CrosshairsRight = nullptr;
+		CrosshairPackage.CrosshairsTop = nullptr;
+		CrosshairPackage.CrosshairsBottom = nullptr;
 	}
 
 	// calculate crosshair spread
@@ -174,9 +174,9 @@ void UCombatComponent::SetHUDCrosshairs(float _deltaTime)
 	}
 
 	// total spread (0.2f is default spread)
-	HUDPackage.SpreadFactor = BaseSpread + crosshairVelocityFactor + CrosshairInAirFactor + CrosshairAimFactor + CrosshairAttackingFactor;
+	CrosshairPackage.SpreadFactor = BaseSpread + crosshairVelocityFactor + CrosshairInAirFactor + CrosshairAimFactor + CrosshairAttackingFactor;
 
-	HUD->SetHUDPackage(HUDPackage, Character->GetInertiaValue() * InertiaMagnitude);
+	HUD->SetCrosshairPackage(CrosshairPackage, Character->GetInertiaValue() * InertiaMagnitude);
 }
 
 

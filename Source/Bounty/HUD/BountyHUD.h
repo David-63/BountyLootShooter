@@ -7,7 +7,7 @@
 #include "BountyHUD.generated.h"
 
 USTRUCT(BlueprintType)
-struct FHUDPackage
+struct FCrosshairPackage
 {
 	GENERATED_BODY()
 public:
@@ -28,29 +28,45 @@ class BOUNTY_API ABountyHUD : public AHUD
 {
 	GENERATED_BODY()
 
-private:
-	FHUDPackage HUDPackage;
-	FVector2D InertiaValue;
-
-	UPROPERTY(EditAnywhere)
-	float CrosshairSpreadMax = 16.f;
-	
-public:
-	UPROPERTY(EditAnywhere, Category = "Player Stats")
-	TSubclassOf<class UUserWidget> CharacterOverlayClass;
-
-	UPROPERTY()
-	class UCharacterOverlay* CharacterOverlay;
-
-private:
-	void DrawCrosshair(UTexture2D* _texture, FVector2D _viewportCenter, FVector2D _spread, FLinearColor _color);
-
 protected:
 	virtual void BeginPlay() override;
 
 public:
 	virtual void DrawHUD() override;
+
+
+	/*
+	* crosshair
+	*/
+private:
+	FCrosshairPackage CrosshairPackage;
+	FVector2D InertiaValue;
+	UPROPERTY(EditAnywhere)
+	float CrosshairSpreadMax = 16.f;
+	void DrawCrosshair(UTexture2D* _texture, FVector2D _viewportCenter, FVector2D _spread, FLinearColor _color);
+public:
+	FORCEINLINE void SetCrosshairPackage(const FCrosshairPackage& _package, const FVector2D& _inertiaValue) { CrosshairPackage = _package; InertiaValue = _inertiaValue; }
+
+
+
+	/*
+	* Character hud
+	*/
+public:
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	TSubclassOf<class UUserWidget> CharacterOverlayClass;
+	UPROPERTY()
+	class UCharacterOverlay* CharacterOverlay;
 	void AddCharacterOverlay();
 
-	FORCEINLINE void SetHUDPackage(const FHUDPackage& _package, const FVector2D& _inertiaValue) { HUDPackage = _package; InertiaValue = _inertiaValue; }
+	/*
+	* Announcement hud
+	*/
+	UPROPERTY(EditAnywhere, Category = "Announcement")
+	TSubclassOf<class UUserWidget> AnnouncementClass;
+	UPROPERTY()
+	class UAnnouncement* Announcement;
+	void AddAnnouncement();
+
+
 };
