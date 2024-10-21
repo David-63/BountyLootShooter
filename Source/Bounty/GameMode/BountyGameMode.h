@@ -25,6 +25,8 @@ public:
 	float LevelStartingTime = 0.f;
 	UPROPERTY(EditDefaultsOnly)
 	float WarmupTime = 5.f;
+	UPROPERTY(EditDefaultsOnly)
+	float MatchTime = 135.f;
 private:
 	float CountdownTime = 0.f; // warmup Ã¼Å©¿ë
 

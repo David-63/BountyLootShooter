@@ -26,32 +26,45 @@ public:
 	virtual void ReceivedPlayer() override;	// 뷰포트나 넷에 연결되면 호출됨
 
 
-
+	/*
+	* hud
+	*/
+private:
+	class UCharacterOverlay* CharacterOverlay;
+	bool bInitializeCharacterOverlay = false;
+	float HUDHealthCur;
+	float HUDHealthMax;
+	float HUDScore;
+	float HUDLifeLoss;
+protected:
+	void PollInit();
+public:
 	void SetHUD_Health(float _healthCur, float _healthMax);
 	void SetHUD_Score(float _score);
 	void SetHUD_LifeLoss(int32 _count);
 	void SetHUD_ExtraAmmo(int32 _count);
 	void SetHUD_CurrentAmmo(int32 _count);
-	void SetHUD_MatchTimeCount(float _count);
+	void SetHUD_MatchTimeCount(float _time);
+	void SetHUD_WarmupTimeCount(float _time);
 
 
 
 
 
 
-
-private:
-	uint32 CountdownInt = 0.f;
-	float MatchTime = 120.f;
-
-protected:
-	void SetHUDTime();
 
 	/*
 	* sync time between client to server
 	*/
+private:
+	uint32 CountdownInt = 0.f;
+	float LevelStartingTime = 0.f;
+	float WarmupTime = 0.f;
+	float MatchTime = 0.f;
 
 protected:
+	void SetHUDTime();
+
 	// Requests the current server time, passing in the client's time when the request was sent
 	UFUNCTION(Server, Reliable)
 	void ServerRequestServerTime(float _timeOfClientRequest); // 클라이언트가 서버 RPC를 호출, 서버에서 시간을 계산 후 client RPC 호출함
@@ -72,24 +85,19 @@ public:
 
 
 
-private:
-	class UCharacterOverlay* CharacterOverlay;
-	bool bInitializeCharacterOverlay = false;
-	float HUDHealthCur;
-	float HUDHealthMax;
-	float HUDScore;
-	float HUDLifeLoss;
-
-protected:
-	void PollInit();
-
 
 
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_MatchState)
-	FName MatchState;
+	FName BountyMatchState;	
+	void HandleMatchHasStarted();
 	UFUNCTION()
 	void OnRep_MatchState();
 public: void OnMatchStateSet(FName _state);
 
+protected:
+	UFUNCTION(Server, Reliable)
+	void ServerCheckMatchState();
+	UFUNCTION(Client, Reliable)
+	void ClientJoinMidgame(FName _stateOfMatch, float _levelStartingTime, float _warmupTime, float _matchTime);
 };

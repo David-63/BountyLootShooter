@@ -4,20 +4,31 @@
 #include "BountyHUD.h"
 #include "GameFramework/PlayerController.h"
 #include "CharacterOverlay.h"
+#include "Announcement.h"
 
 void ABountyHUD::BeginPlay()
 {
-	Super::BeginPlay();
-	APlayerController* playerController = GetOwningPlayerController();
-	if (playerController && CharacterOverlayClass)
-	{
-		CharacterOverlay = CreateWidget<UCharacterOverlay>(playerController, CharacterOverlayClass);		
-	}
+	Super::BeginPlay();	
 }
 
 void ABountyHUD::AddCharacterOverlay()
 {
-	CharacterOverlay->AddToViewport();
+	APlayerController* playerController = GetOwningPlayerController();
+	if (playerController && CharacterOverlayClass)
+	{
+		CharacterOverlay = CreateWidget<UCharacterOverlay>(playerController, CharacterOverlayClass);
+		CharacterOverlay->AddToViewport();
+	}	
+}
+
+void ABountyHUD::AddAnnouncement()
+{
+	APlayerController* playerController = GetOwningPlayerController();
+	if (playerController && AnnouncementClass)
+	{
+		Announcement = CreateWidget<UAnnouncement>(playerController, AnnouncementClass);
+		Announcement->AddToViewport();
+	}
 }
 
 void ABountyHUD::DrawHUD()
