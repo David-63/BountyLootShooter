@@ -12,11 +12,7 @@
 UCLASS()
 class BOUNTY_API ABountyPlayerController : public APlayerController
 {
-	GENERATED_BODY()	
-private:
-	UPROPERTY()
-	class ABountyHUD* BountyHUD;
-
+	GENERATED_BODY()
 private:
 	virtual void BeginPlay() override;
 public:
@@ -30,6 +26,8 @@ public:
 	* hud
 	*/
 private:
+	UPROPERTY()
+	class ABountyHUD* BountyHUD;
 	class UCharacterOverlay* CharacterOverlay;
 	bool bInitializeCharacterOverlay = false;
 	float HUDHealthCur;
@@ -45,7 +43,7 @@ public:
 	void SetHUD_ExtraAmmo(int32 _count);
 	void SetHUD_CurrentAmmo(int32 _count);
 	void SetHUD_MatchTimeCount(float _time);
-	void SetHUD_WarmupTimeCount(float _time);
+	void SetHUD_AnnouncementCount(float _time);
 
 
 
@@ -61,6 +59,7 @@ private:
 	float LevelStartingTime = 0.f;
 	float WarmupTime = 0.f;
 	float MatchTime = 0.f;
+	float CooldownTime = 0.f;
 
 protected:
 	void SetHUDTime();
@@ -86,11 +85,17 @@ public:
 
 
 
-
+	/*
+	* Handle gamemode
+	*/
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_MatchState)
 	FName BountyMatchState;	
+	UPROPERTY()
+	class ABountyGameMode* BountyGameMode;
 	void HandleMatchHasStarted();
+	void HandleCooldown();
+
 	UFUNCTION()
 	void OnRep_MatchState();
 public: void OnMatchStateSet(FName _state);
@@ -99,5 +104,5 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void ServerCheckMatchState();
 	UFUNCTION(Client, Reliable)
-	void ClientJoinMidgame(FName _stateOfMatch, float _levelStartingTime, float _warmupTime, float _matchTime);
+	void ClientJoinMidgame(FName _stateOfMatch, float _levelStartingTime, float _warmupTime, float _matchTime, float _cooldownTime);
 };

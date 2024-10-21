@@ -8,6 +8,13 @@
 #include "GameFramework/PlayerStart.h"
 #include "Bounty/PlayerState/BountyPlayerState.h"
 
+
+
+namespace MatchState
+{
+	const FName Cooldown = FName("Cooldown"); // Match duratino has been reached. Display winner and begin cooldown timer
+}
+
 ABountyGameMode::ABountyGameMode()
 {
 	bDelayedStart = true;
@@ -28,6 +35,14 @@ void ABountyGameMode::Tick(float _deltaTime)
 		if (0.f >= CountdownTime)
 		{
 			StartMatch();
+		}
+	}
+	if (MatchState == MatchState::InProgress)
+	{
+		CountdownTime = LevelStartingTime + WarmupTime + MatchTime - GetWorld()->GetTimeSeconds();
+		if (0.f >= CountdownTime)
+		{
+			SetMatchState(MatchState::Cooldown);
 		}
 	}
 }

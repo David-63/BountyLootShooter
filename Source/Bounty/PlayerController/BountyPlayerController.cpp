@@ -148,6 +148,11 @@ void ABountyPlayerController::SetHUD_MatchTimeCount(float _time)
 
 	if (isValidHUD)
 	{
+		if (0.f > _time)
+		{
+			BountyHUD->CharacterOverlay->MatchTimeCount->SetText(FText());
+			return;
+		}
 		int32 minutes = FMath::FloorToInt(_time / 60.f);
 		int32 seconds = _time - (minutes * 60);
 
@@ -156,7 +161,7 @@ void ABountyPlayerController::SetHUD_MatchTimeCount(float _time)
 		BountyHUD->CharacterOverlay->MatchTimeCount->SetText(FText::FromString(matchCount));
 	}
 }
-void ABountyPlayerController::SetHUD_WarmupTimeCount(float _time)
+void ABountyPlayerController::SetHUD_AnnouncementCount(float _time)
 {
 	BountyHUD = nullptr == BountyHUD ? Cast<ABountyHUD>(GetHUD()) : BountyHUD;
 	bool isValidHUD =
@@ -164,6 +169,11 @@ void ABountyPlayerController::SetHUD_WarmupTimeCount(float _time)
 
 	if (isValidHUD)
 	{
+		if (0.f > _time)
+		{
+			BountyHUD->Announcement->WarmupTimerText->SetText(FText());
+			return;
+		}
 		int32 minutes = FMath::FloorToInt(_time / 60.f);
 		int32 seconds = _time - (minutes * 60);
 
@@ -193,26 +203,37 @@ void ABountyPlayerController::PollInit()
 
 void ABountyPlayerController::SetHUDTime()
 {
-	if (HasAuthority())
+	// 서버 시간 재조정 (서버의 경우 클라이언트와 다르게 컨트롤러가 먼저 초기화되서 시간이 안맞음)
+	bool isAuthority = HasAuthority();
+	if (isAuthority)
 	{
-		ABountyGameMode* bountyGamemode = Cast<ABountyGameMode>(UGameplayStatics::GetGameMode(this));
-		if (bountyGamemode)
+		BountyGameMode = nullptr == BountyGameMode ? Cast<ABountyGameMode>(UGameplayStatics::GetGameMode(this)) : BountyGameMode;
+		if (BountyGameMode)
 		{
-			LevelStartingTime = bountyGamemode->LevelStartingTime;
+			LevelStartingTime = BountyGameMode->LevelStartingTime;
 		}
 	}
 
 	float timeLeft = 0.f;
 	if (MatchState::WaitingToStart == BountyMatchState) timeLeft = (LevelStartingTime + WarmupTime) - GetServerTime();
 	else if (MatchState::InProgress == BountyMatchState) timeLeft = (LevelStartingTime + WarmupTime + MatchTime) - GetServerTime();
-	
+	else if (MatchState::Cooldown == BountyMatchState) timeLeft = (LevelStartingTime + WarmupTime + MatchTime + CooldownTime) - GetServerTime();	
 	uint32 secondsLeft = FMath::CeilToInt(timeLeft);
+
+	if (isAuthority)
+	{		
+		if (BountyGameMode)
+		{
+			secondsLeft = FMath::CeilToInt(BountyGameMode->LevelStartingTime + BountyGameMode->GetCountdownTime());
+		}
+	}
+
 
 	if (secondsLeft != CountdownInt)
 	{
-		if (MatchState::WaitingToStart == BountyMatchState)
+		if (MatchState::WaitingToStart == BountyMatchState || MatchState::Cooldown == BountyMatchState)
 		{
-			SetHUD_WarmupTimeCount(timeLeft);
+			SetHUD_AnnouncementCount(timeLeft);
 		}
 		if (MatchState::InProgress == BountyMatchState)
 		{
@@ -264,12 +285,20 @@ void ABountyPlayerController::OnMatchStateSet(FName _state)
 	{
 		HandleMatchHasStarted();
 	}
+	else if (MatchState::Cooldown == BountyMatchState)
+	{
+		HandleCooldown();
+	}
 }
 void ABountyPlayerController::OnRep_MatchState()
 {
 	if (MatchState::InProgress == BountyMatchState)
 	{
 		HandleMatchHasStarted();
+	}
+	else if (MatchState::Cooldown == BountyMatchState)
+	{
+		HandleCooldown();
 	}
 }
 void ABountyPlayerController::HandleMatchHasStarted()
@@ -285,6 +314,23 @@ void ABountyPlayerController::HandleMatchHasStarted()
 	}
 }
 
+void ABountyPlayerController::HandleCooldown()
+{
+	BountyHUD = nullptr == BountyHUD ? Cast<ABountyHUD>(GetHUD()) : BountyHUD;
+	if (BountyHUD)
+	{
+		BountyHUD->CharacterOverlay->RemoveFromParent();
+		bool bHUDValid = BountyHUD->Announcement && BountyHUD->Announcement->AnnouncementText && BountyHUD->Announcement->MatchInfoText;
+		if (bHUDValid)
+		{
+			BountyHUD->Announcement->SetVisibility(ESlateVisibility::Visible);
+			FString announcementText("New Match Starts In");
+			BountyHUD->Announcement->AnnouncementText->SetText(FText::FromString(announcementText));
+			BountyHUD->Announcement->MatchInfoText->SetText(FText());
+		}
+	}
+}
+
 
 void ABountyPlayerController::ServerCheckMatchState_Implementation()
 {
@@ -295,15 +341,17 @@ void ABountyPlayerController::ServerCheckMatchState_Implementation()
 		LevelStartingTime = gameMode->LevelStartingTime;
 		WarmupTime = gameMode->WarmupTime;
 		MatchTime = gameMode->MatchTime;
-		ClientJoinMidgame(BountyMatchState, LevelStartingTime, WarmupTime, MatchTime);
+		CooldownTime = gameMode->CooldownTime;
+		ClientJoinMidgame(BountyMatchState, LevelStartingTime, WarmupTime, MatchTime, CooldownTime);
 	}
 }
-void ABountyPlayerController::ClientJoinMidgame_Implementation(FName _stateOfMatch, float _levelStartingTime, float _warmupTime, float _matchTime)
+void ABountyPlayerController::ClientJoinMidgame_Implementation(FName _stateOfMatch, float _levelStartingTime, float _warmupTime, float _matchTime, float _cooldownTime)
 {
 	BountyMatchState = _stateOfMatch;
 	LevelStartingTime = _levelStartingTime;
 	WarmupTime = _warmupTime;
 	MatchTime = _matchTime;
+	CooldownTime = _cooldownTime;
 	OnMatchStateSet(BountyMatchState);
 	if (BountyHUD && MatchState::WaitingToStart == BountyMatchState)
 	{

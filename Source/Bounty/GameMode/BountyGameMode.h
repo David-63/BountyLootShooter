@@ -6,6 +6,12 @@
 #include "GameFramework/GameMode.h"
 #include "BountyGameMode.generated.h"
 
+
+namespace MatchState
+{
+	extern BOUNTY_API const FName Cooldown; // Match duratino has been reached. Display winner and begin cooldown timer
+}
+
 /**
  * 
  */
@@ -26,11 +32,15 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	float WarmupTime = 5.f;
 	UPROPERTY(EditDefaultsOnly)
-	float MatchTime = 135.f;
+	float MatchTime = 15.f;
+	UPROPERTY(EditDefaultsOnly)
+	float CooldownTime = 5.f;
 private:
 	float CountdownTime = 0.f; // warmup Ã¼Å©¿ë
-
 protected:
 	virtual void OnMatchStateSet() override;
+public:
+	FORCEINLINE float GetCountdownTime() const { return CountdownTime; }
+
 
 };
