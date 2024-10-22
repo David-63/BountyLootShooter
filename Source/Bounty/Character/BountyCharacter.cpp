@@ -190,7 +190,10 @@ void ABountyCharacter::Destroyed()
 	{
 		ElimBotComponent->DestroyComponent();
 	}
-	if (Combat && Combat->EquippedWeapon)
+
+	ABountyGameMode* bountyGameMode = Cast<ABountyGameMode>(UGameplayStatics::GetGameMode(this));
+	bool bmatchNotInProgress = bountyGameMode && bountyGameMode->GetMatchState() != MatchState::InProgress;
+	if (Combat && Combat->EquippedWeapon && bmatchNotInProgress)
 	{
 		Combat->EquippedWeapon->Destroy();
 	}
@@ -502,11 +505,16 @@ void ABountyCharacter::MulticastElim_Implementation()
 		DynamicDissolveMaterialInstanceB->SetScalarParameterValue(TEXT("Glow"), 300.f);
 	}
 	StartDissolve();
+	bDisableGameplay = true;
+
+	if (Combat)
+	{
+		Combat->Attack(false);
+	}
 
 	// Disable character
 	GetCharacterMovement()->DisableMovement();
 	GetCharacterMovement()->StopMovementImmediately();
-	bDisableGameplay = true;
 	if (BountyPlayerController)
 	{
 		DisableInput(BountyPlayerController);

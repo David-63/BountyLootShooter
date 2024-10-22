@@ -7,12 +7,14 @@
 #include "Net/UnrealNetwork.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
-#include "Bounty/Character/BountyCharacter.h"
-#include "Bounty/BountyComponents/CombatComponent.h"
 #include "Bounty/GameMode/BountyGameMode.h"
+#include "Bounty/GameState/BountyGameState.h"
 #include "Bounty/HUD/BountyHUD.h"
 #include "Bounty/HUD/CharacterOverlay.h"
 #include "Bounty/HUD/Announcement.h"
+#include "Bounty/Character/BountyCharacter.h"
+#include "Bounty/BountyComponents/CombatComponent.h"
+#include "Bounty/PlayerState/BountyPlayerState.h"
 
 void ABountyPlayerController::BeginPlay()
 {
@@ -327,7 +329,36 @@ void ABountyPlayerController::HandleCooldown()
 			BountyHUD->Announcement->SetVisibility(ESlateVisibility::Visible);
 			FString announcementText("New Match Starts In");
 			BountyHUD->Announcement->AnnouncementText->SetText(FText::FromString(announcementText));
-			BountyHUD->Announcement->MatchInfoText->SetText(FText());
+
+
+			ABountyGameState* bountyGameState = Cast<ABountyGameState>(UGameplayStatics::GetGameState(this));
+			ABountyPlayerState* bountyPlayerState = GetPlayerState<ABountyPlayerState>();
+			if (bountyGameState && bountyPlayerState)
+			{
+				TArray<ABountyPlayerState*> topPlayers = bountyGameState->TopScoringPlayers;
+				FString infoTextString;
+				if (0 == topPlayers.Num())
+				{
+					infoTextString = FString("There is no winner.");
+				}
+				else if (1 == topPlayers.Num() && bountyPlayerState == topPlayers[0])
+				{
+					infoTextString = FString("You are the winner!");
+				}
+				else if (1 == topPlayers.Num())
+				{
+					infoTextString = FString::Printf(TEXT("Winner \n%s"), *topPlayers[0]->GetPlayerName());
+				}
+				else if (1 < topPlayers.Num())
+				{
+					infoTextString = FString::Printf(TEXT("Player tied for the win \n"));
+					for (auto tidPlayer : topPlayers)
+					{
+						infoTextString.Append(FString::Printf(TEXT("%s\n"), *tidPlayer->GetPlayerName()));
+					}
+				}
+				BountyHUD->Announcement->MatchInfoText->SetText(FText::FromString(infoTextString));
+			}
 		}
 	}
 	

@@ -7,6 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"
 #include "Bounty/PlayerState/BountyPlayerState.h"
+#include "Bounty/GameState/BountyGameState.h"
 
 
 
@@ -59,10 +60,12 @@ void ABountyGameMode::PlayerEliminated(ABountyCharacter* _elimmedCharacter, ABou
 {
 	ABountyPlayerState* attackerState = _attackerController ? Cast<ABountyPlayerState>(_attackerController->PlayerState) : nullptr;
 	ABountyPlayerState* victimState = _victimController ? Cast<ABountyPlayerState>(_victimController->PlayerState) : nullptr;
+	ABountyGameState* bountyGameState = GetGameState<ABountyGameState>();
 
 	if (attackerState && attackerState != victimState)
 	{
 		attackerState->AddToScore(1.f);
+		bountyGameState->UpdateTopScore(attackerState);
 	}
 	if (victimState)
 	{
