@@ -11,11 +11,16 @@ struct FCrosshairPackage
 {
 	GENERATED_BODY()
 public:
+	UPROPERTY()
 	class UTexture2D* CrosshairsCenter;
+	UPROPERTY()
 	UTexture2D* CrosshairsLeft;
+	UPROPERTY()
 	UTexture2D* CrosshairsRight;
+	UPROPERTY()
 	UTexture2D* CrosshairsTop;
-	UTexture2D* CrosshairsBottom;
+	UPROPERTY()
+	UTexture2D* CrosshairsBottom;	
 	FLinearColor CrosshairsColor;
 	float SpreadFactor;
 };
@@ -39,6 +44,7 @@ public:
 	* crosshair
 	*/
 private:
+	UPROPERTY()
 	FCrosshairPackage CrosshairPackage;
 	FVector2D InertiaValue;
 	UPROPERTY(EditAnywhere)

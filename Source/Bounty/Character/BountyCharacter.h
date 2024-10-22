@@ -71,6 +71,7 @@ public:
 
 	ECombatState GetCombatState() const;
 
+	FORCEINLINE UCombatComponent* GetCombat() const { return Combat; }
 
 	/*
 	* for input controll
@@ -141,6 +142,9 @@ private:
 	void HideCharacterMesh();
 	float CalculateSpeed() const;
 
+protected:
+		void RotateInPlace(float DeltaTime);
+
 public:
 	virtual void OnRep_ReplicatedMovement() override;
 
@@ -156,7 +160,6 @@ public:
 	FORCEINLINE float GetAO_Pitch() const { return AO_Pitch; }
 	FORCEINLINE ETurningInPlace GetTurningInPlace() const { return TurningInPlace; }
 	FORCEINLINE bool ShouldRotateRootBone() const { return bIsRotateRootBone; }
-
 
 	/*
 	* hud
@@ -251,9 +254,10 @@ public:
 	void PlayElimMontage();
 
 	FORCEINLINE bool IsElimmed() const { return bIsElimmed; }
+	UPROPERTY(Replicated)
+	bool bDisableGameplay = false;
 
-
-
+	FORCEINLINE bool IsDisableGameplay() const { return bDisableGameplay; }
 
 
 

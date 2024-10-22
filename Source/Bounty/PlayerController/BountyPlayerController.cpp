@@ -8,6 +8,7 @@
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Bounty/Character/BountyCharacter.h"
+#include "Bounty/BountyComponents/CombatComponent.h"
 #include "Bounty/GameMode/BountyGameMode.h"
 #include "Bounty/HUD/BountyHUD.h"
 #include "Bounty/HUD/CharacterOverlay.h"
@@ -328,6 +329,13 @@ void ABountyPlayerController::HandleCooldown()
 			BountyHUD->Announcement->AnnouncementText->SetText(FText::FromString(announcementText));
 			BountyHUD->Announcement->MatchInfoText->SetText(FText());
 		}
+	}
+	
+	ABountyCharacter* bountyCharacter = Cast<ABountyCharacter>(GetPawn());
+	if (bountyCharacter && bountyCharacter->GetCombat())
+	{
+		bountyCharacter->bDisableGameplay = true;
+		bountyCharacter->GetCombat()->Attack(false);
 	}
 }
 

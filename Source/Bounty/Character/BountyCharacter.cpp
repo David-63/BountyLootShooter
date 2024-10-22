@@ -104,9 +104,22 @@ void ABountyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	RotateInPlace(DeltaTime);
+
+	HideCharacterMesh();
+	PollInit();
+}
+void ABountyCharacter::RotateInPlace(float DeltaTime)
+{
+	if (bDisableGameplay)
+	{
+		bUseControllerRotationYaw = false;
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+		return;
+	}
 	if (ENetRole::ROLE_SimulatedProxy < GetLocalRole() && IsLocallyControlled())
 	{
-		ADS_Offset(DeltaTime);		
+		ADS_Offset(DeltaTime);
 	}
 	else
 	{
@@ -117,9 +130,6 @@ void ABountyCharacter::Tick(float DeltaTime)
 		}
 		CalculateAO_Pitch();
 	}
-
-	HideCharacterMesh();
-	PollInit();
 }
 void ABountyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -169,7 +179,8 @@ void ABountyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	DOREPLIFETIME_CONDITION(ABountyCharacter, OverlappingWeapon, COND_OwnerOnly); // 변동사항이 생기고, 조건에 해당하는 경우 리플리케이트한다
 	DOREPLIFETIME(ABountyCharacter, Health_Cur);
-
+	DOREPLIFETIME(ABountyCharacter, bDisableGameplay);
+	
 }
 
 void ABountyCharacter::Destroyed()
@@ -178,6 +189,10 @@ void ABountyCharacter::Destroyed()
 	if (ElimBotComponent)
 	{
 		ElimBotComponent->DestroyComponent();
+	}
+	if (Combat && Combat->EquippedWeapon)
+	{
+		Combat->EquippedWeapon->Destroy();
 	}
 }
 
@@ -491,6 +506,7 @@ void ABountyCharacter::MulticastElim_Implementation()
 	// Disable character
 	GetCharacterMovement()->DisableMovement();
 	GetCharacterMovement()->StopMovementImmediately();
+	bDisableGameplay = true;
 	if (BountyPlayerController)
 	{
 		DisableInput(BountyPlayerController);
@@ -545,7 +561,6 @@ void ABountyCharacter::PlayElimMontage()
 }
 
 
-// get function
 ABaseWeapon* ABountyCharacter::GetEquippedWeapon() const
 {
 	if (nullptr == Combat) return nullptr;
@@ -593,6 +608,7 @@ ECombatState ABountyCharacter::GetCombatState() const
 // controll function
 void ABountyCharacter::InputMove(const FInputActionValue& Value)
 {
+	if (bDisableGameplay) return;
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 	if (Controller != nullptr)
@@ -638,6 +654,8 @@ void ABountyCharacter::InputLook(const FInputActionValue& Value)
 }
 void ABountyCharacter::InputEquip(const FInputActionValue& Value)
 {
+	if (bDisableGameplay) return;
+
 	if (Combat)
 	{
 		if (HasAuthority())
@@ -652,6 +670,7 @@ void ABountyCharacter::InputEquip(const FInputActionValue& Value)
 }
 void ABountyCharacter::InputCrouch()
 {
+	if (bDisableGameplay) return;
 	if (!IsWeaponEquipped()) return;
 	if (bIsCrouched)
 	{
@@ -672,7 +691,7 @@ void ABountyCharacter::InputADS()
 void ABountyCharacter::InputFireDown(const FInputActionValue& Value)
 {
 	if (!Combat) return;
-
+	if (bDisableGameplay) return;
 	Combat->Attack(true);
 }
 void ABountyCharacter::InputFireRelease(const FInputActionValue& Value)
@@ -683,6 +702,7 @@ void ABountyCharacter::InputFireRelease(const FInputActionValue& Value)
 }
 void ABountyCharacter::Jump()
 {
+	if (bDisableGameplay) return;
 	if (bIsCrouched)
 	{
 		UnCrouch();

@@ -136,7 +136,6 @@ private:
 	void UpdateAmmoValue();
 
 protected:
-	void Attack(bool _presseed); // input
 	void Fire();				// do attack
 	UFUNCTION(Server, Reliable)
 	void ServerAttack(const FVector_NetQuantize& _traceHitTarget);	
@@ -150,6 +149,7 @@ protected:
 
 
 public:
+	void Attack(bool _presseed); // input
 	void WeaponReload();
 	UFUNCTION(BlueprintCallable)
 	void WeaponReloadFinish();

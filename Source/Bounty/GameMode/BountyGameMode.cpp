@@ -45,6 +45,14 @@ void ABountyGameMode::Tick(float _deltaTime)
 			SetMatchState(MatchState::Cooldown);
 		}
 	}
+	else if (MatchState == MatchState::Cooldown)
+	{
+		CountdownTime = LevelStartingTime + WarmupTime + MatchTime + CooldownTime - GetWorld()->GetTimeSeconds();
+		if (0.f >= CountdownTime)
+		{
+			RestartGame();
+		}
+	}
 }
 
 void ABountyGameMode::PlayerEliminated(ABountyCharacter* _elimmedCharacter, ABountyPlayerController* _victimController, ABountyPlayerController* _attackerController)
