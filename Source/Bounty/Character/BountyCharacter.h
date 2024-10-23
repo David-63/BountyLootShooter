@@ -254,7 +254,6 @@ public:
 	void PlayElimMontage();
 
 	FORCEINLINE bool IsElimmed() const { return bIsElimmed; }
-	UPROPERTY(Replicated)
 	bool bDisableGameplay = false;
 
 	FORCEINLINE bool IsDisableGameplay() const { return bDisableGameplay; }

@@ -309,7 +309,11 @@ void ABountyPlayerController::HandleMatchHasStarted()
 	BountyHUD = nullptr == BountyHUD ? Cast<ABountyHUD>(GetHUD()) : BountyHUD;
 	if (BountyHUD)
 	{
-		BountyHUD->AddCharacterOverlay();
+		if (nullptr == BountyHUD->CharacterOverlay)
+		{
+			BountyHUD->AddCharacterOverlay();
+		}
+		
 		if (BountyHUD->Announcement)
 		{
 			BountyHUD->Announcement->SetVisibility(ESlateVisibility::Hidden);
@@ -392,8 +396,12 @@ void ABountyPlayerController::ClientJoinMidgame_Implementation(FName _stateOfMat
 	MatchTime = _matchTime;
 	CooldownTime = _cooldownTime;
 	OnMatchStateSet(BountyMatchState);
-	if (BountyHUD && MatchState::WaitingToStart == BountyMatchState)
+	if (BountyHUD)
 	{
-		BountyHUD->AddAnnouncement();
+		if (nullptr == BountyHUD->Announcement)
+		{
+			BountyHUD->AddAnnouncement();
+		}
+		BountyHUD->Announcement->SetVisibility(ESlateVisibility::Hidden);
 	}
 }

@@ -179,7 +179,6 @@ void ABountyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	DOREPLIFETIME_CONDITION(ABountyCharacter, OverlappingWeapon, COND_OwnerOnly); // 변동사항이 생기고, 조건에 해당하는 경우 리플리케이트한다
 	DOREPLIFETIME(ABountyCharacter, Health_Cur);
-	DOREPLIFETIME(ABountyCharacter, bDisableGameplay);
 	
 }
 

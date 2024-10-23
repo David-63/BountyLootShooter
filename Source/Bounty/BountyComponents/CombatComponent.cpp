@@ -127,8 +127,7 @@ void UCombatComponent::SetHUDCrosshairs(float _deltaTime)
 		CrosshairPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
 		CrosshairPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;
 		CrosshairPackage.CrosshairsRight = EquippedWeapon->CrosshairsRight;
-		//CrosshairPackage.CrosshairsTop = EquippedWeapon->CrosshairsTop;
-		CrosshairPackage.CrosshairsTop = nullptr;
+		CrosshairPackage.CrosshairsTop = EquippedWeapon->CrosshairsTop;		
 		CrosshairPackage.CrosshairsBottom = EquippedWeapon->CrosshairsBottom;
 	}
 	else
@@ -338,7 +337,8 @@ void UCombatComponent::OnRep_ExtraAmmo()
 }
 void UCombatComponent::InitializeExtraAmmo()
 {
-	ExtraAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingAmmo);
+	ExtraAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingAmmoAR);
+	ExtraAmmoMap.Emplace(EWeaponType::EWT_RocketLauncher, StartingAmmoRocket);
 }
 void UCombatComponent::UpdateAmmoValue()
 {
