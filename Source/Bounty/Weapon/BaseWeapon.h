@@ -43,23 +43,6 @@ public:
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 
-
-	/*
-	* visual
-	*/
-
-private:
-
-
-public:
-
-
-public:
-
-
-
-
-
 	/*
 	* weapon function
 	*/
@@ -74,16 +57,16 @@ private:
 	UPROPERTY()
 	class ABountyPlayerController* BountyOwnerController;
 
-	UPROPERTY(EditAnywhere, Category = "Fire")
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	class UAnimationAsset* FireAnimation;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	TSubclassOf<class ACasing> CasingClass;
 
-	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo)
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties", ReplicatedUsing = OnRep_Ammo)
 	int32 Ammo;				// ÇöÀç Åº
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	int32 MagCapacity;		// ÅºÃ¢ ¿ë·®
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	EWeaponType WeaponType;
 private:
 	UFUNCTION()
@@ -93,11 +76,11 @@ private:
 	void SpendRound();
 
 public:
-	UPROPERTY(EditAnywhere, Category = Combat)
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	float FireDelay = 0.12f;
-	UPROPERTY(EditAnywhere, Category = Combat)
-	bool bUseAutoAttack = true;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	bool bUseAutoAttack = true;	
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	class USoundCue* EquipSound;
 
 public:
@@ -119,15 +102,15 @@ public:
 * Textures for the weapon crosshair
 */
 public:
-	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UPROPERTY(EditAnywhere, Category = "Weapon Crosshairs")
 	class UTexture2D* CrosshairsCenter;
-	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UPROPERTY(EditAnywhere, Category = "Weapon Crosshairs")
 	UTexture2D* CrosshairsLeft;
-	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UPROPERTY(EditAnywhere, Category = "Weapon Crosshairs")
 	UTexture2D* CrosshairsRight;
-	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UPROPERTY(EditAnywhere, Category = "Weapon Crosshairs")
 	UTexture2D* CrosshairsTop;
-	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UPROPERTY(EditAnywhere, Category = "Weapon Crosshairs")
 	UTexture2D* CrosshairsBottom;
 
 	/*

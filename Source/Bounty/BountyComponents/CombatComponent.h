@@ -118,11 +118,12 @@ private:
 	int32 ExtraAmmo;
 	TMap<EWeaponType, int32> ExtraAmmoMap;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Extra Ammo")
 	int32 StartingAmmoAR = 60;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Extra Ammo")
 	int32 StartingAmmoRocket = 12;
-
+	UPROPERTY(EditAnywhere, Category = "Extra Ammo")
+	int32 StartingAmmoPistol = 30;
 
 	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
 	ECombatState CombatState = ECombatState::ECS_Unoccupied;

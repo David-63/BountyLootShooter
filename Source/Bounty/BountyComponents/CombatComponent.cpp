@@ -339,6 +339,7 @@ void UCombatComponent::InitializeExtraAmmo()
 {
 	ExtraAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingAmmoAR);
 	ExtraAmmoMap.Emplace(EWeaponType::EWT_RocketLauncher, StartingAmmoRocket);
+	ExtraAmmoMap.Emplace(EWeaponType::EWT_Pistol, StartingAmmoPistol);
 }
 void UCombatComponent::UpdateAmmoValue()
 {
