@@ -12,11 +12,6 @@ class BOUNTY_API AProjectile : public AActor
 	GENERATED_BODY()
 	
 private:
-
-
-	UPROPERTY(VisibleAnywhere)
-	class UProjectileMovementComponent* ProjectileMovementComponent;
-
 	UPROPERTY(EditAnywhere, Category = "Weapon property")
 	class UParticleSystem* Tracer;
 	UPROPERTY()
@@ -24,6 +19,9 @@ private:
 
 
 protected:
+	UPROPERTY(VisibleAnywhere)
+	class UProjectileMovementComponent* ProjectileMovementComponent;
+
 	UPROPERTY(EditAnywhere)
 	class UBoxComponent* CollisionBox;
 	UPROPERTY(EditAnywhere, Category = "Weapon property")

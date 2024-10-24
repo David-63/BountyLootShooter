@@ -14,6 +14,8 @@ class BOUNTY_API AProjectileBullet : public AProjectile
 {
 	GENERATED_BODY()
 
+public:
+	AProjectileBullet();
 
 protected:
 	virtual void OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit) override;

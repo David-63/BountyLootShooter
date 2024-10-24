@@ -35,7 +35,8 @@ protected:
 	USoundAttenuation* LoopSoundAttenuation;
 	UPROPERTY()
 	UAudioComponent* ProjectileLoopComponent;
-
+	UPROPERTY(VisibleAnywhere, Category = "Weapon property")
+	class UThrusterMovementComponent* ThrusterMovementComponent;
 
 private:
 	UPROPERTY(VisibleAnywhere)

@@ -462,7 +462,9 @@ void ABountyCharacter::PlayReloadMontage()
 		{
 		case EWeaponType::EWT_AssaultRifle:
 			sessionName = FName("Rifle");
-		default:
+			break;
+		case EWeaponType::EWT_RocketLauncher:
+			sessionName = FName("Rifle");
 			break;
 		}
 
