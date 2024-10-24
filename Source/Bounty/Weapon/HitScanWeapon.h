@@ -6,6 +6,9 @@
 #include "BaseWeapon.h"
 #include "HitScanWeapon.generated.h"
 
+
+
+class UParticleSystem;
 /**
  * 
  */
@@ -21,5 +24,7 @@ private:
 	float Damage = 7.f;
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Addon")
-	class UParticleSystem* ImpactParticle;
+	UParticleSystem* ImpactParticle;
+	UPROPERTY(EditAnywhere, Category = "Weapon Addon")
+	UParticleSystem* BeamParticle;
 };
