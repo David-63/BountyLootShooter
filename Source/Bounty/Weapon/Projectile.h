@@ -12,24 +12,25 @@ class BOUNTY_API AProjectile : public AActor
 	GENERATED_BODY()
 	
 private:
-	UPROPERTY(EditAnywhere)
-	class UBoxComponent* CollisionBox;
+
 
 	UPROPERTY(VisibleAnywhere)
 	class UProjectileMovementComponent* ProjectileMovementComponent;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Weapon property")
 	class UParticleSystem* Tracer;
 	UPROPERTY()
 	class UParticleSystemComponent* TracerComponent;
 
-	UPROPERTY(EditAnywhere)
-	UParticleSystem* ImpactParticles;
-	UPROPERTY(EditAnywhere)
-	class USoundCue* ImpactSound;
 
 protected:
 	UPROPERTY(EditAnywhere)
+	class UBoxComponent* CollisionBox;
+	UPROPERTY(EditAnywhere, Category = "Weapon property")
+	UParticleSystem* ImpactParticles;
+	UPROPERTY(EditAnywhere, Category = "Weapon property")
+	class USoundCue* ImpactSound;
+	UPROPERTY(EditAnywhere, Category = "Weapon property")
 	float Damage = 7.f;
 
 protected:
