@@ -41,14 +41,13 @@ void ACasing::OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimiti
 void ACasing::CasingImpulse()
 {
 	// 기본 이동량
-	FVector ejectionPower = GetActorForwardVector() * ShellEjectionImpulse;
-	//FVector velocity = OwnerVelocity;
-	//velocity.Z = 0;
-	//velocity.Normalize();
-	//
-	//float dotDiraction = FVector::DotProduct(GetActorForwardVector(), velocity);
-	//float impulseScalingFactor = FMath::Clamp(dotDiraction, 0.0f, 1.0f);
-	//ejectionPower += ejectionPower * dotDiraction * 2.f;
+	FVector casingDirection = GetActorForwardVector() * 1.9 + GetActorRightVector() * 1.2;
+	casingDirection += FMath::VRand() * 1.5f; // 약간의 랜덤 벡터 추가
+	casingDirection = casingDirection.GetSafeNormal();
+	FVector ejectionPower = casingDirection * ShellEjectionImpulse;
 
 	CasingMesh->AddImpulse(ejectionPower);
+
+	FVector randomSpin = FMath::VRand() * 5.0f; // 임의의 회전력 추가
+	CasingMesh->AddTorqueInRadians(randomSpin);
 }

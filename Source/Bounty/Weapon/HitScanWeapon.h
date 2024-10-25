@@ -27,4 +27,12 @@ private:
 	UParticleSystem* ImpactParticle;
 	UPROPERTY(EditAnywhere, Category = "Weapon Addon")
 	UParticleSystem* BeamParticle;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Addon")
+	UParticleSystem* MuzzleFlash;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Addon")
+	USoundCue* FireSound;
+	UPROPERTY(EditAnywhere, Category = "Weapon Addon")
+	USoundCue* HitSound;
 };

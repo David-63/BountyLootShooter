@@ -469,6 +469,9 @@ void ABountyCharacter::PlayReloadMontage()
 		case EWeaponType::EWT_Pistol:
 			sessionName = FName("Rifle");
 			break;
+		case EWeaponType::EWT_SubmachineGun:
+			sessionName = FName("Rifle");
+			break;
 		}
 
 		Super::PlayAnimMontage(ReloadMontage, 1.f, sessionName);

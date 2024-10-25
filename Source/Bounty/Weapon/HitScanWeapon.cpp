@@ -4,8 +4,9 @@
 #include "HitScanWeapon.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Kismet/GameplayStatics.h"
-#include "Bounty/Character/BountyCharacter.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Sound/SoundCue.h"
+#include "Bounty/Character/BountyCharacter.h"
 
 void AHitScanWeapon::Fire(const FVector& _hitTarget)
 {
@@ -43,6 +44,10 @@ void AHitScanWeapon::Fire(const FVector& _hitTarget)
 				{
 					UGameplayStatics::SpawnEmitterAtLocation(world, ImpactParticle, bulletHit.ImpactPoint, bulletHit.ImpactNormal.Rotation());
 				}
+				if (HitSound)
+				{
+					UGameplayStatics::PlaySoundAtLocation(this, HitSound, bulletHit.ImpactPoint);
+				}
 			}
 			if (BeamParticle)
 			{
@@ -53,6 +58,15 @@ void AHitScanWeapon::Fire(const FVector& _hitTarget)
 				}
 				
 			}
+		}
+
+		if (MuzzleFlash)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(world, MuzzleFlash, socketTransform);			
+		}
+		if (FireSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
 		}
 	}
 }

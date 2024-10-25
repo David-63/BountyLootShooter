@@ -16,7 +16,7 @@ private:
 	UStaticMeshComponent* CasingMesh;
 
 	UPROPERTY(EditAnywhere)
-	float ShellEjectionImpulse = 5.f;
+	float ShellEjectionImpulse = 4.5f;
 	UPROPERTY(EditAnywhere)
 	class USoundCue* ShellSound;
 
