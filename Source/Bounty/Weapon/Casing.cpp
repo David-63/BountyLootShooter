@@ -14,6 +14,7 @@ ACasing::ACasing()
 	SetRootComponent(CasingMesh);
 
 	CasingMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	CasingMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 	CasingMesh->SetCollisionResponseToChannel(ECC_SkeletalMesh, ECollisionResponse::ECR_Ignore);
 	CasingMesh->SetSimulatePhysics(true);
 	CasingMesh->SetEnableGravity(true);
@@ -48,6 +49,6 @@ void ACasing::CasingImpulse()
 
 	CasingMesh->AddImpulse(ejectionPower);
 
-	FVector randomSpin = FMath::VRand() * 5.0f; // 임의의 회전력 추가
+	FVector randomSpin = FMath::VRand() * 3.0f; // 임의의 회전력 추가
 	CasingMesh->AddTorqueInRadians(randomSpin);
 }

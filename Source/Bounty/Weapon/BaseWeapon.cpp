@@ -110,7 +110,7 @@ void ABaseWeapon::Dropped()
 }
 
 void ABaseWeapon::Fire(const FVector& _hitTarget)
-{	
+{
 	if (FireAnimation)
 	{
 		WeaponMesh->PlayAnimation(FireAnimation, false);
@@ -120,24 +120,24 @@ void ABaseWeapon::Fire(const FVector& _hitTarget)
 	{
 		USkeletalMeshComponent* weaponMesh = GetWeaponMesh();
 		const USkeletalMeshSocket* ejectSocket = weaponMesh->GetSocketByName(FName("AmmoEject"));
-		if (!ejectSocket) return;
-
-		FTransform socketTransform = ejectSocket->GetSocketTransform(weaponMesh);
-
-		UWorld* world = GetWorld();
-		if (!world) return;
-
-		ACasing* tanpi = world->SpawnActor<ACasing>(CasingClass, socketTransform.GetLocation(), socketTransform.GetRotation().Rotator());
-
-		ABountyCharacter* owner = Cast<ABountyCharacter>(GetOwner());
-
-		if (owner)
+		if (ejectSocket)
 		{
-			tanpi->SetOwnerVelocity(owner->GetVelocity());
-		}
-		tanpi->CasingImpulse();
+			FTransform socketTransform = ejectSocket->GetSocketTransform(weaponMesh);
+
+			UWorld* world = GetWorld();
+			if (!world) return;
+
+			ACasing* tanpi = world->SpawnActor<ACasing>(CasingClass, socketTransform.GetLocation(), socketTransform.GetRotation().Rotator());
+
+			ABountyCharacter* owner = Cast<ABountyCharacter>(GetOwner());
+
+			if (owner)
+			{
+				tanpi->SetOwnerVelocity(owner->GetVelocity());
+			}
+			tanpi->CasingImpulse();
+		}		
 	}
-	
 	SpendRound();
 }
 
@@ -227,6 +227,7 @@ void ABaseWeapon::OnRep_Ammo()
 }
 void ABaseWeapon::SpendRound()
 {
+	UE_LOG(LogTemp, Warning, TEXT("current ammo %d"), Ammo);
 	Ammo = FMath::Clamp(Ammo -1, 0, MagCapacity);
 	SetHUDCurrentAmmo();
 }
