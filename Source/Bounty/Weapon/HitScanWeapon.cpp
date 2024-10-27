@@ -4,9 +4,12 @@
 #include "HitScanWeapon.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
 #include "Bounty/Character/BountyCharacter.h"
+#include "WeaponTypes.h"
+#include "DrawDebugHelpers.h"
 
 void AHitScanWeapon::Fire(const FVector& _hitTarget)
 {
@@ -68,4 +71,19 @@ void AHitScanWeapon::Fire(const FVector& _hitTarget)
 			UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
 		}
 	}
+}
+
+FVector AHitScanWeapon::TraceEndWithScatter(const FVector& _traceStart, const FVector& _hitTarget)
+{
+	FVector toTargetNormalized = (_hitTarget - _traceStart).GetSafeNormal();
+
+	FVector scatterCenter = _traceStart + toTargetNormalized * EffectiveRange;
+	DrawDebugSphere(GetWorld(), scatterCenter, ScatterRadius, 24, FColor::Green, true);
+
+	FVector randVector = UKismetMathLibrary::RandomUnitVector() * FMath::RandRange(0.f, ScatterRadius);
+	FVector endLocation = scatterCenter + randVector;
+	FVector toEndLocation = endLocation - _traceStart;
+	DrawDebugSphere(GetWorld(), endLocation, 4.f, 24, FColor::Orange, true);
+	DrawDebugLine(GetWorld(), _traceStart, FVector(_traceStart + toEndLocation * TRACE_LENGTH / toEndLocation.Size()), FColor::Cyan, true);
+	return FVector(_traceStart + toEndLocation * TRACE_LENGTH / toEndLocation.Size());
 }

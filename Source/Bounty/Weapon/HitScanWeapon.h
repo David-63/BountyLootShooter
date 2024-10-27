@@ -35,4 +35,18 @@ private:
 	USoundCue* FireSound;
 	UPROPERTY(EditAnywhere, Category = "Weapon Addon")
 	USoundCue* HitSound;
+
+	/*
+	* Trace end with scatter
+	*/
+protected:
+	FVector TraceEndWithScatter(const FVector& _traceStart, const FVector& _hitTarget);
+private:
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	float EffectiveRange = 1500.f;
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	float ScatterRadius = 100.f;
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	bool bUseScatter = false;
+
 };
