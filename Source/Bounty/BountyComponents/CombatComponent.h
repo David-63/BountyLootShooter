@@ -128,7 +128,8 @@ private:
 	int32 StartingAmmoSMG = 100;
 	UPROPERTY(EditAnywhere, Category = "Extra Ammo")
 	int32 StartingAmmoScatterGun = 24;
-
+	UPROPERTY(EditAnywhere, Category = "Extra Ammo")
+	int32 StartingAmmoDMR = 24;
 
 
 	UPROPERTY(ReplicatedUsing = OnRep_CombatState)

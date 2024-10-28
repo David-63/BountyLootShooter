@@ -475,6 +475,9 @@ void ABountyCharacter::PlayReloadMontage()
 		case EWeaponType::EWT_ScatterGun:
 			sessionName = FName("Rifle");
 			break;
+		case EWeaponType::EWT_MarksmanRifle:
+			sessionName = FName("Rifle");
+			break;
 		}
 
 		Super::PlayAnimMontage(ReloadMontage, 1.f, sessionName);
