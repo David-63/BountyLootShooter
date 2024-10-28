@@ -136,7 +136,7 @@ void ABaseWeapon::Fire(const FVector& _hitTarget)
 				tanpi->SetOwnerVelocity(owner->GetVelocity());
 			}
 			tanpi->CasingImpulse();
-		}		
+		}
 	}
 	SpendRound();
 }

@@ -19,18 +19,15 @@ class BOUNTY_API AHitScanWeapon : public ABaseWeapon
 public:
 	virtual void Fire(const FVector& _hitTarget) override;
 
-private:
+protected:
 	UPROPERTY(EditAnywhere, Category = "Weapon property")
-	float Damage = 7.f;
-
+	float Damage = 7.f;	
 	UPROPERTY(EditAnywhere, Category = "Weapon Addon")
 	UParticleSystem* ImpactParticle;
 	UPROPERTY(EditAnywhere, Category = "Weapon Addon")
 	UParticleSystem* BeamParticle;
-
 	UPROPERTY(EditAnywhere, Category = "Weapon Addon")
 	UParticleSystem* MuzzleFlash;
-
 	UPROPERTY(EditAnywhere, Category = "Weapon Addon")
 	USoundCue* FireSound;
 	UPROPERTY(EditAnywhere, Category = "Weapon Addon")
@@ -41,12 +38,13 @@ private:
 	*/
 protected:
 	FVector TraceEndWithScatter(const FVector& _traceStart, const FVector& _hitTarget);
+	void WeaponTraceHit(const FVector& _traceStart, const FVector& _hitTarget, FHitResult& _inOutHit);
 private:
 	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
 	float EffectiveRange = 1500.f;
 	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
-	float ScatterRadius = 100.f;
+	float ScatterRadius = 25.f;
 	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
-	bool bUseScatter = false;
+	bool bUseScatter = true;
 
 };
