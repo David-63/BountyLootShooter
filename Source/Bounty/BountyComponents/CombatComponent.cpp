@@ -343,7 +343,8 @@ void UCombatComponent::InitializeExtraAmmo()
 	ExtraAmmoMap.Emplace(EWeaponType::EWT_SubmachineGun, StartingAmmoSMG);
 	ExtraAmmoMap.Emplace(EWeaponType::EWT_ScatterGun, StartingAmmoScatterGun);
 	ExtraAmmoMap.Emplace(EWeaponType::EWT_MarksmanRifle, StartingAmmoDMR);
-	
+	ExtraAmmoMap.Emplace(EWeaponType::EWT_GrenadeLauncher, StartingAmmoGrenade);
+
 }
 void UCombatComponent::UpdateAmmoValue()
 {
@@ -429,11 +430,15 @@ void UCombatComponent::InterpFov(float _deltaTime)
 }
 void UCombatComponent::SetADS(bool _bIsADS)
 {
+	if (nullptr == Character || nullptr == EquippedWeapon) return;
+
 	bIsADS = _bIsADS;
 	ServerSetADS(_bIsADS);
-	if (Character)
+	Character->GetCharacterMovement()->MaxWalkSpeed = bIsADS ? ADSMoveSpeed : BaseMoveSpeed;
+
+	if (Character->IsLocallyControlled() && EWeaponType::EWT_MarksmanRifle == EquippedWeapon->GetWeaponType())
 	{
-		Character->GetCharacterMovement()->MaxWalkSpeed = bIsADS ? ADSMoveSpeed : BaseMoveSpeed;
+		Character->ShowSniperScopeWidget(bIsADS);
 	}
 }
 void UCombatComponent::ServerSetADS_Implementation(bool _bIsADS)

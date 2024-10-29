@@ -130,7 +130,8 @@ private:
 	int32 StartingAmmoScatterGun = 24;
 	UPROPERTY(EditAnywhere, Category = "Extra Ammo")
 	int32 StartingAmmoDMR = 24;
-
+	UPROPERTY(EditAnywhere, Category = "Extra Ammo")
+	int32 StartingAmmoGrenade = 24;
 
 	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
 	ECombatState CombatState = ECombatState::ECS_Unoccupied;

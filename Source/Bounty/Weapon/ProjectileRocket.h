@@ -22,14 +22,6 @@ protected:
 	virtual void OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
 
 	UPROPERTY(EditAnywhere, Category = "Weapon property")
-	class UNiagaraSystem* TrailSystem;
-	UPROPERTY()
-	class UNiagaraComponent* TrailSystemComponent;
-
-	void DestroyTimerFinished();
-
-
-	UPROPERTY(EditAnywhere, Category = "Weapon property")
 	USoundCue* ProjectileLoopSound;
 	UPROPERTY(EditAnywhere, Category = "Weapon property")
 	USoundAttenuation* LoopSoundAttenuation;
@@ -39,10 +31,7 @@ protected:
 	class UThrusterMovementComponent* ThrusterMovementComponent;
 
 private:
-	UPROPERTY(VisibleAnywhere)
-	UStaticMeshComponent* RocketMesh;
 
-	FTimerHandle DestroyTimer;
-	UPROPERTY(EditAnywhere, Category = "Weapon property")
-	float DestroyTime = 2.f;
+
+
 };

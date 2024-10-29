@@ -221,6 +221,7 @@ void ABountyCharacter::SetOverlappingWeapon(ABaseWeapon* _weapon)
 	}
 }
 
+
 void ABountyCharacter::OnRep_OverlappingWeapon(ABaseWeapon* _lastWeapon)
 {
 	if (OverlappingWeapon)
@@ -478,6 +479,9 @@ void ABountyCharacter::PlayReloadMontage()
 		case EWeaponType::EWT_MarksmanRifle:
 			sessionName = FName("Rifle");
 			break;
+		case EWeaponType::EWT_GrenadeLauncher:
+			sessionName = FName("Rifle");
+			break;
 		}
 
 		Super::PlayAnimMontage(ReloadMontage, 1.f, sessionName);
@@ -544,6 +548,15 @@ void ABountyCharacter::MulticastElim_Implementation()
 	if (ElimBotSound)
 	{
 		UGameplayStatics::SpawnSoundAtLocation(this, ElimBotSound, GetActorLocation());
+	}
+
+	bool releaseScope = 
+		IsLocallyControlled() && Combat && Combat->bIsADS && Combat->EquippedWeapon && 
+		EWeaponType::EWT_MarksmanRifle == Combat->EquippedWeapon->GetWeaponType();
+
+	if (releaseScope)
+	{
+		ShowSniperScopeWidget(false);
 	}
 }
 void ABountyCharacter::ElimTimerFinished()

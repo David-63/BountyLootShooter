@@ -69,8 +69,11 @@ public:
 	void PlayReloadMontage();
 	void SetOverlappingWeapon(ABaseWeapon* _weapon);
 
-	ECombatState GetCombatState() const;
+	UFUNCTION(BlueprintImplementableEvent)
+	void ShowSniperScopeWidget(bool _bShowScope);
 
+
+	ECombatState GetCombatState() const;
 	FORCEINLINE UCombatComponent* GetCombat() const { return Combat; }
 
 	/*

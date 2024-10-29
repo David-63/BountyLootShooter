@@ -22,18 +22,45 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	class UProjectileMovementComponent* ProjectileMovementComponent;
 
-	UPROPERTY(EditAnywhere)
-	class UBoxComponent* CollisionBox;
-	UPROPERTY(EditAnywhere, Category = "Weapon property")
-	UParticleSystem* ImpactParticles;
-	UPROPERTY(EditAnywhere, Category = "Weapon property")
-	class USoundCue* ImpactSound;
 	UPROPERTY(EditAnywhere, Category = "Weapon property")
 	float Damage = 7.f;
 
-protected:
+	UPROPERTY(EditAnywhere)
+	class UBoxComponent* CollisionBox;
+	UPROPERTY(EditAnywhere, Category = "Weapon Addon")
+	UParticleSystem* ImpactParticles;
+	UPROPERTY(EditAnywhere, Category = "Weapon Addon")
+	class USoundCue* ImpactSound;
+	UPROPERTY(EditAnywhere, Category = "Weapon Addon")
+	class UNiagaraSystem* TrailSystem;
+	UPROPERTY()
+	class UNiagaraComponent* TrailSystemComponent;
+
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit);
+
+
+
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* ProjectileMesh;
+
+	void SpawnTrailSystem();
+
+
+	FTimerHandle DestroyTimer;
+	UPROPERTY(EditAnywhere, Category = "Weapon property")
+	float DestroyTime = 2.f;
+	void StartDestroyTimer();
+	void DestroyTimerFinished();
+
+	UPROPERTY(EditAnywhere, Category = "Weapon property")
+	float DamageInnerRadius = 300.f;
+	UPROPERTY(EditAnywhere, Category = "Weapon property")
+	float DamageOuterRadius = 700.f;
+	
+	void ExplodeDamage();
+
+
 
 public:
 	virtual void Destroyed() override;

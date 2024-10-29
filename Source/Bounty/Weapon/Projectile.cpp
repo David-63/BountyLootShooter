@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Particles/ParticleSystem.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Sound/SoundCue.h"
 #include "Bounty/Character/BountyCharacter.h"
 #include "Bounty/Bounty.h"
@@ -49,6 +50,53 @@ void AProjectile::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
+
+void AProjectile::SpawnTrailSystem()
+{
+	if (TrailSystem)
+	{
+		TrailSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			TrailSystem, GetRootComponent(), FName(), GetActorLocation(), GetActorRotation(), EAttachLocation::KeepWorldPosition, false);
+	}
+}
+
+
+void AProjectile::StartDestroyTimer()
+{
+	GetWorldTimerManager().SetTimer(DestroyTimer, this, &ThisClass::DestroyTimerFinished, DestroyTime);
+}
+
+void AProjectile::DestroyTimerFinished()
+{
+	Destroy();
+}
+
+void AProjectile::ExplodeDamage()
+{
+	APawn* firingPawn = GetInstigator();
+	if (firingPawn && HasAuthority())
+	{
+		AController* firingController = firingPawn->GetController();
+		if (firingController)
+		{
+			UGameplayStatics::ApplyRadialDamageWithFalloff(
+				this,	// world context object
+				Damage, // base damage
+				Damage / 2.f, // minimum damage
+				GetActorLocation(), // origin
+				DamageInnerRadius, // damage inner radius
+				DamageOuterRadius, // damage outer radius
+				1.f, // damage fallof
+				UDamageType::StaticClass(), // damage type class
+				TArray<AActor*>(), // ignore actors
+				this, // damage causer
+				firingController // instigator controller
+			);
+		}
+	}
+
+}
+
 
 void AProjectile::OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
 {
