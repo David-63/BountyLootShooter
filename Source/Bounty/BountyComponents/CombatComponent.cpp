@@ -2,19 +2,22 @@
 
 
 #include "CombatComponent.h"
-#include "Bounty/Character/BountyCharacter.h"
-#include "Bounty/Weapon/BaseWeapon.h"
-#include "Engine/SkeletalMeshSocket.h"
-#include "Components/SphereComponent.h"
 #include "Net/UnrealNetwork.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-
-#include "DrawDebugHelpers.h"
-#include "Bounty/PlayerController/BountyPlayerController.h"
-#include "Camera/CameraComponent.h"
+#include "Engine/SkeletalMeshSocket.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "TimerManager.h"
 #include "Sound/SoundCue.h"
+#include "Components/SphereComponent.h"
+#include "Camera/CameraComponent.h"
+//#include "DrawDebugHelpers.h"
+
+#include "Bounty/Character/BountyCharacter.h"
+#include "Bounty/Weapon/BaseWeapon.h"
+#include "Bounty/PlayerController/BountyPlayerController.h"
+#include "Bounty/Character/BountyAnimInstance.h"
+
+
 
 UCombatComponent::UCombatComponent()
 {
@@ -215,7 +218,7 @@ void UCombatComponent::EquipWeapon(ABaseWeapon* _weaponToEquip)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->EquipSound, Character->GetActorLocation());
 	}
-	if (EquippedWeapon->IsMagEmpty())
+	if (EquippedWeapon->IsAmmoEmpty())
 	{
 		WeaponReload();
 	}
@@ -244,88 +247,22 @@ void UCombatComponent::OnRep_EquipWeapon()
 }
 
 
-void UCombatComponent::Fire()
-{	
-	if (!EquippedWeapon) return;
-	if (CanFire())
-	{		
-		bCanAttack = false;
-		ServerAttack(HitTarget);
-		CrosshairAttackingFactor = SpreadMOA;
-		StartFireTimer();
-	}	
-}
-void UCombatComponent::StartFireTimer()
-{
-	if (!EquippedWeapon || !Character) return;
 
-	Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, EquippedWeapon->FireDelay);
-}
-void UCombatComponent::FireTimerFinished()
-{
-	bCanAttack = true;
-	if (bIsAttackDown && EquippedWeapon->bUseAutoAttack)
-	{
-		Fire();
-	}
-	if (EquippedWeapon->IsMagEmpty())
-	{
-		WeaponReload();
-	}
-}
-bool UCombatComponent::CanFire()
-{
-	if (!EquippedWeapon) return false;
 
-	return !EquippedWeapon->IsMagEmpty() && bCanAttack && ECombatState::ECS_Unoccupied == CombatState;
-}
 
-void UCombatComponent::WeaponReload()
-{
-	if (0 < ExtraAmmo && ECombatState::ECS_Reloading != CombatState)
-	{
-		ServerWeaponReload();
-	}
-}
 void UCombatComponent::WeaponReloadFinish()
 {
 	if (!Character) return;
 	if (Character->HasAuthority())
 	{
 		CombatState = ECombatState::ECS_Unoccupied;
-		UpdateAmmoValue();
+		UpdateMagazineAmmo();
 	}
 	if (bIsAttackDown)
 	{
-		Fire();
+		Attack();
 	}
 }
-void UCombatComponent::ServerWeaponReload_Implementation()
-{
-	if (!Character || !EquippedWeapon) return;
-	
-	CombatState = ECombatState::ECS_Reloading;
-	HandleReload();
-}
-void UCombatComponent::HandleReload()
-{
-	Character->PlayReloadMontage();
-}
-int32 UCombatComponent::AmountToReload()
-{
-	if (!EquippedWeapon) return 0;
-
-	int32 roomInMag = EquippedWeapon->GetMagCapacity() - EquippedWeapon->GetAmmo();
-	if (ExtraAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
-	{
-		int32 amountCarried = ExtraAmmoMap[EquippedWeapon->GetWeaponType()];
-		int32 least = FMath::Min(roomInMag, amountCarried);
-		return FMath::Clamp(roomInMag, 0, least);
-	}
-
-	return 0;
-}
-
 
 void UCombatComponent::OnRep_ExtraAmmo()
 {
@@ -333,6 +270,12 @@ void UCombatComponent::OnRep_ExtraAmmo()
 	if (PlayerController)
 	{
 		PlayerController->SetHUD_ExtraAmmo(ExtraAmmo);
+	}
+	bool bJumpToShotGunEnd = ECombatState::ECS_Reloading == CombatState && !EquippedWeapon &&
+		EWeaponType::EWT_ScatterGun == EquippedWeapon->GetWeaponType() && 0 == ExtraAmmo;
+	if (bJumpToShotGunEnd)
+	{
+		JumpToShotGunEnd();
 	}
 }
 void UCombatComponent::InitializeExtraAmmo()
@@ -346,7 +289,7 @@ void UCombatComponent::InitializeExtraAmmo()
 	ExtraAmmoMap.Emplace(EWeaponType::EWT_GrenadeLauncher, StartingAmmoGrenade);
 
 }
-void UCombatComponent::UpdateAmmoValue()
+void UCombatComponent::UpdateMagazineAmmo()
 {
 	if (!Character || !EquippedWeapon) return;
 
@@ -364,48 +307,77 @@ void UCombatComponent::UpdateAmmoValue()
 	EquippedWeapon->AddAmmo(reloadAmount);
 	
 }
-
-void UCombatComponent::OnRep_CombatState()
+void UCombatComponent::UpdateSingleRoundAmmo()
 {
-	switch (CombatState)
+	if (!Character || !EquippedWeapon) return;
+
+	if (ExtraAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
 	{
-	case ECombatState::ECS_Unoccupied:
-		if (bIsAttackDown)
-		{
-			Fire();
-		}
-		break;
-	case ECombatState::ECS_Reloading:
-		HandleReload();
-		break;
+		ExtraAmmoMap[EquippedWeapon->GetWeaponType()] -= 1;
+		ExtraAmmo = ExtraAmmoMap[EquippedWeapon->GetWeaponType()];
+	}
+	PlayerController = nullptr == PlayerController ? Cast<ABountyPlayerController>(Character->Controller) : PlayerController;
+	if (PlayerController)
+	{
+		PlayerController->SetHUD_ExtraAmmo(ExtraAmmo);
+	}
+	EquippedWeapon->AddAmmo(1);
+	bCanAttack = true;
+	if (EquippedWeapon->IsAmmoFull() || 0 == ExtraAmmo)
+	{
+		JumpToShotGunEnd();
 	}
 }
 
-
-
-
-void UCombatComponent::Attack(bool _presseed)
+int32 UCombatComponent::AmountToReload()
 {
-	bIsAttackDown = _presseed;
+	if (!EquippedWeapon) return 0;
 
-	if (!bIsAttackDown) return;
-
-	Fire();
-	
-}
-void UCombatComponent::ServerAttack_Implementation(const FVector_NetQuantize& _traceHitTarget)
-{
-	MulticastAttack(_traceHitTarget);
-}
-void UCombatComponent::MulticastAttack_Implementation(const FVector_NetQuantize& _traceHitTarget)
-{
-	if (!Character) return;
-	if (!EquippedWeapon) return;
-
-	if (ECombatState::ECS_Unoccupied == CombatState)
+	int32 roomInMag = EquippedWeapon->GetMagCapacity() - EquippedWeapon->GetAmmo();
+	if (ExtraAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
 	{
-		Character->PlayFireMontage(bIsADS);
-		EquippedWeapon->Fire(_traceHitTarget);
+		int32 amountCarried = ExtraAmmoMap[EquippedWeapon->GetWeaponType()];
+		int32 least = FMath::Min(roomInMag, amountCarried);
+		return FMath::Clamp(roomInMag, 0, least);
+	}
+
+	return 0;
+}
+
+void UCombatComponent::WeaponReload()
+{
+	if (0 < ExtraAmmo && ECombatState::ECS_Reloading != CombatState)
+	{
+		ServerWeaponReload();
+	}
+}
+void UCombatComponent::ServerWeaponReload_Implementation()
+{
+	if (!Character || !EquippedWeapon) return;
+
+	CombatState = ECombatState::ECS_Reloading;
+	HandleReload();
+}
+void UCombatComponent::HandleReload()
+{
+	Character->PlayReloadMontage();
+}
+
+
+void UCombatComponent::ReloadSingleRound()
+{
+	if (Character && Character->HasAuthority())
+	{
+		UpdateSingleRoundAmmo();
+	}
+}
+
+void UCombatComponent::JumpToShotGunEnd()
+{
+	UAnimMontage* animMontage = Character->GetReloadMontage();
+	if (animMontage)
+	{
+		Character->PlayAnimMontage(animMontage, 1.f, FName("ShotGunEnd"));
 	}
 }
 
@@ -448,4 +420,89 @@ void UCombatComponent::ServerSetADS_Implementation(bool _bIsADS)
 	{
 		Character->GetCharacterMovement()->MaxWalkSpeed = bIsADS ? ADSMoveSpeed : BaseMoveSpeed;
 	}
+}
+
+void UCombatComponent::OnRep_CombatState()
+{
+	switch (CombatState)
+	{
+	case ECombatState::ECS_Unoccupied:
+		if (bIsAttackDown)
+		{
+			Attack();
+		}
+		break;
+	case ECombatState::ECS_Reloading:
+		HandleReload();
+		break;
+	}
+}
+
+void UCombatComponent::InputAttack(bool _presseed)
+{
+	bIsAttackDown = _presseed;
+
+	if (!bIsAttackDown) return;
+
+	Attack();
+	
+}
+
+void UCombatComponent::Attack()
+{
+	if (!EquippedWeapon) return;
+	if (CanFire())
+	{
+		bCanAttack = false;
+		ServerAttack(HitTarget);
+		CrosshairAttackingFactor = SpreadMOA;
+		StartFireTimer();
+	}
+}
+void UCombatComponent::ServerAttack_Implementation(const FVector_NetQuantize& _traceHitTarget)
+{
+	MulticastAttack(_traceHitTarget);
+}
+void UCombatComponent::MulticastAttack_Implementation(const FVector_NetQuantize& _traceHitTarget)
+{
+	if (!Character) return;
+	if (!EquippedWeapon) return;
+	if (ECombatState::ECS_Reloading == CombatState && EWeaponType::EWT_ScatterGun == EquippedWeapon->GetWeaponType())
+	{
+		Character->PlayFireMontage(bIsADS);
+		EquippedWeapon->Fire(_traceHitTarget);
+		CombatState = ECombatState::ECS_Unoccupied;
+		return;
+	}
+	if (ECombatState::ECS_Unoccupied == CombatState)
+	{
+		Character->PlayFireMontage(bIsADS);
+		EquippedWeapon->Fire(_traceHitTarget);
+	}
+}
+
+void UCombatComponent::StartFireTimer()
+{
+	if (!EquippedWeapon || !Character) return;
+
+	Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, EquippedWeapon->FireDelay);
+}
+void UCombatComponent::FireTimerFinished()
+{
+	bCanAttack = true;
+	if (bIsAttackDown && EquippedWeapon->bUseAutoAttack)
+	{
+		Attack();
+	}
+	if (EquippedWeapon->IsAmmoEmpty())
+	{
+		WeaponReload();
+	}
+}
+bool UCombatComponent::CanFire()
+{
+	if (!EquippedWeapon) return false;
+	if (!EquippedWeapon->IsAmmoEmpty() && bCanAttack && ECombatState::ECS_Reloading == CombatState
+		&& EWeaponType::EWT_ScatterGun == EquippedWeapon->GetWeaponType()) return true;
+	return !EquippedWeapon->IsAmmoEmpty() && bCanAttack && ECombatState::ECS_Unoccupied == CombatState;
 }

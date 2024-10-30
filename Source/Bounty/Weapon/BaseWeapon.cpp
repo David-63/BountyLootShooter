@@ -2,14 +2,16 @@
 
 
 #include "BaseWeapon.h"
+#include "Net/UnrealNetwork.h"
+#include "Engine/SkeletalMeshSocket.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
-#include "Net/UnrealNetwork.h"
 #include "Animation/AnimationAsset.h"
-#include "Components/SkeletalMeshComponent.h"
+
 #include "Bounty/Character/BountyCharacter.h"
+#include "Bounty/BountyComponents/CombatComponent.h"
 #include "Bounty/PlayerController/BountyPlayerController.h"
-#include "Engine/SkeletalMeshSocket.h"
 #include "Casing.h"
 
 // Sets default values
@@ -73,7 +75,7 @@ void ABaseWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ABaseWeapon, WeaponState);
-	DOREPLIFETIME(ABaseWeapon, Ammo);
+	DOREPLIFETIME(ABaseWeapon, AmmoCur);
 }
 
 void ABaseWeapon::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -223,12 +225,16 @@ void ABaseWeapon::OnRep_Owner()
 void ABaseWeapon::OnRep_Ammo()
 {
 	BountyOwnerCharacter = nullptr == BountyOwnerCharacter ? Cast<ABountyCharacter>(GetOwner()) : BountyOwnerCharacter;
+	if (BountyOwnerCharacter && BountyOwnerCharacter->GetCombat() && IsAmmoFull())
+	{
+		BountyOwnerCharacter->GetCombat()->JumpToShotGunEnd();
+	}
 	SetHUDCurrentAmmo();
 }
 void ABaseWeapon::SpendRound()
 {
-	UE_LOG(LogTemp, Warning, TEXT("current ammo %d"), Ammo);
-	Ammo = FMath::Clamp(Ammo -1, 0, MagCapacity);
+	UE_LOG(LogTemp, Warning, TEXT("current ammo %d"), AmmoCur);
+	AmmoCur = FMath::Clamp(AmmoCur -1, 0, AmmoMax);
 	SetHUDCurrentAmmo();
 }
 void ABaseWeapon::SetHUDCurrentAmmo()
@@ -239,19 +245,24 @@ void ABaseWeapon::SetHUDCurrentAmmo()
 		BountyOwnerController = nullptr == BountyOwnerController ? Cast<ABountyPlayerController>(BountyOwnerCharacter->Controller) : BountyOwnerController;
 		if (BountyOwnerController)
 		{
-			BountyOwnerController->SetHUD_CurrentAmmo(Ammo);
+			BountyOwnerController->SetHUD_CurrentAmmo(AmmoCur);
 		}
 	}
 }
 
-bool ABaseWeapon::IsMagEmpty()
+bool ABaseWeapon::IsAmmoEmpty()
 {
-	return 0 >= Ammo;
+	return 0 >= AmmoCur;
+}
+
+bool ABaseWeapon::IsAmmoFull()
+{
+	return AmmoCur == AmmoMax;
 }
 
 void ABaseWeapon::AddAmmo(int32 _ammoToAdd)
 {
-	Ammo = FMath::Clamp(Ammo + _ammoToAdd, 0, MagCapacity);
+	AmmoCur = FMath::Clamp(AmmoCur + _ammoToAdd, 0, AmmoMax);
 
 	SetHUDCurrentAmmo();
 }

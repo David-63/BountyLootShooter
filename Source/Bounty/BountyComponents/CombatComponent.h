@@ -104,18 +104,42 @@ protected:
 	void ServerSetADS(bool _bIsADS);
 
 
-	/*
-	* Auto Fire
-	*/
 
+	/*
+	* Attack
+	*/
 private:
 	FTimerHandle FireTimer;
 
 	bool bCanAttack = true;
 	bool bIsAttackDown;
 
-	UPROPERTY(ReplicatedUsing = OnRep_ExtraAmmo)
-	int32 ExtraAmmo;
+	void StartFireTimer();
+	void FireTimerFinished();
+	bool CanFire();
+
+	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
+	ECombatState CombatState = ECombatState::ECS_Unoccupied;
+	UFUNCTION()
+	void OnRep_CombatState();
+
+protected:
+	void Attack();				// do attack
+	UFUNCTION(Server, Reliable)
+	void ServerAttack(const FVector_NetQuantize& _traceHitTarget);
+	UFUNCTION(NetMulticast, Reliable)	// NetMulticast 옵션으로 서버에서 호출시 모든 클라이언트가 동일하게 작동함
+	void MulticastAttack(const FVector_NetQuantize& _traceHitTarget);
+
+public:
+	void InputAttack(bool _presseed); // input
+
+
+
+
+	/*
+	* Reload
+	*/
+private:
 	TMap<EWeaponType, int32> ExtraAmmoMap;
 
 	UPROPERTY(EditAnywhere, Category = "Extra Ammo")
@@ -127,46 +151,37 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Extra Ammo")
 	int32 StartingAmmoSMG = 100;
 	UPROPERTY(EditAnywhere, Category = "Extra Ammo")
-	int32 StartingAmmoScatterGun = 24;
+	int32 StartingAmmoScatterGun = 21;
 	UPROPERTY(EditAnywhere, Category = "Extra Ammo")
-	int32 StartingAmmoDMR = 24;
+	int32 StartingAmmoDMR = 18;
 	UPROPERTY(EditAnywhere, Category = "Extra Ammo")
 	int32 StartingAmmoGrenade = 24;
 
-	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
-	ECombatState CombatState = ECombatState::ECS_Unoccupied;
-
-private:
 	void InitializeExtraAmmo();
-	void StartFireTimer();
-	void FireTimerFinished();
-	bool CanFire();
+
+	UPROPERTY(ReplicatedUsing = OnRep_ExtraAmmo)
+	int32 ExtraAmmo;
 	UFUNCTION()
 	void OnRep_ExtraAmmo();
-	UFUNCTION()
-	void OnRep_CombatState();
-	void UpdateAmmoValue();
+
+	void UpdateMagazineAmmo();
+	void UpdateSingleRoundAmmo();
 
 protected:
-	void Fire();				// do attack
-	UFUNCTION(Server, Reliable)
-	void ServerAttack(const FVector_NetQuantize& _traceHitTarget);	
-	UFUNCTION(NetMulticast, Reliable)	// NetMulticast 옵션으로 서버에서 호출시 모든 클라이언트가 동일하게 작동함
-	void MulticastAttack(const FVector_NetQuantize& _traceHitTarget);
+
 	UFUNCTION(Server, Reliable)
 	void ServerWeaponReload();
 
 	void HandleReload();
 	int32 AmountToReload();
 
-
 public:
-	void Attack(bool _presseed); // input
 	void WeaponReload();
 	UFUNCTION(BlueprintCallable)
 	void WeaponReloadFinish();
-
-
+	UFUNCTION(BlueprintCallable)
+	void ReloadSingleRound();
+	void JumpToShotGunEnd();
 
 public:	
 	UCombatComponent();

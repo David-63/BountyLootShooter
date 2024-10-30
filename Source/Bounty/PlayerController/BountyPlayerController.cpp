@@ -370,7 +370,7 @@ void ABountyPlayerController::HandleCooldown()
 	if (bountyCharacter && bountyCharacter->GetCombat())
 	{
 		bountyCharacter->bDisableGameplay = true;
-		bountyCharacter->GetCombat()->Attack(false);
+		bountyCharacter->GetCombat()->InputAttack(false);
 	}
 }
 

@@ -16,6 +16,7 @@ enum class EWeaponState : uint8
 
 	EWS_MAX UMETA(DisplayName = "DefaultMAX")
 };
+class UTexture2D;
 
 UCLASS()
 class BOUNTY_API ABaseWeapon : public AActor
@@ -26,51 +27,59 @@ class BOUNTY_API ABaseWeapon : public AActor
 	* Actor setting
 	*/
 private:
-	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
+	UPROPERTY(VisibleAnywhere, Category = "BaseWeapon Properties")
 	USkeletalMeshComponent* WeaponMesh;
-	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
+	UPROPERTY(VisibleAnywhere, Category = "BaseWeapon Properties")
 	class USphereComponent* AreaSphere;
-	
+	UPROPERTY(VisibleAnywhere, Category = "BaseWeapon Properties")
+	class UWidgetComponent* PickupWidget;
+	UPROPERTY()
+	class ABountyCharacter* BountyOwnerCharacter;
+	UPROPERTY()
+	class ABountyPlayerController* BountyOwnerController;
+	UPROPERTY(VisibleAnywhere, Category = "BaseWeapon Properties", ReplicatedUsing = OnRep_WeaponState)	// 엑터는 replicate를 사용하려면 생성자에서 bReplicates = true 선언해줘야함
+		EWeaponState WeaponState;
+	UFUNCTION()
+	void OnRep_WeaponState();
+
 protected:
 	UFUNCTION()
 	virtual void OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 	virtual void OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
 public:
 	void ShowPickupWidget(bool _showWidget);
+	void SetWeaponState(EWeaponState _state);
+	virtual void OnRep_Owner() override;
 	void Dropped();
 
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
+	
+
+
+
+
+
 
 	/*
 	* weapon function
 	*/
 
 private:
-	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties", ReplicatedUsing = OnRep_WeaponState)	// 엑터는 replicate를 사용하려면 생성자에서 bReplicates = true 선언해줘야함
-	EWeaponState WeaponState;
-	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-	class UWidgetComponent* PickupWidget;
-	UPROPERTY()
-	class ABountyCharacter* BountyOwnerCharacter;
-	UPROPERTY()
-	class ABountyPlayerController* BountyOwnerController;
-
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	class UAnimationAsset* FireAnimation;
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	TSubclassOf<class ACasing> CasingClass;
 
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties", ReplicatedUsing = OnRep_Ammo)
-	int32 Ammo;				// 현재 탄
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-	int32 MagCapacity;		// 탄창 용량
+	int32 AmmoMax;
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties", ReplicatedUsing = OnRep_Ammo)
+	int32 AmmoCur;
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	EWeaponType WeaponType;
 private:
-	UFUNCTION()
-	void OnRep_WeaponState();
 	UFUNCTION()
 	void OnRep_Ammo();
 	void SpendRound();
@@ -84,26 +93,24 @@ public:
 	class USoundCue* EquipSound;
 
 public:
-	void SetWeaponState(EWeaponState _state);
-	virtual void OnRep_Owner() override;
 	virtual void Fire(const FVector& _hitTarget);
 	void SetHUDCurrentAmmo();
-	bool IsMagEmpty();
 	void AddAmmo(int32 _ammoToAdd);
+	bool IsAmmoEmpty();
+	bool IsAmmoFull();
 
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
-	FORCEINLINE int32 GetAmmo() const { return Ammo; }
-	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
+	FORCEINLINE int32 GetAmmo() const { return AmmoCur; }
+	FORCEINLINE int32 GetMagCapacity() const { return AmmoMax; }
 
 
+	/*
+	* weapon aim sight
+	*/
 
-
-/*
-* Textures for the weapon crosshair
-*/
 public:
 	UPROPERTY(EditAnywhere, Category = "Weapon Crosshairs")
-	class UTexture2D* CrosshairsCenter;
+	UTexture2D* CrosshairsCenter;
 	UPROPERTY(EditAnywhere, Category = "Weapon Crosshairs")
 	UTexture2D* CrosshairsLeft;
 	UPROPERTY(EditAnywhere, Category = "Weapon Crosshairs")
@@ -113,9 +120,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Weapon Crosshairs")
 	UTexture2D* CrosshairsBottom;
 
-	/*
-	*  Zoomed FOV while ADS
-	*/
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	float ZoomedFOV = 45.f;
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
@@ -124,8 +128,6 @@ public:
 public:
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
-
-
 
 
 

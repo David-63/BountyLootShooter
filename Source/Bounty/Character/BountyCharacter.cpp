@@ -526,7 +526,7 @@ void ABountyCharacter::MulticastElim_Implementation()
 
 	if (Combat)
 	{
-		Combat->Attack(false);
+		Combat->InputAttack(false);
 	}
 
 	// Disable character
@@ -726,13 +726,13 @@ void ABountyCharacter::InputFireDown(const FInputActionValue& Value)
 {
 	if (!Combat) return;
 	if (bDisableGameplay) return;
-	Combat->Attack(true);
+	Combat->InputAttack(true);
 }
 void ABountyCharacter::InputFireRelease(const FInputActionValue& Value)
 {
 	if (!Combat) return;
 	
-	Combat->Attack(false);
+	Combat->InputAttack(false);
 }
 void ABountyCharacter::Jump()
 {
