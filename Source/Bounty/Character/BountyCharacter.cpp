@@ -468,16 +468,16 @@ void ABountyCharacter::PlayReloadMontage()
 			sessionName = FName("Rifle");
 			break;
 		case EWeaponType::EWT_Pistol:
-			sessionName = FName("Rifle");
+			sessionName = FName("Pistol");
 			break;
 		case EWeaponType::EWT_SubmachineGun:
 			sessionName = FName("Rifle");
 			break;
 		case EWeaponType::EWT_ScatterGun:
-			sessionName = FName("Rifle");
+			sessionName = FName("ShotGun");
 			break;
 		case EWeaponType::EWT_MarksmanRifle:
-			sessionName = FName("Rifle");
+			sessionName = FName("SniperRifle");
 			break;
 		case EWeaponType::EWT_GrenadeLauncher:
 			sessionName = FName("Rifle");
