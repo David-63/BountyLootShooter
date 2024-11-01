@@ -130,7 +130,11 @@ public:
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
 
 
-
+	/*
+	* custom depth (outline mtrl)
+	*/
+public:
+	void EnableCustomDepth(bool _bEnable);
 	
 
 

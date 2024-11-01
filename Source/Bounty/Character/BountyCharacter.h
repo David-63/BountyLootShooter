@@ -119,7 +119,7 @@ protected:
 
 
 	/*
-	* visual info
+	* tps animation value
 	*/
 private:
 	float AO_Yaw;
@@ -149,7 +149,7 @@ private:
 	float CalculateSpeed() const;
 
 protected:
-		void RotateInPlace(float DeltaTime);
+	void RotateInPlace(float DeltaTime);
 
 public:
 	virtual void OnRep_ReplicatedMovement() override;
@@ -195,7 +195,6 @@ public:
 	FORCEINLINE float GetHealth_Max() const { return Health_Max; }
 	FORCEINLINE float GetHealth_Cur() const { return Health_Cur; }
 	FORCEINLINE FVector2D GetInertiaValue() const { return InertiaValue; }
-
 
 
 
