@@ -183,6 +183,21 @@ public:
 	void ReloadSingleRound();
 	void JumpToShotGunEnd();
 
+	/*
+	* throw grenade
+	*/
+protected:
+	void ThrowGrenade();
+	UFUNCTION(Server, Reliable)
+	void ServerThrowGrenade();
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void ThrowGrenadeFinished();
+
+
+
+
 public:	
 	UCombatComponent();
 protected:

@@ -54,7 +54,8 @@ private:
 	class UAnimMontage* HitReactMontage;
 	UPROPERTY(EditAnywhere, Category = "Montage")
 	class UAnimMontage* ReloadMontage;
-
+	UPROPERTY(EditAnywhere, Category = "Montage")
+	class UAnimMontage* ThrowMontage;
 private:
 	
 	UFUNCTION(Server, Reliable)	// RPC 함수중에 Reliable 옵션은 코스트를 많이 먹기 때문에 중요한 경우가 아니면 되도록 사용하지 않는걸 권장
@@ -70,6 +71,7 @@ public:
 	void PlayFireMontage(bool _bADS);
 	void PlayReloadMontage();
 	void SetOverlappingWeapon(ABaseWeapon* _weapon);
+	void PlayThrowMontage();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowSniperScopeWidget(bool _bShowScope);
@@ -104,7 +106,8 @@ private:
 	UInputAction* IA_Sprint;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction", meta = (AllowPrivateAccess = "true"))
 	UInputAction* IA_ReloadNSwap;
-
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction", meta = (AllowPrivateAccess = "true"))
+	UInputAction* IA_Throw;
 protected:
 	void InputMove(const FInputActionValue& Value);
 	void InputLook(const FInputActionValue& Value);
@@ -115,6 +118,7 @@ protected:
 	void InputFireRelease(const FInputActionValue& Value);
 	virtual void Jump() override;
 	void InputReload();
+	void InputThrow();
 	
 
 
@@ -185,7 +189,7 @@ private:
 
 private:
 	UFUNCTION()
-	void OnRep_Health(); // 클라이언트에서 호출됨	
+	void OnRep_Health(); // 클라이언트에서 호출됨
 
 protected:
 	void PollInit();	// Poll for any relelvant classes and initialize our HUD

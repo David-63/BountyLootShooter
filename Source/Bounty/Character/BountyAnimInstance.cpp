@@ -91,7 +91,9 @@ void UBountyAnimInstance::NativeUpdateAnimation(float _deltaTime)
 	// for turning movement
 	TurningInPlace = BountyCharacter->GetTurningInPlace();
 
-	bUseFabrik = BountyCharacter->GetCombatState() != ECombatState::ECS_Reloading;
-	bUseAO = BountyCharacter->GetCombatState() != ECombatState::ECS_Reloading && !BountyCharacter->IsDisableGameplay();
-	bUseTransformRightHand = BountyCharacter->GetCombatState() != ECombatState::ECS_Reloading && !BountyCharacter->IsDisableGameplay();
+
+	// hand ctrl
+	bUseFabrik = BountyCharacter->GetCombatState() != ECombatState::ECS_Reloading && BountyCharacter->GetCombatState() != ECombatState::ECS_Throwing;
+	bUseAO = BountyCharacter->GetCombatState() != ECombatState::ECS_Reloading && !BountyCharacter->IsDisableGameplay() && BountyCharacter->GetCombatState() != ECombatState::ECS_Throwing;
+	bUseTransformRightHand = BountyCharacter->GetCombatState() != ECombatState::ECS_Reloading && !BountyCharacter->IsDisableGameplay() && BountyCharacter->GetCombatState() != ECombatState::ECS_Throwing;
 }

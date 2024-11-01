@@ -158,6 +158,7 @@ void ABountyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(IA_Fire, ETriggerEvent::Started, this, &ABountyCharacter::InputFireDown);
 		EnhancedInputComponent->BindAction(IA_Fire, ETriggerEvent::Completed, this, &ABountyCharacter::InputFireRelease);
 		EnhancedInputComponent->BindAction(IA_ReloadNSwap, ETriggerEvent::Triggered, this, &ABountyCharacter::InputReload);
+		EnhancedInputComponent->BindAction(IA_Throw, ETriggerEvent::Triggered, this, &ABountyCharacter::InputThrow);
 
 	}
 }
@@ -220,6 +221,8 @@ void ABountyCharacter::SetOverlappingWeapon(ABaseWeapon* _weapon)
 		}
 	}
 }
+
+
 
 
 void ABountyCharacter::OnRep_OverlappingWeapon(ABaseWeapon* _lastWeapon)
@@ -393,6 +396,15 @@ void ABountyCharacter::PlayHitReactMontage()
 		Super::PlayAnimMontage(HitReactMontage, 1.f, sessionName);
 	}
 }
+void ABountyCharacter::PlayThrowMontage()
+{
+	if (ThrowMontage)
+	{
+		//FName sessionName("FromFront");
+		Super::PlayAnimMontage(ThrowMontage, 1.7f);
+	}	
+}
+
 
 void ABountyCharacter::PollInit()
 {
@@ -752,5 +764,13 @@ void ABountyCharacter::InputReload()
 	if (Combat)
 	{
 		Combat->WeaponReload();
+	}
+}
+
+void ABountyCharacter::InputThrow()
+{
+	if (Combat)
+	{
+		Combat->ThrowGrenade();
 	}
 }
