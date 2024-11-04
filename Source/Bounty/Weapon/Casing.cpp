@@ -42,7 +42,7 @@ void ACasing::OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimiti
 void ACasing::CasingImpulse()
 {
 	// 기본 이동량
-	FVector casingDirection = GetActorForwardVector() * 1.9 + GetActorRightVector() * 1.2;
+	FVector casingDirection = GetActorForwardVector() * 1.9 + GetActorRightVector() * 1.4;
 	casingDirection += FMath::VRand() * 1.5f; // 약간의 랜덤 벡터 추가
 	casingDirection = casingDirection.GetSafeNormal();
 	FVector ejectionPower = casingDirection * ShellEjectionImpulse;

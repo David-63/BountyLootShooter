@@ -401,7 +401,7 @@ void ABountyCharacter::PlayThrowMontage()
 	if (ThrowMontage)
 	{
 		//FName sessionName("FromFront");
-		Super::PlayAnimMontage(ThrowMontage, 1.7f);
+		Super::PlayAnimMontage(ThrowMontage, 1.4f);
 	}	
 }
 
@@ -496,7 +496,7 @@ void ABountyCharacter::PlayReloadMontage()
 			break;
 		}
 
-		Super::PlayAnimMontage(ReloadMontage, 1.f, sessionName);
+		Super::PlayAnimMontage(ReloadMontage, 1.4f, sessionName);
 	}
 }
 

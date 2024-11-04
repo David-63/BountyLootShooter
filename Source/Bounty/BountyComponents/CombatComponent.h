@@ -37,10 +37,20 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_EquipWeapon)
 	class ABaseWeapon* EquippedWeapon;
 protected:
+	void DropEquippedWeapon();
+	void AttachActorToHand(AActor* _actorToAttach, FName _socket);
+	void UpdateExtraAmmo();
+	void PlayEquipWeaponSound();
+	void ReloadEmptyWeapon();
 	UFUNCTION()
 	void OnRep_EquipWeapon();
 public:
 	void EquipWeapon(ABaseWeapon* _weaponToEquip);
+
+
+
+
+
 
 
 
