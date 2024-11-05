@@ -24,15 +24,15 @@ class BOUNTY_API ABountyCharacter : public ACharacter, public ICrosshairInteract
 private:
 	// Camera
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character Addon", meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character Addon", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
-	
+
 
 	// UI
 private:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = HUD, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character Addon", meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* OverheadWidget;
 
 	/*
@@ -48,18 +48,18 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UCombatComponent* Combat;			// 컴포넌트는 자체적으로 Replicate 설정하는 기능이 있음, 생성자에서 설정
 
-	UPROPERTY(EditAnywhere, Category = "Montage")
+	UPROPERTY(EditAnywhere, Category = "Character Addon")
 	class UAnimMontage* FireArmMontage;
-	UPROPERTY(EditAnywhere, Category = "Montage")
+	UPROPERTY(EditAnywhere, Category = "Character Addon")
 	class UAnimMontage* HitReactMontage;
-	UPROPERTY(EditAnywhere, Category = "Montage")
+	UPROPERTY(EditAnywhere, Category = "Character Addon")
 	class UAnimMontage* ReloadMontage;
-	UPROPERTY(EditAnywhere, Category = "Montage")
+	UPROPERTY(EditAnywhere, Category = "Character Addon")
 	class UAnimMontage* ThrowMontage;
 private:
-	
+
 	UFUNCTION(Server, Reliable)	// RPC 함수중에 Reliable 옵션은 코스트를 많이 먹기 때문에 중요한 경우가 아니면 되도록 사용하지 않는걸 권장
-	void ServerInputEquip();
+		void ServerInputEquip();
 
 protected:
 	UFUNCTION()
@@ -119,7 +119,7 @@ protected:
 	virtual void Jump() override;
 	void InputReload();
 	void InputThrow();
-	
+
 
 
 	/*
@@ -131,7 +131,7 @@ private:
 	float InterpAO_Yaw;
 	FRotator StartingAimRotation;
 	ETurningInPlace TurningInPlace;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Camera option")
 	float CameraThreshold = 200.f;
 
 	bool bIsRotateRootBone;
@@ -142,8 +142,8 @@ private:
 	float TurnThreshold = 0.5f;
 	float TimeSinceLastMovementReplication;
 
-	
-	
+
+
 private:
 	void ADS_Offset(float _deltaTime);
 	void CalculateAO_Pitch();
@@ -214,7 +214,7 @@ private:
 
 	bool bIsElimmed = false;
 	FTimerHandle ElimTimer;
-	UPROPERTY(EditDefaultsOnly, Category = "Elim")
+	UPROPERTY(EditDefaultsOnly, Category = "Elim option")
 	float ElimDelay = 3.f;
 
 	// Dissolve Effect
@@ -222,29 +222,29 @@ private:
 	UTimelineComponent* DissolveTimeline;
 	FOnTimelineFloat DissolveTrack;
 
-	UPROPERTY(EditAnywhere, Category = "Elim")
+	UPROPERTY(EditAnywhere, Category = "Character Addon")
 	UCurveFloat* DissolveCurve;
 
 	// dynamic instance that we can change at runtime
-	UPROPERTY(VisibleAnywhere, Category = "Elim")
+	UPROPERTY(VisibleAnywhere, Category = "Character Addon")
 	UMaterialInstanceDynamic* DynamicDissolveMaterialInstanceA;
-	UPROPERTY(VisibleAnywhere, Category = "Elim")
+	UPROPERTY(VisibleAnywhere, Category = "Character Addon")
 	UMaterialInstanceDynamic* DynamicDissolveMaterialInstanceB;
 
 	// material instance set on the blueprint, used with the dynamic material instnace
-	UPROPERTY(EditAnywhere, Category = "Elim")
+	UPROPERTY(EditAnywhere, Category = "Character Addon")
 	UMaterialInstance* DissolveMaterialInstanceA;
-	UPROPERTY(EditAnywhere, Category = "Elim")
+	UPROPERTY(EditAnywhere, Category = "Character Addon")
 	UMaterialInstance* DissolveMaterialInstanceB;
 
-	UPROPERTY(EditAnywhere, Category = "Montage")
+	UPROPERTY(EditAnywhere, Category = "Character Addon")
 	class UAnimMontage* ElimMontage;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Character Addon")
 	UParticleSystem* ElimBotEffect;
 	UPROPERTY(VisibleAnywhere)
 	UParticleSystemComponent* ElimBotComponent;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Character Addon")
 	class USoundCue* ElimBotSound;
 
 private:
@@ -269,6 +269,18 @@ public:
 
 
 
+
+	/*
+	* Grenade
+	*/
+
+private:
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* AttachedGrenade;
+
+
+public:
+	FORCEINLINE UStaticMeshComponent* GetAttachedGrenade() const { return AttachedGrenade; }
 
 	// 공용 함수
 public:

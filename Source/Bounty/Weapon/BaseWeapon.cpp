@@ -134,15 +134,14 @@ void ABaseWeapon::Fire(const FVector& _hitTarget)
 			UWorld* world = GetWorld();
 			if (!world) return;
 
-			ACasing* tanpi = world->SpawnActor<ACasing>(CasingClass, socketTransform.GetLocation(), socketTransform.GetRotation().Rotator());
+			FActorSpawnParameters spawnParam;
+			spawnParam.Owner = this;
+			ACasing* tanpi = world->SpawnActor<ACasing>(CasingClass, socketTransform.GetLocation(), socketTransform.GetRotation().Rotator(), spawnParam);
 
-			ABountyCharacter* owner = Cast<ABountyCharacter>(GetOwner());
-
-			if (owner)
+			if (tanpi)
 			{
-				tanpi->SetOwnerVelocity(owner->GetVelocity());
+				tanpi->CasingImpulse();
 			}
-			tanpi->CasingImpulse();
 		}
 	}
 	SpendRound();
@@ -246,7 +245,6 @@ void ABaseWeapon::OnRep_Ammo()
 }
 void ABaseWeapon::SpendRound()
 {
-	UE_LOG(LogTemp, Warning, TEXT("current ammo %d"), AmmoCur);
 	AmmoCur = FMath::Clamp(AmmoCur -1, 0, AmmoMax);
 	SetHUDCurrentAmmo();
 }

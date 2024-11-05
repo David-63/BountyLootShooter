@@ -33,7 +33,8 @@ private:
 	float HUDHealthCur;
 	float HUDHealthMax;
 	float HUDScore;
-	float HUDLifeLoss;
+	int32 HUDLifeLoss;
+	int32 HUDGrenades;
 protected:
 	void PollInit();
 public:
@@ -44,6 +45,7 @@ public:
 	void SetHUD_CurrentAmmo(int32 _count);
 	void SetHUD_MatchTimeCount(float _time);
 	void SetHUD_AnnouncementCount(float _time);
+	void SetHUD_GrenadeCount(int32 _count);
 
 
 

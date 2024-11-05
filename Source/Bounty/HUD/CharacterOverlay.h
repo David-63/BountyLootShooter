@@ -29,4 +29,7 @@ public:
 	UTextBlock* CurrentAmmoAmount;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* MatchTimeCount;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* GrenadeCount;
+	
 };

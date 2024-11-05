@@ -38,7 +38,7 @@ private:
 	UPROPERTY()
 	class ABountyPlayerController* BountyOwnerController;
 	UPROPERTY(VisibleAnywhere, Category = "BaseWeapon Properties", ReplicatedUsing = OnRep_WeaponState)	// 엑터는 replicate를 사용하려면 생성자에서 bReplicates = true 선언해줘야함
-		EWeaponState WeaponState;
+	EWeaponState WeaponState;
 	UFUNCTION()
 	void OnRep_WeaponState();
 

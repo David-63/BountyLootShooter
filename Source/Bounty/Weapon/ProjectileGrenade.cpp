@@ -5,6 +5,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
+#include "Components/BoxComponent.h"
 
 AProjectileGrenade::AProjectileGrenade()
 {
@@ -25,6 +26,9 @@ void AProjectileGrenade::BeginPlay()
 	SpawnTrailSystem();
 	StartDestroyTimer();
 	ProjectileMovementComponent->OnProjectileBounce.AddDynamic(this, &ThisClass::OnBounce);
+	FCollisionQueryParams queryParams;
+	queryParams.AddIgnoredActor(GetOwner());
+	CollisionBox->IgnoreActorWhenMoving(GetOwner(), true);
 }
 
 void AProjectileGrenade::OnBounce(const FHitResult& _impactResult, const FVector& _impactVelocity)

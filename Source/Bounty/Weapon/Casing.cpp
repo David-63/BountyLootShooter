@@ -25,8 +25,15 @@ void ACasing::BeginPlay()
 {
 	Super::BeginPlay();
 	CasingMesh->OnComponentHit.AddDynamic(this, &ACasing::OnHit);
-	SetLifeSpan(2.f);
+	SetLifeSpan(2.5f);
 
+	AActor* owner = GetOwner();
+	if (owner)
+	{
+		FCollisionQueryParams queryParams;
+		queryParams.AddIgnoredActor(GetOwner());
+		CasingMesh->IgnoreActorWhenMoving(GetOwner(), true);
+	}
 }
 
 void ACasing::OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimitiveComponent* _otherComp, FVector _normalImpulse, const FHitResult& _hit)
@@ -42,7 +49,7 @@ void ACasing::OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor, UPrimiti
 void ACasing::CasingImpulse()
 {
 	// 기본 이동량
-	FVector casingDirection = GetActorForwardVector() * 1.9 + GetActorRightVector() * 1.4;
+	FVector casingDirection = GetActorForwardVector() * 1.9 + GetActorRightVector() * 1.6;
 	casingDirection += FMath::VRand() * 1.5f; // 약간의 랜덤 벡터 추가
 	casingDirection = casingDirection.GetSafeNormal();
 	FVector ejectionPower = casingDirection * ShellEjectionImpulse;

@@ -186,6 +186,24 @@ void ABountyPlayerController::SetHUD_AnnouncementCount(float _time)
 	}
 }
 
+void ABountyPlayerController::SetHUD_GrenadeCount(int32 _count)
+{
+	BountyHUD = nullptr == BountyHUD ? Cast<ABountyHUD>(GetHUD()) : BountyHUD;
+	bool isValidHUD =
+		BountyHUD && BountyHUD->CharacterOverlay && BountyHUD->CharacterOverlay->GrenadeCount;
+
+	if (isValidHUD)
+	{
+		FString grenadeCount = FString::Printf(TEXT("%d"), _count);
+		BountyHUD->CharacterOverlay->GrenadeCount->SetText(FText::FromString(grenadeCount));
+	}
+	else
+	{
+		HUDGrenades = _count;
+		PollInit();
+	}
+}
+
 void ABountyPlayerController::PollInit()
 {
 	if (nullptr == CharacterOverlay)
@@ -198,6 +216,12 @@ void ABountyPlayerController::PollInit()
 				SetHUD_Health(HUDHealthCur, HUDHealthMax);
 				SetHUD_Score(HUDScore);
 				SetHUD_LifeLoss(HUDLifeLoss);
+				ABountyCharacter* bountyCharacter = Cast<ABountyCharacter>(GetPawn());
+				if (bountyCharacter && bountyCharacter->GetCombat())
+				{
+					SetHUD_GrenadeCount(bountyCharacter->GetCombat()->GetGrenadeCount());
+				}
+				
 			}
 		}
 	}

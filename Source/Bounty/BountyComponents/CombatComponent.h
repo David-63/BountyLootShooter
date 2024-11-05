@@ -36,6 +36,10 @@ private:
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_EquipWeapon)
 	class ABaseWeapon* EquippedWeapon;
+	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
+	ECombatState CombatState = ECombatState::ECS_Unoccupied;
+	UFUNCTION()
+	void OnRep_CombatState();
 protected:
 	void DropEquippedWeapon();
 	void AttachActorToHand(AActor* _actorToAttach, FName _socket);
@@ -59,21 +63,21 @@ public:
 	*/
 private:
 	FCrosshairPackage CrosshairPackage;
-	UPROPERTY(EditAnywhere, Category = "CrossHair")
+	UPROPERTY(EditAnywhere, Category = "CrossHair Factor")
 	float BaseSpread = 0.5f;
-	UPROPERTY(EditAnywhere, Category = "CrossHair")
+	UPROPERTY(EditAnywhere, Category = "CrossHair Factor")
 	float InertiaMagnitude = 20.f;
 
 	float CrosshairInAirFactor;		// 반동 요소
 	float CrosshairAimFactor;		// 반동 요소
 	float CrosshairAttackingFactor;	// 반동 요소
 
-	UPROPERTY(EditAnywhere, Category = "CrossHair")
+	UPROPERTY(EditAnywhere, Category = "CrossHair Factor")
 	float SpreadCorrection = 0.45f;				// 조준 보정
 
-	UPROPERTY(EditAnywhere, Category = "CrossHair")
+	UPROPERTY(EditAnywhere, Category = "CrossHair Factor")
 	float SpreadMOA = 1.8f;					// Minute Of Angle (사격 패널티 용어로 사용함)
-	UPROPERTY(EditAnywhere, Category = "CrossHair")
+	UPROPERTY(EditAnywhere, Category = "CrossHair Factor")
 	float RecoveryMOA = 10.f;				// 반동 회복속도
 
 protected:
@@ -102,9 +106,9 @@ private:
 	float DefaultFOV;
 	float CurrentFOV;
 
-	UPROPERTY(EditAnywhere, Category = "CrossHair")
+	UPROPERTY(EditAnywhere, Category = "CrossHair Factor")
 	float ZoomedFOV = 45.f;
-	UPROPERTY(EditAnywhere, Category = "CrossHair")
+	UPROPERTY(EditAnywhere, Category = "CrossHair Factor")
 	float ZoomInterpSpeed = 30.f;
 
 	void InterpFov(float _deltaTime);	// aim 상태에 따라 fov 변경해주는 함수
@@ -128,10 +132,7 @@ private:
 	void FireTimerFinished();
 	bool CanFire();
 
-	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
-	ECombatState CombatState = ECombatState::ECS_Unoccupied;
-	UFUNCTION()
-	void OnRep_CombatState();
+	
 
 protected:
 	void Attack();				// do attack
@@ -200,11 +201,27 @@ protected:
 	void ThrowGrenade();
 	UFUNCTION(Server, Reliable)
 	void ServerThrowGrenade();
-
+	UPROPERTY(EditAnywhere, Category = "Combat Addon")
+	TSubclassOf<class AProjectile> GrenadeClass;
 public:
 	UFUNCTION(BlueprintCallable)
 	void ThrowGrenadeFinished();
+	UFUNCTION(BlueprintCallable)
+	void LaunchGrenade();
+	UFUNCTION(Server, Reliable)
+	void ServerLaunchGrenade(const FVector_NetQuantize& _target);
+private:
+	void ShowAttachedGrenade(bool _show);
 
+	UPROPERTY(EditAnywhere, Category = "Grenade Count")
+	int32 GrenadeMax = 3;
+	UPROPERTY(ReplicatedUsing = OnRep_Grenades)
+	int32 GrenadeCur = 3;
+	UFUNCTION()
+	void OnRep_Grenades();
+	void UpdateHUDGrenades();
+public:
+	FORCEINLINE int32 GetGrenadeCount() { return GrenadeCur; }
 
 
 

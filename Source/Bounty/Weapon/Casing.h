@@ -16,7 +16,7 @@ private:
 	UStaticMeshComponent* CasingMesh;
 
 	UPROPERTY(EditAnywhere)
-	float ShellEjectionImpulse = 3.5f;
+	float ShellEjectionImpulse = 5.5f;
 	UPROPERTY(EditAnywhere)
 	class USoundCue* ShellSound;
 
@@ -30,7 +30,6 @@ protected:
 
 public:
 	void CasingImpulse();
-	FORCEINLINE void SetOwnerVelocity(const FVector _velocity) { OwnerVelocity = _velocity; }
 
 public:	
 	ACasing();

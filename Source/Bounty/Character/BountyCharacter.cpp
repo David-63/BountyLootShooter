@@ -30,6 +30,7 @@
 #include "Bounty/Weapon/WeaponTypes.h"
 
 
+
 ABountyCharacter::ABountyCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -87,6 +88,11 @@ ABountyCharacter::ABountyCharacter()
 	// Elim Effect
 	DissolveTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DissolveTimelineComponent"));
 
+
+	// grenade
+	AttachedGrenade = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Attached Grenade"));
+	AttachedGrenade->SetupAttachment(GetMesh(), FName("HandGrenadeSocket"));
+	AttachedGrenade->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 void ABountyCharacter::BeginPlay()
 {
@@ -97,6 +103,11 @@ void ABountyCharacter::BeginPlay()
 	if (HasAuthority())
 	{
 		OnTakeAnyDamage.AddDynamic(this, &ABountyCharacter::ReceiveDamage);
+	}
+
+	if (AttachedGrenade)
+	{
+		AttachedGrenade->SetVisibility(false);
 	}
 }
 
@@ -398,6 +409,7 @@ void ABountyCharacter::PlayHitReactMontage()
 }
 void ABountyCharacter::PlayThrowMontage()
 {
+	if (nullptr == Combat || nullptr == Combat->EquippedWeapon) return;
 	if (ThrowMontage)
 	{
 		//FName sessionName("FromFront");
