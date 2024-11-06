@@ -59,7 +59,7 @@ private:
 private:
 
 	UFUNCTION(Server, Reliable)	// RPC 함수중에 Reliable 옵션은 코스트를 많이 먹기 때문에 중요한 경우가 아니면 되도록 사용하지 않는걸 권장
-		void ServerInputEquip();
+	void ServerInputEquip();
 
 protected:
 	UFUNCTION()

@@ -24,13 +24,13 @@ class BOUNTY_API ABaseWeapon : public AActor
 	GENERATED_BODY()
 	
 	/*
-	* Actor setting
+	* Pickup & Drop
 	*/
 private:
 	UPROPERTY(VisibleAnywhere, Category = "BaseWeapon Properties")
 	USkeletalMeshComponent* WeaponMesh;
 	UPROPERTY(VisibleAnywhere, Category = "BaseWeapon Properties")
-	class USphereComponent* AreaSphere;
+	class USphereComponent* PickupArea;
 	UPROPERTY(VisibleAnywhere, Category = "BaseWeapon Properties")
 	class UWidgetComponent* PickupWidget;
 	UPROPERTY()
@@ -41,7 +41,8 @@ private:
 	EWeaponState WeaponState;
 	UFUNCTION()
 	void OnRep_WeaponState();
-
+	UPROPERTY(EditAnywhere, Category = "BaseWeapon Properties")
+	EWeaponType WeaponType;
 protected:
 	UFUNCTION()
 	virtual void OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -54,9 +55,30 @@ public:
 	virtual void OnRep_Owner() override;
 	void Dropped();
 
-	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
+	FORCEINLINE USphereComponent* GetAreaSphere() const { return PickupArea; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
-	
+	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
+
+
+private:
+	UPROPERTY(EditAnywhere, Category = "BaseWeapon Properties")
+	int32 AmmoMax;
+	UPROPERTY(EditAnywhere, Category = "BaseWeapon Properties", ReplicatedUsing = OnRep_Ammo)
+	int32 AmmoCur;
+	UFUNCTION()
+	void OnRep_Ammo();
+	void SpendRound();
+
+public:
+	void SetHUDCurrentAmmo();
+	void AddAmmo(int32 _ammoToAdd);
+	bool IsAmmoEmpty();
+	bool IsAmmoFull();
+
+	FORCEINLINE int32 GetAmmo() const { return AmmoCur; }
+	FORCEINLINE int32 GetMagCapacity() const { return AmmoMax; }
+
+	void EnableCustomDepth(bool _bEnable);
 
 
 
@@ -68,21 +90,18 @@ public:
 	*/
 
 private:
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-	class UAnimationAsset* FireAnimation;
+	// 이건 WeaponAmmo 한테 줄거
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	TSubclassOf<class ACasing> CasingClass;
 
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-	int32 AmmoMax;
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties", ReplicatedUsing = OnRep_Ammo)
-	int32 AmmoCur;
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-	EWeaponType WeaponType;
+
+
+	// platform 클래스에 전달
 private:
-	UFUNCTION()
-	void OnRep_Ammo();
-	void SpendRound();
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	class UAnimationAsset* FireAnimation;
+
+	
 
 public:
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
@@ -94,14 +113,7 @@ public:
 
 public:
 	virtual void Fire(const FVector& _hitTarget);
-	void SetHUDCurrentAmmo();
-	void AddAmmo(int32 _ammoToAdd);
-	bool IsAmmoEmpty();
-	bool IsAmmoFull();
 
-	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
-	FORCEINLINE int32 GetAmmo() const { return AmmoCur; }
-	FORCEINLINE int32 GetMagCapacity() const { return AmmoMax; }
 
 
 	/*
@@ -134,7 +146,7 @@ public:
 	* custom depth (outline mtrl)
 	*/
 public:
-	void EnableCustomDepth(bool _bEnable);
+
 	
 
 

@@ -37,15 +37,15 @@ ABaseWeapon::ABaseWeapon()
 	WeaponMesh->MarkRenderStateDirty();
 	EnableCustomDepth(true);
 
-	AreaSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AreaSphere"));
-	AreaSphere->SetupAttachment(RootComponent);
-	AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	PickupArea = CreateDefaultSubobject<USphereComponent>(TEXT("PickupArea"));
+	PickupArea->SetupAttachment(RootComponent);
+	PickupArea->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	PickupArea->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	if (HasAuthority())
 	{
-		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+		PickupArea->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		PickupArea->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 	}
 
 }
@@ -56,10 +56,10 @@ void ABaseWeapon::BeginPlay()
 	Super::BeginPlay();
 	if (HasAuthority())
 	{
-		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-		AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &ABaseWeapon::OnSphereBeginOverlap);
-		AreaSphere->OnComponentEndOverlap.AddDynamic(this, &ABaseWeapon::OnSphereEndOverlap);
+		PickupArea->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		PickupArea->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+		PickupArea->OnComponentBeginOverlap.AddDynamic(this, &ABaseWeapon::OnSphereBeginOverlap);
+		PickupArea->OnComponentEndOverlap.AddDynamic(this, &ABaseWeapon::OnSphereEndOverlap);
 	}
 
 	if (PickupWidget)
@@ -116,13 +116,18 @@ void ABaseWeapon::Dropped()
 	BountyOwnerController = nullptr;
 }
 
+
+
+
+// 이건 다른 클래스에 전달
 void ABaseWeapon::Fire(const FVector& _hitTarget)
 {
+	// 애니메이션
 	if (FireAnimation)
 	{
 		WeaponMesh->PlayAnimation(FireAnimation, false);
 	}
-	
+	// 탄피
 	if (CasingClass)
 	{
 		USkeletalMeshComponent* weaponMesh = GetWeaponMesh();
@@ -144,6 +149,7 @@ void ABaseWeapon::Fire(const FVector& _hitTarget)
 			}
 		}
 	}
+	// 총알 소모
 	SpendRound();
 }
 
@@ -191,7 +197,7 @@ void ABaseWeapon::SetWeaponState(EWeaponState _state)
 		break;
 	case EWeaponState::EWS_Equipped:
 		ShowPickupWidget(false);
-		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		PickupArea->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		WeaponMesh->SetSimulatePhysics(false);
 		WeaponMesh->SetEnableGravity(false);
 		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -206,7 +212,7 @@ void ABaseWeapon::SetWeaponState(EWeaponState _state)
 	case EWeaponState::EWS_Dropped:
 		if (HasAuthority())
 		{
-			AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+			PickupArea->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		}
 		WeaponMesh->SetSimulatePhysics(true);
 		WeaponMesh->SetEnableGravity(true);

@@ -443,6 +443,7 @@ void ABountyCharacter::UpdateHUD_Health()
 
 void ABountyCharacter::ReceiveDamage(AActor* _damagedActor, float _damage, const UDamageType* _damageType, AController* _instegatorController, AActor* _damageCauser)
 {
+	if (bIsElimmed) return;
 	Health_Cur = FMath::Clamp(Health_Cur - _damage, 0.f, Health_Max);
 	UpdateHUD_Health();
 	PlayHitReactMontage();
