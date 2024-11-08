@@ -47,7 +47,7 @@ ABaseWeapon::ABaseWeapon()
 		PickupArea->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		PickupArea->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 	}
-
+	
 }
 
 // Called when the game starts or when spawned
@@ -66,6 +66,7 @@ void ABaseWeapon::BeginPlay()
 	{
 		PickupWidget->SetVisibility(false);
 	}
+	MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName("MuzzleFlash");
 }
 
 // Called every frame
@@ -153,6 +154,11 @@ void ABaseWeapon::Fire(const FVector& _hitTarget)
 	SpendRound();
 }
 
+void ABaseWeapon::FireRound(const FVector& _hitTarget)
+{
+	// do nothing
+}
+
 
 void ABaseWeapon::OnRep_WeaponState()
 {
@@ -238,7 +244,7 @@ void ABaseWeapon::OnRep_Owner()
 	else
 	{
 		SetHUDCurrentAmmo();
-	}	
+	}
 }
 void ABaseWeapon::OnRep_Ammo()
 {

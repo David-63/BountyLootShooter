@@ -597,14 +597,14 @@ void UCombatComponent::MulticastAttack_Implementation(const FVector_NetQuantize&
 	if (ECombatState::ECS_Reloading == CombatState && EWeaponType::EWT_ScatterGun == EquippedWeapon->GetWeaponType())
 	{
 		Character->PlayFireMontage(bIsADS);
-		EquippedWeapon->Fire(_traceHitTarget);
+		EquippedWeapon->FireRound(_traceHitTarget);
 		CombatState = ECombatState::ECS_Unoccupied;
 		return;
 	}
 	if (ECombatState::ECS_Unoccupied == CombatState)
 	{
 		Character->PlayFireMontage(bIsADS);
-		EquippedWeapon->Fire(_traceHitTarget);
+		EquippedWeapon->FireRound(_traceHitTarget);
 	}
 }
 

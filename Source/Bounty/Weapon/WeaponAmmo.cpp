@@ -3,25 +3,32 @@
 
 #include "WeaponAmmo.h"
 
-// Sets default values
-AWeaponAmmo::AWeaponAmmo()
+// Sets default values for this component's properties
+UWeaponAmmo::UWeaponAmmo()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
+	// off to improve performance if you don't need them.
+	PrimaryComponentTick.bCanEverTick = true;
 
+	// ...
 }
 
-// Called when the game starts or when spawned
-void AWeaponAmmo::BeginPlay()
+
+// Called when the game starts
+void UWeaponAmmo::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// ...
 	
 }
 
-// Called every frame
-void AWeaponAmmo::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 
+// Called every frame
+void UWeaponAmmo::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	// ...
 }
 

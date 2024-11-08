@@ -15,42 +15,21 @@ UCLASS()
 class BOUNTY_API AWeaponPlatform : public ABaseWeapon
 {
 	GENERATED_BODY()
-	
-	/*
-	* 무기 조작 방식(예: 자동, 반자동, 단발)
-		반동 제어(Scatter)						add
-		연사 속도								add
-		장전 속도								not
-		크로스헤어 이미지							add
-		FOV(시야각)								add
-		WeaponAmmoClass(무기 탄약 클래스)			add
-		무기 데미지								add
-	*/
-	
+		
 private:
 	UPROPERTY(EditAnywhere, Category = "Platform Addon")
 	class UAnimationAsset* PlatformFireAnimation;
+	UPROPERTY(EditAnywhere, Category = "Platform Addon")
+	class UParticleSystem* HitScanTrail;
 
 public:
 	UPROPERTY(EditAnywhere, Category = "Platform Addon")
 	USoundCue* PlatformEquipSound;
 
-	UPROPERTY(EditAnywhere, Category = "Platform Crosshairs")
-	UTexture2D* CrosshairCenter;
-	UPROPERTY(EditAnywhere, Category = "Platform Crosshairs")
-	UTexture2D* CrosshairLeft;
-	UPROPERTY(EditAnywhere, Category = "Platform Crosshairs")
-	UTexture2D* CrosshairRight;
-	UPROPERTY(EditAnywhere, Category = "Platform Crosshairs")
-	UTexture2D* CrosshairTop;
-	UPROPERTY(EditAnywhere, Category = "Platform Crosshairs")
-	UTexture2D* CrosshairBottom;
-
 	UPROPERTY(EditAnywhere, Category = "Platform Properties")
 	float FireRate = 0.12f;
 	UPROPERTY(EditAnywhere, Category = "Platform Properties")
 	bool bUseAuto = true;
-	virtual void FireRound(const FVector& _hitTarget);
 
 	UPROPERTY(EditAnywhere, Category = "Platform Properties")
 	float AdsFov = 45.f;
@@ -78,18 +57,21 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Platform Scatter")	// 정밀도 사용여부
 	bool bUseScatter = true;
 	UPROPERTY(EditAnywhere, Category = "Platform Scatter")
-	uint32 NumberOfPellets = 23;
+	uint32 NumberOfPellets = 2;
 protected:
 	FVector TraceEndWithScatter(const FVector& _traceStart, const FVector& _hitTarget);
-	void WeaponTraceHit(const FVector& _traceStart, const FVector& _hitTarget, FHitResult& _inOutHit);
+	FVector WeaponTraceHit(const FVector& _traceStart, const FVector& _hitTarget, FHitResult& _inOutHit);
 
 
 private:
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AWeaponAmmo> AWeaponAmmoClass;
+	//UPROPERTY(EditAnywhere)
+	//TSubclassOf<class AWeaponAmmo> AWeaponAmmoClass;
 	
+public:
+	virtual void FireRound(const FVector& _hitTarget) override;
 
-	// 여기 아래는 WeaponAmmo
+	void PlayWeaponEffect();
 
-	
+private:
+	bool bIsHitScan = true;	
 };

@@ -19,3 +19,14 @@ enum class EWeaponType : uint8
 
 	EWT_MAX UMETA(DisplayName = "DefaultMAX"),
 };
+
+
+UENUM(BlueprintType)
+enum class EAmmoType : uint8
+{
+	EAT_Projectile UMETA(DisplayName = "Projectile"),
+	EAT_HitScane UMETA(DisplayName = "Hit Scane"),
+	EAT_Grenade UMETA(DisplayName = "Grenade"),
+	EAT_Thruster UMETA(DisplayName = "Thruster"),
+	EAT_MAX UMETA(DisplayName = "DefaultMAX"),
+};

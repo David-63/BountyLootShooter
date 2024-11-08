@@ -26,7 +26,7 @@ class BOUNTY_API ABaseWeapon : public AActor
 	/*
 	* Pickup & Drop
 	*/
-private:
+protected:
 	UPROPERTY(VisibleAnywhere, Category = "BaseWeapon Properties")
 	USkeletalMeshComponent* WeaponMesh;
 	UPROPERTY(VisibleAnywhere, Category = "BaseWeapon Properties")
@@ -43,13 +43,15 @@ private:
 	void OnRep_WeaponState();
 	UPROPERTY(EditAnywhere, Category = "BaseWeapon Properties")
 	EWeaponType WeaponType;
-protected:
+	const USkeletalMeshSocket* MuzzleFlashSocket;
 	UFUNCTION()
 	virtual void OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 	virtual void OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 public:
+	UPROPERTY(EditAnywhere, Category = "BaseWeapon Properties")
+	class USoundCue* EquipSound;
 	void ShowPickupWidget(bool _showWidget);
 	void SetWeaponState(EWeaponState _state);
 	virtual void OnRep_Owner() override;
@@ -67,6 +69,7 @@ private:
 	int32 AmmoCur;
 	UFUNCTION()
 	void OnRep_Ammo();
+protected:
 	void SpendRound();
 
 public:
@@ -91,29 +94,28 @@ public:
 
 private:
 	// 이건 WeaponAmmo 한테 줄거
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties, dont use")
 	TSubclassOf<class ACasing> CasingClass;
 
 
 
 	// platform 클래스에 전달
 private:
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties, dont use")
 	class UAnimationAsset* FireAnimation;
 
 	
 
 public:
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties, dont use")
 	float FireDelay = 0.12f;
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties, dont use")
 	bool bUseAutoAttack = true;	
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-	class USoundCue* EquipSound;
+	
 
 public:
 	virtual void Fire(const FVector& _hitTarget);
-
+	virtual void FireRound(const FVector& _hitTarget);
 
 
 	/*

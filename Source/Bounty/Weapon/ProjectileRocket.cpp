@@ -8,8 +8,9 @@
 #include "Sound/SoundCue.h"
 #include "Components/AudioComponent.h"
 #include "NiagaraComponent.h"
-#include "NiagaraSystemInstance.h"
+#include "NiagaraSystemInstanceController.h"
 #include "ThrusterMovementComponent.h"
+
 
 AProjectileRocket::AProjectileRocket()
 {
@@ -70,7 +71,7 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* _hitComp, AActor* _otherActor
 	}
 	if (TrailSystemComponent && TrailSystemComponent->GetSystemInstance())
 	{
-		TrailSystemComponent->GetSystemInstance()->Deactivate();
+		TrailSystemComponent->GetSystemInstanceController()->Deactivate();
 	}
 	if (ProjectileLoopComponent && ProjectileLoopComponent->IsPlaying())
 	{
