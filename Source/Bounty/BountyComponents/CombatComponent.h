@@ -66,15 +66,16 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CrossHair Factor")
 	float BaseSpread = 0.5f;
 	UPROPERTY(EditAnywhere, Category = "CrossHair Factor")
-	float InertiaMagnitude = 20.f;
+	float InertiaMagnitude = 10.f;
 
 	float CrosshairInAirFactor;		// 반동 요소
 	float CrosshairAimFactor;		// 반동 요소
 	float CrosshairAttackingFactor;	// 반동 요소
 
+
+	// 아래 3개는 weapon으로부터 값을 받아야함
 	UPROPERTY(EditAnywhere, Category = "CrossHair Factor")
 	float SpreadCorrection = 0.45f;				// 조준 보정
-
 	UPROPERTY(EditAnywhere, Category = "CrossHair Factor")
 	float SpreadMOA = 1.8f;					// Minute Of Angle (사격 패널티 용어로 사용함)
 	UPROPERTY(EditAnywhere, Category = "CrossHair Factor")

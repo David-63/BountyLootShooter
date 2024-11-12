@@ -6,8 +6,17 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Sound/SoundCue.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Bounty/Character/BountyCharacter.h"
 #include "Particles/ParticleSystemComponent.h"
+
+#include "Bounty/Character/BountyCharacter.h"
+#include "WeaponAmmo.h"
+#include "WeaponRound.h"
+
+
+AWeaponPlatform::AWeaponPlatform()
+{
+	WeaponAmmo = CreateDefaultSubobject<UWeaponAmmo>(TEXT("Weapon Ammo"));	
+}
 
 void AWeaponPlatform::FireRound(const FVector& _hitTarget)
 {
@@ -29,69 +38,78 @@ void AWeaponPlatform::FireRound(const FVector& _hitTarget)
 		// 총구 위치 찾기
 		FTransform socketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
 		FVector beginLocation = socketTransform.GetLocation();
-
-		// 멀티샷 개수 계산
-		if (1 < NumberOfPellets)
-		uint32 hits = 0;
 		TMap<ABountyCharacter*, uint32> hitMap;
 		if (bIsHitScan)
-		{
-			for (uint32 pellet = 0; pellet < NumberOfPellets; ++pellet)
-			{
-				FHitResult hitInfo;
-
-				
-				FVector endLocation = WeaponTraceHit(beginLocation, _hitTarget, hitInfo);
-				FVector trailEnd = endLocation;
-				if (hitInfo.bBlockingHit)
-				{
-					trailEnd = hitInfo.ImpactPoint;
-
-				}
-				if (HitScanTrail)
-				{
-					UParticleSystemComponent* trail = UGameplayStatics::SpawnEmitterAtLocation(world, HitScanTrail, beginLocation, FRotator::ZeroRotator, true);
-					if (trail)
-					{
-						trail->SetVectorParameter(FName("Target"), trailEnd);
-					}
-				}
-				ABountyCharacter* victimCharacter = Cast<ABountyCharacter>(hitInfo.GetActor());
-				// 맞춘거 같으면 TMap에 등록
-				if (victimCharacter && HasAuthority() && instigatorController)
-				{
-					if (hitMap.Contains(victimCharacter))
-					{
-						hitMap[victimCharacter]++;
-					}
-					else
-					{
-						hitMap.Emplace(victimCharacter, 1);
-					}
-
-				}
-				if (hitInfo.bBlockingHit)
-				{
-					// impact!!
-				}
-			}
-
-			for (auto hitPair : hitMap)
-			{
-				if (hitPair.Key && HasAuthority() && instigatorController)
-				{
-					UGameplayStatics::ApplyDamage(hitPair.Key, PlatformDamage * hitPair.Value, instigatorController, this, UDamageType::StaticClass());
-				}
-
-			}
+		{			
+			HitScanFire(beginLocation, _hitTarget, *world, instigatorController, hitMap);
 		}
 		else
 		{
-			// 투사체 생성
+			if (WeaponAmmo && WeaponAmmo->GetRoundClass())
+			{
+				APawn* instigatorPawn = Cast<APawn>(GetOwner());
+				for (uint32 pellet = 0; pellet < NumberOfPellets; ++pellet)
+				{
+					FHitResult hitInfo;
+					FVector endLocation = bUseScatter ? TraceEndWithScatter(beginLocation, _hitTarget) : beginLocation + (_hitTarget - beginLocation) * 1.25f;
+					FVector toTarget = endLocation - beginLocation;
+					FRotator targetRotation = toTarget.Rotation();
+					FActorSpawnParameters spawnParams;
+					spawnParams.Owner = GetOwner();
+					spawnParams.Instigator = instigatorPawn;
+					world->SpawnActor<AWeaponRound>(WeaponAmmo->GetRoundClass(), beginLocation, targetRotation, spawnParams);
+				}				
+			}
+		}
+	}
+}
+
+void AWeaponPlatform::HitScanFire(FVector& beginLocation, const FVector& _hitTarget, const UWorld& world, AController* instigatorController, TMap<ABountyCharacter*, uint32>& hitMap)
+{
+	for (uint32 pellet = 0; pellet < NumberOfPellets; ++pellet)
+	{
+		FHitResult hitInfo;
+		FVector endLocation = WeaponTraceHit(beginLocation, _hitTarget, hitInfo);
+
+		if (HitScanTrail)
+		{
+			UParticleSystemComponent* trail = UGameplayStatics::SpawnEmitterAtLocation(&world, HitScanTrail, beginLocation, FRotator::ZeroRotator, true);
+			if (trail)
+			{
+				trail->SetVectorParameter(FName("Target"), endLocation);
+			}
+		}
+		ABountyCharacter* victimCharacter = Cast<ABountyCharacter>(hitInfo.GetActor());
+		// 맞춘거 같으면 TMap에 등록
+		if (victimCharacter && HasAuthority() && instigatorController)
+		{
+			if (hitMap.Contains(victimCharacter))
+			{
+				hitMap[victimCharacter]++;
+			}
+			else
+			{
+				hitMap.Emplace(victimCharacter, 1);
+			}
+
+		}
+		if (hitInfo.bBlockingHit)
+		{
+			// impact!!
+			// WeaponAmmo 에서 해줄거임
 		}
 	}
 
+	for (auto hitPair : hitMap)
+	{
+		if (hitPair.Key && HasAuthority() && instigatorController)
+		{
+			UGameplayStatics::ApplyDamage(hitPair.Key, PlatformDamage * hitPair.Value, instigatorController, this, UDamageType::StaticClass());
+		}
+
+	}
 }
+
 
 void AWeaponPlatform::PlayWeaponEffect()
 {
@@ -146,6 +164,11 @@ FVector AWeaponPlatform::WeaponTraceHit(const FVector& _traceStart, const FVecto
 	{
 		FVector endLocation = bUseScatter ? TraceEndWithScatter(_traceStart, _hitTarget) : _traceStart + (_hitTarget - _traceStart) * 1.25f;
 		world->LineTraceSingleByChannel(_inOutHit, _traceStart, endLocation, ECollisionChannel::ECC_Visibility);
+
+		if (_inOutHit.bBlockingHit)
+		{
+			endLocation = _inOutHit.ImpactPoint;
+		}
 		return endLocation;
 	}
 	return FVector();

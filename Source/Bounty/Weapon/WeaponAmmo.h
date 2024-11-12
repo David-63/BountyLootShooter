@@ -6,22 +6,34 @@
 #include "Components/ActorComponent.h"
 #include "WeaponAmmo.generated.h"
 
+class AWeaponRound;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BOUNTY_API UWeaponAmmo : public UActorComponent
 {
 	GENERATED_BODY()
 
+
+
+private:
+	UPROPERTY(EditAnywhere, Category = "Ammo Addon")
+	TSubclassOf<AWeaponRound> RoundClass;
+
+	UPROPERTY(EditAnywhere, Category = "Ammo property")
+	float AmmoDamage = 5.f;
+
+
+
+
+public:
+	TSubclassOf<AWeaponRound> GetRoundClass() { return RoundClass; }
+
+
 public:	
-	// Sets default values for this component's properties
 	UWeaponAmmo();
-
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
-
 public:	
-	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 		

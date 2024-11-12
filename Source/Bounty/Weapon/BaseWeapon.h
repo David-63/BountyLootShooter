@@ -62,13 +62,17 @@ public:
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
 
 
-private:
+private:	
 	UPROPERTY(EditAnywhere, Category = "BaseWeapon Properties")
-	int32 AmmoMax;
+	int32 AmmoMax = 50;
 	UPROPERTY(EditAnywhere, Category = "BaseWeapon Properties", ReplicatedUsing = OnRep_Ammo)
-	int32 AmmoCur;
+	int32 AmmoCur = 50;
 	UFUNCTION()
 	void OnRep_Ammo();
+	UPROPERTY(EditAnywhere, Category = "BaseWeapon Properties")
+	float FireRate = 0.06f;
+public:
+	FORCEINLINE float GetFireRate() const { return FireRate; }
 protected:
 	void SpendRound();
 

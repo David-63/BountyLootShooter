@@ -26,8 +26,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Platform Addon")
 	USoundCue* PlatformEquipSound;
 
-	UPROPERTY(EditAnywhere, Category = "Platform Properties")
-	float FireRate = 0.12f;
+
 	UPROPERTY(EditAnywhere, Category = "Platform Properties")
 	bool bUseAuto = true;
 
@@ -51,7 +50,7 @@ protected:
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Platform Scatter")	// 유효 거리
-	float EffectiveRange = 1500.f;
+	float EffectiveRange = 500.f;
 	UPROPERTY(EditAnywhere, Category = "Platform Scatter")	// 산탄 범위
 	float ScatterRadius = 25.f;
 	UPROPERTY(EditAnywhere, Category = "Platform Scatter")	// 정밀도 사용여부
@@ -66,12 +65,21 @@ protected:
 private:
 	//UPROPERTY(EditAnywhere)
 	//TSubclassOf<class AWeaponAmmo> AWeaponAmmoClass;
-	
+
+	UPROPERTY(EditAnywhere, Category = "Platform Ammo")
+	class UWeaponAmmo* WeaponAmmo;
+
+
 public:
 	virtual void FireRound(const FVector& _hitTarget) override;
-
 	void PlayWeaponEffect();
+	void HitScanFire(FVector& beginLocation, const FVector& _hitTarget, const UWorld& world, AController* instigatorController, TMap<ABountyCharacter*, uint32>& hitMap);
+
 
 private:
-	bool bIsHitScan = true;	
+	UPROPERTY(EditAnywhere, Category = "Platform Properties")
+	bool bIsHitScan = true;
+
+public:
+	AWeaponPlatform();
 };

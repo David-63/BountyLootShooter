@@ -612,7 +612,7 @@ void UCombatComponent::StartFireTimer()
 {
 	if (!EquippedWeapon || !Character) return;
 
-	Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, EquippedWeapon->FireDelay);
+	Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, EquippedWeapon->GetFireRate());
 }
 void UCombatComponent::FireTimerFinished()
 {
