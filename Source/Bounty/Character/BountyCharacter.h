@@ -28,7 +28,12 @@ private:
 	USpringArmComponent* CameraBoom;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character Addon", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character Addon", meta = (AllowPrivateAccess = "true"))
+	UCameraComponent* ADSCamera;
+public:
+	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	FORCEINLINE UCameraComponent* GetADSCamera() const { return ADSCamera; }
 
 	// UI
 private:
@@ -164,8 +169,6 @@ public:
 	bool IsUsingGamepad() const;
 	bool IsWeaponEquipped() const;
 	bool IsADS() const;
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE float GetAO_Yaw() const { return AO_Yaw; }
 	FORCEINLINE float GetAO_Pitch() const { return AO_Pitch; }
 	FORCEINLINE ETurningInPlace GetTurningInPlace() const { return TurningInPlace; }

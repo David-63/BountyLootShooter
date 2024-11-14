@@ -46,7 +46,7 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 	if (Character && Character->IsLocallyControlled())
 	{
-		InterpFov(DeltaTime);
+		//InterpFov(DeltaTime);
 		SetHUDCrosshairs(DeltaTime);
 
 		FHitResult result;
@@ -562,6 +562,18 @@ void UCombatComponent::SetADS(bool _bIsADS)
 	bIsADS = _bIsADS;
 	ServerSetADS(_bIsADS);
 	Character->GetCharacterMovement()->MaxWalkSpeed = bIsADS ? ADSMoveSpeed : BaseMoveSpeed;
+	if (bIsADS)
+	{
+		Character->GetADSCamera()->SetActive(true);
+		Character->GetFollowCamera()->SetActive(false);
+		Character->bUseControllerRotationYaw = true;
+	}
+	else
+	{
+		Character->GetADSCamera()->SetActive(false);
+		Character->GetFollowCamera()->SetActive(true);
+		Character->bUseControllerRotationYaw = false;
+	}
 
 	if (Character->IsLocallyControlled() && EquippedWeapon->IsUsingScope())
 	{
@@ -571,9 +583,18 @@ void UCombatComponent::SetADS(bool _bIsADS)
 void UCombatComponent::ServerSetADS_Implementation(bool _bIsADS)
 {
 	bIsADS = _bIsADS;
-	if (Character)
+	if (!Character) return;
+	Character->GetCharacterMovement()->MaxWalkSpeed = bIsADS ? ADSMoveSpeed : BaseMoveSpeed;
+
+	if (bIsADS)
 	{
-		Character->GetCharacterMovement()->MaxWalkSpeed = bIsADS ? ADSMoveSpeed : BaseMoveSpeed;
+		Character->GetADSCamera()->SetActive(true);
+		Character->GetFollowCamera()->SetActive(false);
+	}
+	else
+	{
+		Character->GetADSCamera()->SetActive(false);
+		Character->GetFollowCamera()->SetActive(true);
 	}
 }
 

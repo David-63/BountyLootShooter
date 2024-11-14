@@ -119,7 +119,6 @@ protected:
 	void ServerSetADS(bool _bIsADS);
 
 
-
 	/*
 	* Attack
 	*/
