@@ -66,7 +66,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CrossHair Factor")
 	float BaseSpread = 0.5f;
 	UPROPERTY(EditAnywhere, Category = "CrossHair Factor")
-	float InertiaMagnitude = 10.f;
+	float InertiaMagnitude = 20.f;
 
 	float CrosshairInAirFactor;		// 반동 요소
 	float CrosshairAimFactor;		// 반동 요소
@@ -155,19 +155,26 @@ private:
 	TMap<EWeaponType, int32> ExtraAmmoMap;
 
 	UPROPERTY(EditAnywhere, Category = "Extra Ammo")
-	int32 StartingAmmoAR = 80;
+	//int32 StartingAmmoAR = 80;
+	int32 StartingAmmoAR = 500;
 	UPROPERTY(EditAnywhere, Category = "Extra Ammo")
-	int32 StartingAmmoRocket = 12;
+	//int32 StartingAmmoRocket = 12;
+	int32 StartingAmmoRocket = 500;
 	UPROPERTY(EditAnywhere, Category = "Extra Ammo")
-	int32 StartingAmmoPistol = 30;
+	//int32 StartingAmmoPistol = 30;
+	int32 StartingAmmoPistol = 500;
 	UPROPERTY(EditAnywhere, Category = "Extra Ammo")
-	int32 StartingAmmoSMG = 100;
+	//int32 StartingAmmoSMG = 100;
+	int32 StartingAmmoSMG = 500;
 	UPROPERTY(EditAnywhere, Category = "Extra Ammo")
-	int32 StartingAmmoScatterGun = 21;
+	//int32 StartingAmmoScatterGun = 21;
+	int32 StartingAmmoScatterGun = 500;
 	UPROPERTY(EditAnywhere, Category = "Extra Ammo")
-	int32 StartingAmmoDMR = 18;
+	//int32 StartingAmmoDMR = 18;
+	int32 StartingAmmoDMR = 500;
 	UPROPERTY(EditAnywhere, Category = "Extra Ammo")
-	int32 StartingAmmoGrenade = 24;
+	//int32 StartingAmmoGrenade = 24;
+	int32 StartingAmmoGrenade = 500;
 
 	void InitializeExtraAmmo();
 

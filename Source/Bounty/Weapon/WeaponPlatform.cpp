@@ -9,14 +9,9 @@
 #include "Particles/ParticleSystemComponent.h"
 
 #include "Bounty/Character/BountyCharacter.h"
-#include "WeaponAmmo.h"
-#include "WeaponRound.h"
+#include "Projectile.h"
 
 
-AWeaponPlatform::AWeaponPlatform()
-{
-	WeaponAmmo = CreateDefaultSubobject<UWeaponAmmo>(TEXT("Weapon Ammo"));	
-}
 
 void AWeaponPlatform::FireRound(const FVector& _hitTarget)
 {
@@ -27,7 +22,7 @@ void AWeaponPlatform::FireRound(const FVector& _hitTarget)
 	if (nullptr == world) return;
 
 	// 이펙트 있으면 재생
-    PlayWeaponEffect();
+    PlayFireEffect(*world);
 	// 총알 소모됨
 	SpendRound();
 
@@ -39,32 +34,54 @@ void AWeaponPlatform::FireRound(const FVector& _hitTarget)
 		FTransform socketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
 		FVector beginLocation = socketTransform.GetLocation();
 		TMap<ABountyCharacter*, uint32> hitMap;
-		if (bIsHitScan)
-		{			
-			HitScanFire(beginLocation, _hitTarget, *world, instigatorController, hitMap);
+		if (bUsingHitScan)
+		{
+			FireHitscan(beginLocation, _hitTarget, *world, instigatorController, hitMap);
 		}
 		else
 		{
-			if (WeaponAmmo && WeaponAmmo->GetRoundClass())
-			{
-				APawn* instigatorPawn = Cast<APawn>(GetOwner());
-				for (uint32 pellet = 0; pellet < NumberOfPellets; ++pellet)
-				{
-					FHitResult hitInfo;
-					FVector endLocation = bUseScatter ? TraceEndWithScatter(beginLocation, _hitTarget) : beginLocation + (_hitTarget - beginLocation) * 1.25f;
-					FVector toTarget = endLocation - beginLocation;
-					FRotator targetRotation = toTarget.Rotation();
-					FActorSpawnParameters spawnParams;
-					spawnParams.Owner = GetOwner();
-					spawnParams.Instigator = instigatorPawn;
-					world->SpawnActor<AWeaponRound>(WeaponAmmo->GetRoundClass(), beginLocation, targetRotation, spawnParams);
-				}				
-			}
+			FireProjectile(beginLocation, _hitTarget, *world);
 		}
 	}
 }
 
-void AWeaponPlatform::HitScanFire(FVector& beginLocation, const FVector& _hitTarget, const UWorld& world, AController* instigatorController, TMap<ABountyCharacter*, uint32>& hitMap)
+void AWeaponPlatform::PlayFireEffect(UWorld& _world)
+{
+	if (PlatformFireAnimation)
+	{
+		WeaponMesh->PlayAnimation(PlatformFireAnimation, false);
+	}
+	else
+	{
+		if (MuzzleFlash && MuzzleFlashSocket)
+		{
+			FTransform socketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
+			UGameplayStatics::SpawnEmitterAtLocation(&_world, MuzzleFlash, socketTransform);
+
+		}
+		if (FireSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
+		}
+	}
+}
+
+void AWeaponPlatform::PlayImpactEffect(FHitResult& _bulletHit, const UWorld& _world)
+{
+	if (_bulletHit.bBlockingHit)
+	{
+		if (ImpactParticles)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(&_world, ImpactParticles, _bulletHit.ImpactPoint, _bulletHit.ImpactNormal.Rotation());
+		}
+		if (ImpactSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, _bulletHit.ImpactPoint);
+		}
+	}
+}
+
+void AWeaponPlatform::FireHitscan(FVector& beginLocation, const FVector& _hitTarget, const UWorld& world, AController* instigatorController, TMap<ABountyCharacter*, uint32>& hitMap)
 {
 	for (uint32 pellet = 0; pellet < NumberOfPellets; ++pellet)
 	{
@@ -95,8 +112,7 @@ void AWeaponPlatform::HitScanFire(FVector& beginLocation, const FVector& _hitTar
 		}
 		if (hitInfo.bBlockingHit)
 		{
-			// impact!!
-			// WeaponAmmo 에서 해줄거임
+			PlayImpactEffect(hitInfo, world);
 		}
 	}
 
@@ -109,32 +125,25 @@ void AWeaponPlatform::HitScanFire(FVector& beginLocation, const FVector& _hitTar
 
 	}
 }
-
-
-void AWeaponPlatform::PlayWeaponEffect()
+void AWeaponPlatform::FireProjectile(FVector& beginLocation, const FVector& _hitTarget, UWorld& world)
 {
-	APawn* ownerPawn = Cast<APawn>(GetOwner());
-	if (nullptr == ownerPawn) return;
-	UWorld* world = GetWorld();
-	if (nullptr == world) return;
-
-	if (PlatformFireAnimation)
+	if (AmmoClass)
 	{
-		WeaponMesh->PlayAnimation(PlatformFireAnimation, false);
+		APawn* instigatorPawn = Cast<APawn>(GetOwner());
+		for (uint32 pellet = 0; pellet < NumberOfPellets; ++pellet)
+		{
+			FHitResult hitInfo;
+			FVector endLocation = bUsingScatter ? TraceEndWithScatter(beginLocation, _hitTarget) : beginLocation + (_hitTarget - beginLocation) * 1.25f;
+			FVector toTarget = endLocation - beginLocation;
+			FRotator targetRotation = toTarget.Rotation();
+			FActorSpawnParameters spawnParams;
+			spawnParams.Owner = GetOwner();
+			spawnParams.Instigator = instigatorPawn;
+			world.SpawnActor<AProjectile>(AmmoClass, beginLocation, targetRotation, spawnParams);
+		}
 	}
-	else
-	{		
-		if (MuzzleFlash && MuzzleFlashSocket)
-		{
-			FTransform socketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
-			UGameplayStatics::SpawnEmitterAtLocation(world, MuzzleFlash, socketTransform);
-		}
-		if (FireSound)
-		{
-			UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
-		}
-	}	
 }
+
 
 FVector AWeaponPlatform::TraceEndWithScatter(const FVector& _traceStart, const FVector& _hitTarget)
 {
@@ -156,13 +165,12 @@ FVector AWeaponPlatform::TraceEndWithScatter(const FVector& _traceStart, const F
 
 	return FVector(_traceStart + toEndVector * TRACE_LENGTH / toEndVector.Size());
 }
-
 FVector AWeaponPlatform::WeaponTraceHit(const FVector& _traceStart, const FVector& _hitTarget, FHitResult& _inOutHit)
 {
 	UWorld* world = GetWorld();
 	if (world)
 	{
-		FVector endLocation = bUseScatter ? TraceEndWithScatter(_traceStart, _hitTarget) : _traceStart + (_hitTarget - _traceStart) * 1.25f;
+		FVector endLocation = bUsingScatter ? TraceEndWithScatter(_traceStart, _hitTarget) : _traceStart + (_hitTarget - _traceStart) * 1.25f;
 		world->LineTraceSingleByChannel(_inOutHit, _traceStart, endLocation, ECollisionChannel::ECC_Visibility);
 
 		if (_inOutHit.bBlockingHit)

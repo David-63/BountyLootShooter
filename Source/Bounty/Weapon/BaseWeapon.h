@@ -17,41 +17,40 @@ enum class EWeaponState : uint8
 	EWS_MAX UMETA(DisplayName = "DefaultMAX")
 };
 class UTexture2D;
-
+class USoundCue;
+class AProjectile;
+class ACasing;
 UCLASS()
 class BOUNTY_API ABaseWeapon : public AActor
 {
 	GENERATED_BODY()
 	
-	/*
-	* Pickup & Drop
-	*/
+
 protected:
-	UPROPERTY(VisibleAnywhere, Category = "BaseWeapon Properties")
-	USkeletalMeshComponent* WeaponMesh;
-	UPROPERTY(VisibleAnywhere, Category = "BaseWeapon Properties")
-	class USphereComponent* PickupArea;
-	UPROPERTY(VisibleAnywhere, Category = "BaseWeapon Properties")
-	class UWidgetComponent* PickupWidget;
+	
+	UPROPERTY(VisibleAnywhere, Category = "BaseWeapon Addon")
+	USkeletalMeshComponent* WeaponMesh = nullptr;
+	UPROPERTY(VisibleAnywhere, Category = "BaseWeapon Addon")
+	class USphereComponent* PickupArea = nullptr;
+	UPROPERTY(VisibleAnywhere, Category = "BaseWeapon Addon")
+	class UWidgetComponent* PickupWidget = nullptr;
 	UPROPERTY()
-	class ABountyCharacter* BountyOwnerCharacter;
+	class ABountyCharacter* BountyOwnerCharacter = nullptr;
 	UPROPERTY()
-	class ABountyPlayerController* BountyOwnerController;
-	UPROPERTY(VisibleAnywhere, Category = "BaseWeapon Properties", ReplicatedUsing = OnRep_WeaponState)	// 엑터는 replicate를 사용하려면 생성자에서 bReplicates = true 선언해줘야함
+	class ABountyPlayerController* BountyOwnerController = nullptr;
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing = OnRep_WeaponState)	// 엑터는 replicate를 사용하려면 생성자에서 bReplicates = true 선언해줘야함
 	EWeaponState WeaponState;
 	UFUNCTION()
 	void OnRep_WeaponState();
 	UPROPERTY(EditAnywhere, Category = "BaseWeapon Properties")
 	EWeaponType WeaponType;
-	const USkeletalMeshSocket* MuzzleFlashSocket;
+	const USkeletalMeshSocket* MuzzleFlashSocket = nullptr;
 	UFUNCTION()
 	virtual void OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 	virtual void OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 public:
-	UPROPERTY(EditAnywhere, Category = "BaseWeapon Properties")
-	class USoundCue* EquipSound;
 	void ShowPickupWidget(bool _showWidget);
 	void SetWeaponState(EWeaponState _state);
 	virtual void OnRep_Owner() override;
@@ -60,19 +59,16 @@ public:
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return PickupArea; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
+	FORCEINLINE virtual USoundCue* GetEquipSound() const { return nullptr; };
 
 
-private:	
+private:
 	UPROPERTY(EditAnywhere, Category = "BaseWeapon Properties")
 	int32 AmmoMax = 50;
 	UPROPERTY(EditAnywhere, Category = "BaseWeapon Properties", ReplicatedUsing = OnRep_Ammo)
 	int32 AmmoCur = 50;
 	UFUNCTION()
 	void OnRep_Ammo();
-	UPROPERTY(EditAnywhere, Category = "BaseWeapon Properties")
-	float FireRate = 0.06f;
-public:
-	FORCEINLINE float GetFireRate() const { return FireRate; }
 protected:
 	void SpendRound();
 
@@ -81,79 +77,53 @@ public:
 	void AddAmmo(int32 _ammoToAdd);
 	bool IsAmmoEmpty();
 	bool IsAmmoFull();
-
 	FORCEINLINE int32 GetAmmo() const { return AmmoCur; }
 	FORCEINLINE int32 GetMagCapacity() const { return AmmoMax; }
+
+public:
+	UPROPERTY(EditAnywhere, Category = "Weapon Crosshairs")
+	UTexture2D* CrosshairsCenter = nullptr;
+	UPROPERTY(EditAnywhere, Category = "Weapon Crosshairs")
+	UTexture2D* CrosshairsLeft = nullptr;
+	UPROPERTY(EditAnywhere, Category = "Weapon Crosshairs")
+	UTexture2D* CrosshairsRight = nullptr;
+	UPROPERTY(EditAnywhere, Category = "Weapon Crosshairs")
+	UTexture2D* CrosshairsTop = nullptr;
+	UPROPERTY(EditAnywhere, Category = "Weapon Crosshairs")
+	UTexture2D* CrosshairsBottom = nullptr;
+
+
+	
+
+public:
+	virtual void FireRound(const FVector& _hitTarget) {}
+
+	FORCEINLINE virtual float GetAdsFov() const { return 0.f; }
+	FORCEINLINE virtual float GetAdsInterpSpeed() const { return 0.f; }
+	FORCEINLINE virtual float GetFireRate() const { return 0.f; }
+	FORCEINLINE virtual bool IsUsingAutoFire() const { return false; }
+	FORCEINLINE virtual bool IsUsingScatter() const { return true; }
+	FORCEINLINE virtual bool IsUsingScope() const { return false; }
+	FORCEINLINE virtual bool IsUsingHitScan() const { return false; }
+	FORCEINLINE virtual bool IsUsingMagazine() const { return true; }
+
+	virtual void Fire(const FVector& _hitTarget) { }
 
 	void EnableCustomDepth(bool _bEnable);
 
 
 
+protected:
+	UPROPERTY(EditAnywhere, Category = "BaseWeapon Addon")
+	TSubclassOf<ACasing> CasingClass;
+	UPROPERTY(EditAnywhere, Category = "BaseWeapon Addon")
+	TSubclassOf<AProjectile> AmmoClass;
+
+	virtual void EjectCasing();
 
 
 
-	/*
-	* weapon function
-	*/
 
-private:
-	// 이건 WeaponAmmo 한테 줄거
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties, dont use")
-	TSubclassOf<class ACasing> CasingClass;
-
-
-
-	// platform 클래스에 전달
-private:
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties, dont use")
-	class UAnimationAsset* FireAnimation;
-
-	
-
-public:
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties, dont use")
-	float FireDelay = 0.12f;
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties, dont use")
-	bool bUseAutoAttack = true;	
-	
-
-public:
-	virtual void Fire(const FVector& _hitTarget);
-	virtual void FireRound(const FVector& _hitTarget);
-
-
-	/*
-	* weapon aim sight
-	*/
-
-public:
-	UPROPERTY(EditAnywhere, Category = "Weapon Crosshairs")
-	UTexture2D* CrosshairsCenter;
-	UPROPERTY(EditAnywhere, Category = "Weapon Crosshairs")
-	UTexture2D* CrosshairsLeft;
-	UPROPERTY(EditAnywhere, Category = "Weapon Crosshairs")
-	UTexture2D* CrosshairsRight;
-	UPROPERTY(EditAnywhere, Category = "Weapon Crosshairs")
-	UTexture2D* CrosshairsTop;
-	UPROPERTY(EditAnywhere, Category = "Weapon Crosshairs")
-	UTexture2D* CrosshairsBottom;
-
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-	float ZoomedFOV = 45.f;
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-	float ZoomInterpSpeed = 30.f;
-	
-public:
-	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
-	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
-
-
-	/*
-	* custom depth (outline mtrl)
-	*/
-public:
-
-	
 
 
 public:	

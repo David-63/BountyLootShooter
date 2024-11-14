@@ -21,11 +21,13 @@ protected:
 	virtual void BeginPlay() override;
 	UFUNCTION()
 	void OnBounce(const FHitResult& _impactResult, const FVector& _impactVelocity);
-
+	
 private:
-	UPROPERTY(EditAnywhere, Category = "Weapon Addon")
+	UPROPERTY(EditAnywhere, Category = "Projectile Addon")
 	USoundCue* BounceSound;
-
+	UPROPERTY(EditAnywhere, Category = "Projectile Properties")
+	float QuickDestroyTime = 0.5f;
+	bool FirstCollision = false;
 
 public:
 	virtual void Destroyed() override;

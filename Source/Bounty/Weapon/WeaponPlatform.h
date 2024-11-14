@@ -8,6 +8,7 @@
 
 
 class USoundCue;
+
 /**
  * 
  */
@@ -16,70 +17,85 @@ class BOUNTY_API AWeaponPlatform : public ABaseWeapon
 {
 	GENERATED_BODY()
 		
-private:
-	UPROPERTY(EditAnywhere, Category = "Platform Addon")
-	class UAnimationAsset* PlatformFireAnimation;
-	UPROPERTY(EditAnywhere, Category = "Platform Addon")
-	class UParticleSystem* HitScanTrail;
 
+private:
+	// fire
+	UPROPERTY(EditAnywhere, Category = "Platform Addon")
+	class UAnimationAsset* PlatformFireAnimation = nullptr;	
+	UPROPERTY(EditAnywhere, Category = "Platform Addon")
+	UParticleSystem* MuzzleFlash = nullptr;
+	UPROPERTY(EditAnywhere, Category = "Platform Addon")
+	USoundCue* FireSound = nullptr;
+	
+	// impact
+	UPROPERTY(EditAnywhere, Category = "Platform Addon")
+	UParticleSystem* ImpactParticles;
+	UPROPERTY(EditAnywhere, Category = "Platform Addon")
+	class USoundCue* ImpactSound;
+
+	// hitscan
+	UPROPERTY(EditAnywhere, Category = "Platform Addon")
+	class UParticleSystem* HitScanTrail = nullptr;
 public:
 	UPROPERTY(EditAnywhere, Category = "Platform Addon")
-	USoundCue* PlatformEquipSound;
+	USoundCue* PlatformEquipSound = nullptr;
+	
 
-
-	UPROPERTY(EditAnywhere, Category = "Platform Properties")
-	bool bUseAuto = true;
-
+private:
 	UPROPERTY(EditAnywhere, Category = "Platform Properties")
 	float AdsFov = 45.f;
 	UPROPERTY(EditAnywhere, Category = "Platform Properties")
 	float AdsInterpSpeed = 30.f;
-	FORCEINLINE float GetAdsFov() const { return AdsFov; }
-	FORCEINLINE float GetAdsInterpSpeed() const { return AdsInterpSpeed; }
+public:
+	FORCEINLINE virtual float GetAdsFov() const override { return AdsFov; }
+	FORCEINLINE virtual float GetAdsInterpSpeed() const override { return AdsInterpSpeed; }
 
+private:
+	UPROPERTY(EditAnywhere, Category = "Platform Properties")
+	bool bUsingAutoFire = true;
+	UPROPERTY(EditAnywhere, Category = "Platform Properties")
+	bool bUsingScatter = true;
+	UPROPERTY(EditAnywhere, Category = "Platform Properties")
+	bool bUsingScope = false;
+	UPROPERTY(EditAnywhere, Category = "Platform Properties")
+	bool bUsingHitScan = true;
+	UPROPERTY(EditAnywhere, Category = "Platform Properties")
+	bool bUsingMagazine = true;
+public:
+	FORCEINLINE virtual bool IsUsingAutoFire() const override { return bUsingAutoFire; }
+	FORCEINLINE virtual bool IsUsingScatter() const override { return bUsingScatter; }
+	FORCEINLINE virtual bool IsUsingHitScan() const override { return bUsingHitScan; }
+	FORCEINLINE virtual bool IsUsingScope() const override { return bUsingScope; }
+	FORCEINLINE virtual bool IsUsingMagazine() const override { return bUsingMagazine; }
 
-protected:
-	UPROPERTY(EditAnywhere, Category = "Platform property")
+private:
+	UPROPERTY(EditAnywhere, Category = "Platform Properties")
 	float PlatformDamage = 10.f;
+	UPROPERTY(EditAnywhere, Category = "Platform Properties")
+	float FireRate = 0.06f;
 
-	UPROPERTY(EditAnywhere, Category = "Platform Addon")
-	UParticleSystem* MuzzleFlash;
-	UPROPERTY(EditAnywhere, Category = "Platform Addon")
-	USoundCue* FireSound;
-
-
+public:
+	FORCEINLINE float GetPlatformDamage() const { return PlatformDamage; }
+	FORCEINLINE virtual float GetFireRate() const override { return FireRate; }
 private:
 	UPROPERTY(EditAnywhere, Category = "Platform Scatter")	// 유효 거리
 	float EffectiveRange = 500.f;
 	UPROPERTY(EditAnywhere, Category = "Platform Scatter")	// 산탄 범위
 	float ScatterRadius = 25.f;
-	UPROPERTY(EditAnywhere, Category = "Platform Scatter")	// 정밀도 사용여부
-	bool bUseScatter = true;
 	UPROPERTY(EditAnywhere, Category = "Platform Scatter")
 	uint32 NumberOfPellets = 2;
-protected:
-	FVector TraceEndWithScatter(const FVector& _traceStart, const FVector& _hitTarget);
-	FVector WeaponTraceHit(const FVector& _traceStart, const FVector& _hitTarget, FHitResult& _inOutHit);
 
-
-private:
-	//UPROPERTY(EditAnywhere)
-	//TSubclassOf<class AWeaponAmmo> AWeaponAmmoClass;
-
-	UPROPERTY(EditAnywhere, Category = "Platform Ammo")
-	class UWeaponAmmo* WeaponAmmo;
 
 
 public:
 	virtual void FireRound(const FVector& _hitTarget) override;
-	void PlayWeaponEffect();
-	void HitScanFire(FVector& beginLocation, const FVector& _hitTarget, const UWorld& world, AController* instigatorController, TMap<ABountyCharacter*, uint32>& hitMap);
-
-
 private:
-	UPROPERTY(EditAnywhere, Category = "Platform Properties")
-	bool bIsHitScan = true;
+	FVector TraceEndWithScatter(const FVector& _traceStart, const FVector& _hitTarget);
+	FVector WeaponTraceHit(const FVector& _traceStart, const FVector& _hitTarget, FHitResult& _inOutHit);
+	void PlayFireEffect(UWorld& _world);
+	void PlayImpactEffect(FHitResult& _bulletHit, const UWorld& _world);
+	void FireHitscan(FVector& beginLocation, const FVector& _hitTarget, const UWorld& world, AController* instigatorController, TMap<ABountyCharacter*, uint32>& hitMap);
+	void FireProjectile(FVector& beginLocation, const FVector& _hitTarget, UWorld& world);
 
-public:
-	AWeaponPlatform();
+
 };

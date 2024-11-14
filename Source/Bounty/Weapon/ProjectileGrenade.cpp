@@ -37,6 +37,12 @@ void AProjectileGrenade::OnBounce(const FHitResult& _impactResult, const FVector
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, BounceSound, GetActorLocation());
 	}
+	//if (!FirstCollision)
+	//{
+	//	GetWorldTimerManager().ClearTimer(DestroyTimer);
+	//	GetWorldTimerManager().SetTimer(DestroyTimer, this, &ThisClass::Destroyed, QuickDestroyTime);
+	//	FirstCollision = true;
+	//}
 }
 
 void AProjectileGrenade::Destroyed()

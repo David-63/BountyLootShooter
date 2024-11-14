@@ -3,17 +3,16 @@
 
 #include "BaseWeapon.h"
 #include "Net/UnrealNetwork.h"
-#include "Engine/SkeletalMeshSocket.h"
-#include "Components/SkeletalMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
-#include "Animation/AnimationAsset.h"
 
 #include "Bounty/Character/BountyCharacter.h"
 #include "Bounty/BountyComponents/CombatComponent.h"
 #include "Bounty/PlayerController/BountyPlayerController.h"
-#include "Casing.h"
 
+#include "Components/SkeletalMeshComponent.h"
+#include "Engine/SkeletalMeshSocket.h"
+#include "Casing.h"
 
 // Sets default values
 ABaseWeapon::ABaseWeapon()
@@ -116,49 +115,6 @@ void ABaseWeapon::Dropped()
 	BountyOwnerCharacter = nullptr;
 	BountyOwnerController = nullptr;
 }
-
-
-
-
-// 이건 다른 클래스에 전달
-void ABaseWeapon::Fire(const FVector& _hitTarget)
-{
-	// 애니메이션
-	if (FireAnimation)
-	{
-		WeaponMesh->PlayAnimation(FireAnimation, false);
-	}
-	// 탄피
-	if (CasingClass)
-	{
-		USkeletalMeshComponent* weaponMesh = GetWeaponMesh();
-		const USkeletalMeshSocket* ejectSocket = weaponMesh->GetSocketByName(FName("AmmoEject"));
-		if (ejectSocket)
-		{
-			FTransform socketTransform = ejectSocket->GetSocketTransform(weaponMesh);
-
-			UWorld* world = GetWorld();
-			if (!world) return;
-
-			FActorSpawnParameters spawnParam;
-			spawnParam.Owner = this;
-			ACasing* tanpi = world->SpawnActor<ACasing>(CasingClass, socketTransform.GetLocation(), socketTransform.GetRotation().Rotator(), spawnParam);
-
-			if (tanpi)
-			{
-				tanpi->CasingImpulse();
-			}
-		}
-	}
-	// 총알 소모
-	SpendRound();
-}
-
-void ABaseWeapon::FireRound(const FVector& _hitTarget)
-{
-	// do nothing
-}
-
 
 void ABaseWeapon::OnRep_WeaponState()
 {
@@ -296,5 +252,27 @@ void ABaseWeapon::EnableCustomDepth(bool _bEnable)
 	if (WeaponMesh)
 	{
 		WeaponMesh->SetRenderCustomDepth(_bEnable);
+	}
+}
+
+void ABaseWeapon::EjectCasing()
+{
+	if (!CasingClass) return;
+	if (!WeaponMesh) return;
+
+	const USkeletalMeshSocket* ejectSocket = WeaponMesh->GetSocketByName(FName("AmmoEject"));
+	if (ejectSocket)
+	{
+		FTransform socketTransform = ejectSocket->GetSocketTransform(WeaponMesh);
+
+		UWorld* world = GetWorld();
+		if (!world) return;
+
+		FActorSpawnParameters spawnParam;
+		spawnParam.Owner = this;
+		ACasing* tanpi = world->SpawnActor<ACasing>(CasingClass, socketTransform.GetLocation(), socketTransform.GetRotation().Rotator(), spawnParam);
+
+		if (!tanpi) return;
+		tanpi->CasingImpulse();
 	}
 }

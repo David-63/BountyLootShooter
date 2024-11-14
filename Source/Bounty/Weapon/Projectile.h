@@ -49,9 +49,9 @@ protected:
 
 	FTimerHandle DestroyTimer;
 	UPROPERTY(EditAnywhere, Category = "Weapon property")
-	float DestroyTime = 2.f;
+	float DestroyTime = 3.5f;
 	void StartDestroyTimer();
-	void DestroyTimerFinished();
+	virtual void DestroyTimerFinished();
 
 	UPROPERTY(EditAnywhere, Category = "Weapon property")
 	float DamageInnerRadius = 300.f;

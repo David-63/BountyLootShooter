@@ -278,9 +278,9 @@ void UCombatComponent::UpdateExtraAmmo()
 }
 void UCombatComponent::PlayEquipWeaponSound()
 {
-	if (Character && EquippedWeapon && EquippedWeapon->EquipSound)
+	if (Character && EquippedWeapon && EquippedWeapon->GetEquipSound())
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->EquipSound, Character->GetActorLocation());
+		UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->GetEquipSound(), Character->GetActorLocation());
 	}
 }
 void UCombatComponent::ReloadEmptyWeapon()
@@ -314,7 +314,7 @@ void UCombatComponent::OnRep_ExtraAmmo()
 		PlayerController->SetHUD_ExtraAmmo(ExtraAmmo);
 	}
 	bool bJumpToShotGunEnd = ECombatState::ECS_Reloading == CombatState && !EquippedWeapon &&
-		EWeaponType::EWT_ScatterGun == EquippedWeapon->GetWeaponType() && 0 == ExtraAmmo;
+		!EquippedWeapon->IsUsingMagazine() && 0 == ExtraAmmo;
 	if (bJumpToShotGunEnd)
 	{
 		JumpToShotGunEnd();
@@ -335,7 +335,7 @@ void UCombatComponent::UpdateMagazineAmmo()
 {
 	if (!Character || !EquippedWeapon) return;
 
-	int32 reloadAmount = AmountToReload();
+	/*int32 reloadAmount = AmountToReload();
 	if (ExtraAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
 	{
 		ExtraAmmoMap[EquippedWeapon->GetWeaponType()] -= reloadAmount;
@@ -346,7 +346,20 @@ void UCombatComponent::UpdateMagazineAmmo()
 	{
 		PlayerController->SetHUD_ExtraAmmo(ExtraAmmo);
 	}
-	EquippedWeapon->AddAmmo(reloadAmount);
+	EquippedWeapon->AddAmmo(reloadAmount);*/
+
+	if (ExtraAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+	{
+		ExtraAmmoMap[EquippedWeapon->GetWeaponType()] -= 1;
+		ExtraAmmo = ExtraAmmoMap[EquippedWeapon->GetWeaponType()];
+	}
+	PlayerController = nullptr == PlayerController ? Cast<ABountyPlayerController>(Character->Controller) : PlayerController;
+	if (PlayerController)
+	{
+		PlayerController->SetHUD_ExtraAmmo(ExtraAmmo);
+	}
+	
+	EquippedWeapon->AddAmmo(EquippedWeapon->GetMagCapacity());
 	
 }
 void UCombatComponent::UpdateSingleRoundAmmo()
@@ -530,7 +543,7 @@ void UCombatComponent::InterpFov(float _deltaTime)
 
 	if (bIsADS)
 	{
-		CurrentFOV = FMath::FInterpTo(CurrentFOV, EquippedWeapon->GetZoomedFOV(), _deltaTime, EquippedWeapon->GetZoomInterpSpeed());
+		CurrentFOV = FMath::FInterpTo(CurrentFOV, EquippedWeapon->GetAdsFov(), _deltaTime, EquippedWeapon->GetAdsInterpSpeed());
 	}
 	else
 	{
@@ -550,7 +563,7 @@ void UCombatComponent::SetADS(bool _bIsADS)
 	ServerSetADS(_bIsADS);
 	Character->GetCharacterMovement()->MaxWalkSpeed = bIsADS ? ADSMoveSpeed : BaseMoveSpeed;
 
-	if (Character->IsLocallyControlled() && EWeaponType::EWT_MarksmanRifle == EquippedWeapon->GetWeaponType())
+	if (Character->IsLocallyControlled() && EquippedWeapon->IsUsingScope())
 	{
 		Character->ShowSniperScopeWidget(bIsADS);
 	}
@@ -617,7 +630,7 @@ void UCombatComponent::StartFireTimer()
 void UCombatComponent::FireTimerFinished()
 {
 	bCanAttack = true;
-	if (bIsAttackDown && EquippedWeapon->bUseAutoAttack)
+	if (bIsAttackDown && EquippedWeapon->IsUsingAutoFire())
 	{
 		Attack();
 	}

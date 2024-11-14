@@ -480,37 +480,34 @@ void ABountyCharacter::PlayReloadMontage()
 {
 	if (nullptr == Combat || nullptr == Combat->EquippedWeapon) return;
 
-
-	if (ReloadMontage)
+	if (!ReloadMontage) return;
+	FName sessionName;
+	if (Combat->EquippedWeapon->IsUsingMagazine())
 	{
-		FName sessionName;
 		switch (Combat->EquippedWeapon->GetWeaponType())
 		{
 		case EWeaponType::EWT_AssaultRifle:
-			sessionName = FName("Rifle");
-			break;
+		case EWeaponType::EWT_SubmachineGun:
 		case EWeaponType::EWT_RocketLauncher:
+		case EWeaponType::EWT_GrenadeLauncher:
+		case EWeaponType::EWT_ScatterGun:
 			sessionName = FName("Rifle");
 			break;
 		case EWeaponType::EWT_Pistol:
 			sessionName = FName("Pistol");
 			break;
-		case EWeaponType::EWT_SubmachineGun:
-			sessionName = FName("Rifle");
-			break;
-		case EWeaponType::EWT_ScatterGun:
-			sessionName = FName("ShotGun");
-			break;
 		case EWeaponType::EWT_MarksmanRifle:
 			sessionName = FName("SniperRifle");
 			break;
-		case EWeaponType::EWT_GrenadeLauncher:
-			sessionName = FName("Rifle");
-			break;
 		}
-
-		Super::PlayAnimMontage(ReloadMontage, 1.4f, sessionName);
 	}
+	else
+	{
+		sessionName = FName("ShotGun");
+	}
+
+
+	Super::PlayAnimMontage(ReloadMontage, 1.4f, sessionName);
 }
 
 
