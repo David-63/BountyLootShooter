@@ -25,15 +25,27 @@ private:
 	// Camera
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character Addon", meta = (AllowPrivateAccess = "true"))
-	USpringArmComponent* CameraBoom;
+	USpringArmComponent* TpsSpringArm;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character Addon", meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* FollowCamera;
+	UCameraComponent* TpsCamera;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character Addon", meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* ADSCamera;
+	USpringArmComponent* FpsSpringArm;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character Addon", meta = (AllowPrivateAccess = "true"))
+	UCameraComponent* FpsCamera;
+
+	FTransform TpsRelativeTransform;
+	FTransform FpsRelativeTransform;
+	bool bInterpTransition = false;
+	bool bIsTransitionComplete = true;
 public:
-	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-	FORCEINLINE UCameraComponent* GetADSCamera() const { return ADSCamera; }
+	FORCEINLINE USpringArmComponent* GetTpsSpringArm() const { return TpsSpringArm; }
+	FORCEINLINE UCameraComponent* GetTpsCamera() const { return TpsCamera; }
+	FORCEINLINE USpringArmComponent* GetFpsSpringArm() const { return FpsSpringArm; }
+	FORCEINLINE UCameraComponent* GetFpsCamera() const { return FpsCamera; }
+	FORCEINLINE FTransform GetTpsRelativeTransform() const { return TpsRelativeTransform; }
+	FORCEINLINE FTransform GetFpsRelativeTransform() const { return FpsRelativeTransform; }
+	FORCEINLINE bool IsInterpTransition() { return bInterpTransition; }
+	FORCEINLINE void SetInterpTransition(bool _excute) { bInterpTransition = _excute; }
 
 	// UI
 private:

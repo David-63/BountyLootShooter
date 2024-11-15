@@ -10,6 +10,7 @@
 #include "Sound/SoundCue.h"
 #include "Components/SphereComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
 //#include "DrawDebugHelpers.h"
 
 #include "Bounty/Character/BountyCharacter.h"
@@ -30,9 +31,9 @@ void UCombatComponent::BeginPlay()
 	if (!Character) return;
 	Character->GetCharacterMovement()->MaxWalkSpeed = BaseMoveSpeed;
 
-	if (Character->GetFollowCamera())
+	if (Character->GetTpsCamera())
 	{
-		DefaultFOV = Character->GetFollowCamera()->FieldOfView;
+		DefaultFOV = Character->GetTpsCamera()->FieldOfView;
 		CurrentFOV = DefaultFOV;
 	}
 	if (Character->HasAuthority())
@@ -47,6 +48,7 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	if (Character && Character->IsLocallyControlled())
 	{
 		//InterpFov(DeltaTime);
+		InterpTransition(DeltaTime);
 		SetHUDCrosshairs(DeltaTime);
 
 		FHitResult result;
@@ -550,10 +552,76 @@ void UCombatComponent::InterpFov(float _deltaTime)
 		CurrentFOV = FMath::FInterpTo(CurrentFOV, DefaultFOV, _deltaTime, ZoomInterpSpeed);
 	}
 
-	if (Character && Character->GetFollowCamera())
+	if (Character && Character->GetTpsCamera())
 	{
-		Character->GetFollowCamera()->SetFieldOfView(CurrentFOV);
+		Character->GetTpsCamera()->SetFieldOfView(CurrentFOV);
 	}
+}
+void UCombatComponent::InterpTransition(float _deltaTime)
+{
+	// interp 할지 말지 정해야함
+	if (!Character->IsInterpTransition()) return;
+
+	// 타이머 진행
+	TransitionTimeCur += _deltaTime;
+	
+	float alpha = FMath::Clamp(TransitionTimeCur / TransitionTimeMax, 0.f, 1.f);
+
+	// 정보 가져오기
+	UCameraComponent* fpsCam = Character->GetFpsCamera();
+	UCameraComponent* tpsCam = Character->GetTpsCamera();
+	FTransform fpsTransform = fpsCam->GetComponentTransform();
+	FTransform tpsTransform = tpsCam->GetComponentTransform();
+	UCapsuleComponent* parentComponent = Character->GetCapsuleComponent();
+
+	// 완료 조건
+	if (TransitionTimeCur >= TransitionTimeMax - 0.1f)
+	{
+		TransitionTimeCur = 0.f;
+		Character->SetInterpTransition(false);
+
+		if (bIsADS)
+		{
+			// 3인칭 끄고 1인칭 켜고
+			Character->GetFpsCamera()->SetActive(true);
+			Character->GetTpsCamera()->SetActive(false);
+			Character->bUseControllerRotationYaw = true;
+			// 3인칭 원위치
+			tpsCam->SetRelativeTransform(Character->GetTpsRelativeTransform());
+		}
+		else
+		{
+			//1인칭 끄고 3인칭 켜고 1인칭 원위치
+			Character->GetFpsCamera()->SetActive(false);
+			Character->GetTpsCamera()->SetActive(true);
+			Character->bUseControllerRotationYaw = false;
+			fpsCam->SetRelativeTransform(Character->GetFpsRelativeTransform());
+		}
+	}
+
+	// 보간 적용
+	//FVector interpLocation;
+	//FQuat interpRotation;
+	//if (bIsADS)
+	//{
+	//	// 3인칭 -> 1인칭
+	//	interpLocation = FMath::Lerp(tpsTransform.GetLocation(), fpsTransform.GetLocation(), alpha);
+	//	interpRotation = FQuat::Slerp(tpsTransform.GetRotation(), fpsTransform.GetRotation(), alpha);
+	//	// location은 카메라에 rotation은 캡슐에 덧씌우기
+	//	tpsCam->SetWorldLocation(interpLocation);
+	//	//Character->GetController()->SetControlRotation(interpRotation.Rotator());
+	//	parentComponent->SetWorldRotation(interpRotation);
+	//}
+	//else
+	//{
+	//	// 1인칭 -> 3인칭
+	//	interpLocation = FMath::Lerp(fpsTransform.GetLocation(), tpsTransform.GetLocation(), alpha);
+	//	interpRotation = FQuat::Slerp(fpsTransform.GetRotation(), tpsTransform.GetRotation(), alpha);
+	//	// 1인칭 카메라에 world 덧씌우기
+	//	fpsCam->SetWorldLocation(interpLocation);
+	//	fpsCam->SetWorldRotation(interpRotation);
+	//}
+
 }
 void UCombatComponent::SetADS(bool _bIsADS)
 {
@@ -562,19 +630,27 @@ void UCombatComponent::SetADS(bool _bIsADS)
 	bIsADS = _bIsADS;
 	ServerSetADS(_bIsADS);
 	Character->GetCharacterMovement()->MaxWalkSpeed = bIsADS ? ADSMoveSpeed : BaseMoveSpeed;
-	if (bIsADS)
+
+	// 트렌지션 안햇으면
+	if (!Character->IsInterpTransition())
 	{
-		Character->GetADSCamera()->SetActive(true);
-		Character->GetFollowCamera()->SetActive(false);
-		Character->bUseControllerRotationYaw = true;
-	}
-	else
-	{
-		Character->GetADSCamera()->SetActive(false);
-		Character->GetFollowCamera()->SetActive(true);
-		Character->bUseControllerRotationYaw = false;
+		Character->SetInterpTransition(true);
 	}
 
+	//if (bIsADS)
+	//{
+	//	//Character->GetFpsCamera()->SetActive(true);
+	//	//Character->GetTpsCamera()->SetActive(false);
+	//	Character->bUseControllerRotationYaw = true;		
+	//}
+	//else
+	//{
+	//	//Character->GetFpsCamera()->SetActive(false);
+	//	//Character->GetTpsCamera()->SetActive(true);
+	//	Character->bUseControllerRotationYaw = false;
+	//}
+
+	// 스코프 보이기 | 말기
 	if (Character->IsLocallyControlled() && EquippedWeapon->IsUsingScope())
 	{
 		Character->ShowSniperScopeWidget(bIsADS);
@@ -586,16 +662,25 @@ void UCombatComponent::ServerSetADS_Implementation(bool _bIsADS)
 	if (!Character) return;
 	Character->GetCharacterMovement()->MaxWalkSpeed = bIsADS ? ADSMoveSpeed : BaseMoveSpeed;
 
-	if (bIsADS)
+	if (!Character->IsInterpTransition())
 	{
-		Character->GetADSCamera()->SetActive(true);
-		Character->GetFollowCamera()->SetActive(false);
+		Character->SetInterpTransition(true);
+	}
+	
+	// 사실 이건 필요 없을듯
+	/*if (bIsADS)
+	{
+		UCameraComponent* fpsCam = Character->GetFpsCamera();		
+		fpsCam->SetActive(true);
+		
+		UCameraComponent* tpsCam = Character->GetTpsCamera();		
+		tpsCam->SetActive(false);
 	}
 	else
 	{
-		Character->GetADSCamera()->SetActive(false);
-		Character->GetFollowCamera()->SetActive(true);
-	}
+		Character->GetFpsCamera()->SetActive(false);
+		Character->GetTpsCamera()->SetActive(true);
+	}*/
 }
 
 

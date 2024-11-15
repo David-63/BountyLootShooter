@@ -59,19 +59,26 @@ ABountyCharacter::ABountyCharacter()
 	GetCharacterMovement()->MaxWalkSpeedCrouched = 250.f;
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 120.0f; // The camera follows at this distance behind the character	
-	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+	TpsSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("TpsSpringArm"));
+	TpsSpringArm->SetupAttachment(RootComponent);
+	TpsSpringArm->TargetArmLength = 275.0f; // The camera follows at this distance behind the character	
+	TpsSpringArm->SocketOffset = FVector(0.f, 50.f, 50.f);
+	TpsSpringArm->bUsePawnControlRotation = true; // Rotate the arm based on the controller	
+	TpsCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("TpsCamera"));
+	TpsCamera->SetupAttachment(TpsSpringArm, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
+	TpsCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	// Camera setup
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
-	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-	ADSCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ADSCamera"));
-	ADSCamera->SetupAttachment(GetMesh(), FName(TEXT("head"))); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
+	FpsSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("FpsSpringArm"));
+	FpsSpringArm->SetupAttachment(GetMesh(), FName(TEXT("head")));
+	FpsSpringArm->TargetArmLength = 0.0f; // The camera follows at this distance behind the character	
+	FpsSpringArm->SetRelativeLocation(FVector(0.f, 10.f, 0.f));	
 
-
+	FpsSpringArm->SetRelativeRotation(FRotator(0.f, 90.f, -90.f).Quaternion()); //FVector(-90.f, 0.f, 90.f)
+	FpsSpringArm->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+	FpsCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FpsCamera"));
+	FpsCamera->SetupAttachment(FpsSpringArm); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
+	FpsCamera->bAutoActivate = false;
+	//(Pitch = 0.000000, Yaw = 90.000000, Roll = -90.000000)
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
@@ -97,6 +104,9 @@ ABountyCharacter::ABountyCharacter()
 	AttachedGrenade = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Attached Grenade"));
 	AttachedGrenade->SetupAttachment(GetMesh(), FName("HandGrenadeSocket"));
 	AttachedGrenade->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	TpsRelativeTransform = TpsCamera->GetRelativeTransform();
+	FpsRelativeTransform = FpsCamera->GetRelativeTransform();
 }
 void ABountyCharacter::BeginPlay()
 {
@@ -121,7 +131,7 @@ void ABountyCharacter::Tick(float DeltaTime)
 
 	RotateInPlace(DeltaTime);
 
-	HideCharacterMesh();
+	//HideCharacterMesh();
 	PollInit();
 }
 void ABountyCharacter::RotateInPlace(float DeltaTime)
@@ -372,7 +382,7 @@ void ABountyCharacter::HideCharacterMesh()
 {
 	if (!IsLocallyControlled()) return;
 
-	if ((FollowCamera->GetComponentLocation() - GetActorLocation()).Size() < CameraThreshold)
+	if ((TpsCamera->GetComponentLocation() - GetActorLocation()).Size() < CameraThreshold)
 	{
 		GetMesh()->SetVisibility(false);
 		//if (Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
@@ -744,6 +754,7 @@ void ABountyCharacter::InputCrouch()
 void ABountyCharacter::InputADS()
 {
 	if (!Combat) return;
+	if (bInterpTransition) return;
 
 	Combat->bIsADS ? Combat->SetADS(false) : Combat->SetADS(true);
 

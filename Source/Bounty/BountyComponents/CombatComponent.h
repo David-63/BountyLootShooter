@@ -112,7 +112,12 @@ private:
 	UPROPERTY(EditAnywhere, Category = "CrossHair Factor")
 	float ZoomInterpSpeed = 30.f;
 
-	void InterpFov(float _deltaTime);	// aim 상태에 따라 fov 변경해주는 함수
+	void InterpFov(float _deltaTime);
+	void InterpTransition(float _deltaTime);
+	
+	float TransitionTimeCur = 0.f;
+	UPROPERTY(EditAnywhere, Category = "CrossHair Factor")
+	float TransitionTimeMax = 3.f;
 protected:
 	void SetADS(bool _bIsADS);
 	UFUNCTION(Server, Reliable)
