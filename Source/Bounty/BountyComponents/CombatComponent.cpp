@@ -575,52 +575,45 @@ void UCombatComponent::InterpTransition(float _deltaTime)
 	UCapsuleComponent* parentComponent = Character->GetCapsuleComponent();
 
 	// ¿Ï·á Á¶°Ç
-	if (TransitionTimeCur >= TransitionTimeMax - 0.1f)
+	if (TransitionTimeCur >= TransitionTimeMax - (TransitionTimeMax / 1.5f))
 	{
 		TransitionTimeCur = 0.f;
 		Character->SetInterpTransition(false);
 
 		if (bIsADS)
 		{
-			// 3ÀÎÄª ²ô°í 1ÀÎÄª ÄÑ°í
+			tpsCam->SetRelativeTransform(Character->GetTpsRelativeTransform());
 			Character->GetFpsCamera()->SetActive(true);
 			Character->GetTpsCamera()->SetActive(false);
 			Character->bUseControllerRotationYaw = true;
-			// 3ÀÎÄª ¿øÀ§Ä¡
-			tpsCam->SetRelativeTransform(Character->GetTpsRelativeTransform());
 		}
 		else
 		{
-			//1ÀÎÄª ²ô°í 3ÀÎÄª ÄÑ°í 1ÀÎÄª ¿øÀ§Ä¡
+			fpsCam->SetRelativeTransform(Character->GetFpsRelativeTransform());
 			Character->GetFpsCamera()->SetActive(false);
 			Character->GetTpsCamera()->SetActive(true);
 			Character->bUseControllerRotationYaw = false;
-			fpsCam->SetRelativeTransform(Character->GetFpsRelativeTransform());
 		}
+		return;
 	}
 
 	// º¸°£ Àû¿ë
-	//FVector interpLocation;
-	//FQuat interpRotation;
-	//if (bIsADS)
-	//{
-	//	// 3ÀÎÄª -> 1ÀÎÄª
-	//	interpLocation = FMath::Lerp(tpsTransform.GetLocation(), fpsTransform.GetLocation(), alpha);
-	//	interpRotation = FQuat::Slerp(tpsTransform.GetRotation(), fpsTransform.GetRotation(), alpha);
-	//	// locationÀº Ä«¸Þ¶ó¿¡ rotationÀº Ä¸½¶¿¡ µ¡¾º¿ì±â
-	//	tpsCam->SetWorldLocation(interpLocation);
-	//	//Character->GetController()->SetControlRotation(interpRotation.Rotator());
-	//	parentComponent->SetWorldRotation(interpRotation);
-	//}
-	//else
-	//{
-	//	// 1ÀÎÄª -> 3ÀÎÄª
-	//	interpLocation = FMath::Lerp(fpsTransform.GetLocation(), tpsTransform.GetLocation(), alpha);
-	//	interpRotation = FQuat::Slerp(fpsTransform.GetRotation(), tpsTransform.GetRotation(), alpha);
-	//	// 1ÀÎÄª Ä«¸Þ¶ó¿¡ world µ¡¾º¿ì±â
-	//	fpsCam->SetWorldLocation(interpLocation);
-	//	fpsCam->SetWorldRotation(interpRotation);
-	//}
+	FVector interpLocation;
+	FQuat interpRotation;
+	if (bIsADS)
+	{
+		interpLocation = FMath::Lerp(tpsTransform.GetLocation(), fpsTransform.GetLocation(), alpha);
+		interpRotation = FQuat::Slerp(tpsTransform.GetRotation(), fpsTransform.GetRotation(), alpha);		
+		tpsCam->SetWorldLocation(interpLocation);
+		parentComponent->SetWorldRotation(interpRotation);
+	}
+	else
+	{
+		interpLocation = FMath::Lerp(fpsTransform.GetLocation(), tpsTransform.GetLocation(), alpha);
+		interpRotation = FQuat::Slerp(fpsTransform.GetRotation(), tpsTransform.GetRotation(), alpha);
+		fpsCam->SetWorldLocation(interpLocation);
+		fpsCam->SetWorldRotation(interpRotation);
+	}
 
 }
 void UCombatComponent::SetADS(bool _bIsADS)
@@ -636,19 +629,6 @@ void UCombatComponent::SetADS(bool _bIsADS)
 	{
 		Character->SetInterpTransition(true);
 	}
-
-	//if (bIsADS)
-	//{
-	//	//Character->GetFpsCamera()->SetActive(true);
-	//	//Character->GetTpsCamera()->SetActive(false);
-	//	Character->bUseControllerRotationYaw = true;		
-	//}
-	//else
-	//{
-	//	//Character->GetFpsCamera()->SetActive(false);
-	//	//Character->GetTpsCamera()->SetActive(true);
-	//	Character->bUseControllerRotationYaw = false;
-	//}
 
 	// ½ºÄÚÇÁ º¸ÀÌ±â | ¸»±â
 	if (Character->IsLocallyControlled() && EquippedWeapon->IsUsingScope())
@@ -667,20 +647,6 @@ void UCombatComponent::ServerSetADS_Implementation(bool _bIsADS)
 		Character->SetInterpTransition(true);
 	}
 	
-	// »ç½Ç ÀÌ°Ç ÇÊ¿ä ¾øÀ»µí
-	/*if (bIsADS)
-	{
-		UCameraComponent* fpsCam = Character->GetFpsCamera();		
-		fpsCam->SetActive(true);
-		
-		UCameraComponent* tpsCam = Character->GetTpsCamera();		
-		tpsCam->SetActive(false);
-	}
-	else
-	{
-		Character->GetFpsCamera()->SetActive(false);
-		Character->GetTpsCamera()->SetActive(true);
-	}*/
 }
 
 

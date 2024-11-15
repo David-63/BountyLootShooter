@@ -117,7 +117,7 @@ private:
 	
 	float TransitionTimeCur = 0.f;
 	UPROPERTY(EditAnywhere, Category = "CrossHair Factor")
-	float TransitionTimeMax = 3.f;
+	float TransitionTimeMax = 5.f;
 protected:
 	void SetADS(bool _bIsADS);
 	UFUNCTION(Server, Reliable)
