@@ -71,7 +71,7 @@ ABountyCharacter::ABountyCharacter()
 	FpsSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("FpsSpringArm"));
 	FpsSpringArm->SetupAttachment(GetMesh(), FName(TEXT("head")));
 	FpsSpringArm->TargetArmLength = 0.0f; // The camera follows at this distance behind the character	
-	FpsSpringArm->SetRelativeLocation(FVector(0.f, 10.f, 0.f));	
+	FpsSpringArm->SetRelativeLocation(FVector(2.f, 5.f, 0.f));	
 
 	FpsSpringArm->SetRelativeRotation(FRotator(0.f, 90.f, -90.f).Quaternion()); //FVector(-90.f, 0.f, 90.f)
 	FpsSpringArm->bUsePawnControlRotation = true; // Rotate the arm based on the controller

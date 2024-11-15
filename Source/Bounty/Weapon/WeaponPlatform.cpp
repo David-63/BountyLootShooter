@@ -43,6 +43,7 @@ void AWeaponPlatform::FireRound(const FVector& _hitTarget)
 			FireProjectile(beginLocation, _hitTarget, *world);
 		}
 	}
+	EjectCasing();
 }
 
 void AWeaponPlatform::PlayFireEffect(UWorld& _world)
