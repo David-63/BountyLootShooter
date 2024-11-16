@@ -182,8 +182,9 @@ void ABountyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(IA_ADS, ETriggerEvent::Started, this, &ABountyCharacter::InputADS);
 		EnhancedInputComponent->BindAction(IA_Fire, ETriggerEvent::Started, this, &ABountyCharacter::InputFireDown);
 		EnhancedInputComponent->BindAction(IA_Fire, ETriggerEvent::Completed, this, &ABountyCharacter::InputFireRelease);
-		EnhancedInputComponent->BindAction(IA_ReloadNSwap, ETriggerEvent::Triggered, this, &ABountyCharacter::InputReload);
 		EnhancedInputComponent->BindAction(IA_Throw, ETriggerEvent::Triggered, this, &ABountyCharacter::InputThrow);
+		EnhancedInputComponent->BindAction(IA_Reload, ETriggerEvent::Canceled, this, &ABountyCharacter::InputChamberingRound);
+		EnhancedInputComponent->BindAction(IA_Reload, ETriggerEvent::Triggered, this, &ABountyCharacter::InputAmmoInsertion);
 
 	}
 }
@@ -231,6 +232,7 @@ void ABountyCharacter::ServerInputEquip_Implementation()
 		Combat->EquipWeapon(OverlappingWeapon);
 	}
 }
+
 void ABountyCharacter::SetOverlappingWeapon(ABaseWeapon* _weapon)
 {
 	if (OverlappingWeapon)
@@ -524,6 +526,19 @@ void ABountyCharacter::PlayReloadMontage()
 	Super::PlayAnimMontage(ReloadMontage, 1.4f, sessionName);
 }
 
+void ABountyCharacter::PlayAmmoInsertion()
+{
+	if (nullptr == Combat || nullptr == Combat->EquippedWeapon) return;
+	if (!ReloadMontage) return;
+	
+	Super::PlayAnimMontage(ReloadMontage, 1.4f, FName("Rifle"));
+}
+void ABountyCharacter::PlayChamberingRound()
+{
+	if (nullptr == Combat || nullptr == Combat->EquippedWeapon) return;
+	if (!ReloadMontage) return;
+	Super::PlayAnimMontage(ReloadMontage, 1.4f, FName("Chamber"));
+}
 
 // Elim function
 void ABountyCharacter::Elim()
@@ -784,18 +799,28 @@ void ABountyCharacter::Jump()
 	}
 }
 
-void ABountyCharacter::InputReload()
-{
-	if (Combat)
-	{
-		Combat->WeaponReload();
-	}
-}
-
 void ABountyCharacter::InputThrow()
 {
 	if (Combat)
 	{
 		Combat->ThrowGrenade();
+	}
+}
+
+void ABountyCharacter::InputChamberingRound()
+{
+	if (Combat)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("R Tap!"));
+		Combat->WeaponChamberingRound();
+	}
+}
+
+void ABountyCharacter::InputAmmoInsertion()
+{
+	if (Combat)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("R Hold!"));
+		Combat->WeaponAmmoInsertion();
 	}
 }

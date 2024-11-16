@@ -213,7 +213,7 @@ void ABaseWeapon::OnRep_Ammo()
 }
 void ABaseWeapon::SpendRound()
 {
-	AmmoCur = FMath::Clamp(AmmoCur -1, 0, AmmoMax);
+	ChamberingRound();
 	SetHUDCurrentAmmo();
 }
 void ABaseWeapon::SetHUDCurrentAmmo()
@@ -224,7 +224,14 @@ void ABaseWeapon::SetHUDCurrentAmmo()
 		BountyOwnerController = nullptr == BountyOwnerController ? Cast<ABountyPlayerController>(BountyOwnerCharacter->Controller) : BountyOwnerController;
 		if (BountyOwnerController)
 		{
-			BountyOwnerController->SetHUD_CurrentAmmo(AmmoCur);
+			if (Chamber)
+			{
+				BountyOwnerController->SetHUD_CurrentAmmo(AmmoCur + 1);
+			}
+			else
+			{
+				BountyOwnerController->SetHUD_CurrentAmmo(AmmoCur);
+			}			
 		}
 	}
 }
@@ -237,6 +244,24 @@ bool ABaseWeapon::IsAmmoEmpty()
 bool ABaseWeapon::IsAmmoFull()
 {
 	return AmmoCur == AmmoMax;
+}
+
+void ABaseWeapon::ChamberingRound()
+{
+	if (0 != AmmoCur)
+	{
+		Chamber = true;
+	}
+	else
+	{
+		Chamber = false;
+	}
+	UE_LOG(LogTemp, Warning, TEXT("before: %d"), AmmoCur);
+
+	AmmoCur = FMath::Clamp(AmmoCur - 1, 0, AmmoMax);
+	UE_LOG(LogTemp, Warning, TEXT("after: %d"), AmmoCur);
+	SetHUDCurrentAmmo();
+	UE_LOG(LogTemp, Warning, TEXT("Chamber Load!"));
 }
 
 void ABaseWeapon::AddAmmo(int32 _ammoToAdd)

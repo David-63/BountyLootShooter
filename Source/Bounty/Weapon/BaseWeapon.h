@@ -67,18 +67,21 @@ private:
 	int32 AmmoMax = 50;
 	UPROPERTY(EditAnywhere, Category = "BaseWeapon Properties", ReplicatedUsing = OnRep_Ammo)
 	int32 AmmoCur = 50;
+	UPROPERTY(VisibleAnywhere, Category = "BaseWeapon Properties", Replicated)
+	bool Chamber = true;
 	UFUNCTION()
 	void OnRep_Ammo();
-protected:
-	void SpendRound();
 
 public:
+	void SpendRound();
 	void SetHUDCurrentAmmo();
 	void AddAmmo(int32 _ammoToAdd);
 	bool IsAmmoEmpty();
 	bool IsAmmoFull();
 	FORCEINLINE int32 GetAmmo() const { return AmmoCur; }
 	FORCEINLINE int32 GetMagCapacity() const { return AmmoMax; }
+	FORCEINLINE void ChamberingRound();
+	FORCEINLINE bool IsChamberEmpty() const { return !Chamber; };
 
 public:
 	UPROPERTY(EditAnywhere, Category = "Weapon Crosshairs")

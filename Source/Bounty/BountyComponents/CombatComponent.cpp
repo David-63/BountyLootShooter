@@ -287,26 +287,14 @@ void UCombatComponent::PlayEquipWeaponSound()
 }
 void UCombatComponent::ReloadEmptyWeapon()
 {
-	if (EquippedWeapon && EquippedWeapon->IsAmmoEmpty())
+	if (EquippedWeapon && EquippedWeapon->IsChamberEmpty())
 	{
 		WeaponReload();
 	}
 }
 
 
-void UCombatComponent::WeaponReloadFinish()
-{
-	if (!Character) return;
-	if (Character->HasAuthority())
-	{
-		CombatState = ECombatState::ECS_Unoccupied;
-		UpdateMagazineAmmo();
-	}
-	if (bIsAttackDown)
-	{
-		Attack();
-	}
-}
+
 
 void UCombatComponent::OnRep_ExtraAmmo()
 {
@@ -408,6 +396,20 @@ void UCombatComponent::WeaponReload()
 		ServerWeaponReload();
 	}
 }
+void UCombatComponent::WeaponAmmoInsertion()
+{
+	if (0 < ExtraAmmo && ECombatState::ECS_Unoccupied == CombatState)
+	{
+		ServerAmmoInsertion();
+	}
+}
+void UCombatComponent::WeaponChamberingRound()
+{
+	if (0 < ExtraAmmo && ECombatState::ECS_Unoccupied == CombatState)
+	{
+		ServerChamberingRound();
+	}
+}
 void UCombatComponent::ServerWeaponReload_Implementation()
 {
 	if (!Character || !EquippedWeapon) return;
@@ -415,17 +417,59 @@ void UCombatComponent::ServerWeaponReload_Implementation()
 	CombatState = ECombatState::ECS_Reloading;
 	HandleReload();
 }
+void UCombatComponent::ServerAmmoInsertion_Implementation()
+{
+	if (!Character || !EquippedWeapon) return;
+
+	CombatState = ECombatState::ECS_Reloading;
+	Character->PlayAmmoInsertion();
+}
+void UCombatComponent::ServerChamberingRound_Implementation()
+{
+	if (!Character || !EquippedWeapon) return;
+
+	CombatState = ECombatState::ECS_Reloading;
+	Character->PlayChamberingRound();
+}
+
 void UCombatComponent::HandleReload()
 {
 	Character->PlayReloadMontage();
 }
 
+void UCombatComponent::WeaponReloadFinish()
+{
+	if (!Character) return;
+	if (Character->HasAuthority())
+	{
+		CombatState = ECombatState::ECS_Unoccupied;
+		UpdateMagazineAmmo();
+	}
+	if (bIsAttackDown)
+	{
+		Attack();
+	}
+}
 
 void UCombatComponent::ReloadSingleRound()
 {
 	if (Character && Character->HasAuthority())
 	{
 		UpdateSingleRoundAmmo();
+	}
+}
+
+void UCombatComponent::ChamberingRound()
+{
+	if (!Character) return;
+	if (Character->HasAuthority())
+	{
+		CombatState = ECombatState::ECS_Unoccupied;
+		Character->GetEquippedWeapon()->ChamberingRound();
+	}
+	if (bIsAttackDown)
+	{
+		Attack();
 	}
 }
 
@@ -711,7 +755,7 @@ void UCombatComponent::FireTimerFinished()
 bool UCombatComponent::CanFire()
 {
 	if (!EquippedWeapon) return false;
-	if (!EquippedWeapon->IsAmmoEmpty() && bCanAttack && ECombatState::ECS_Reloading == CombatState
+	if (!EquippedWeapon->IsChamberEmpty() && bCanAttack && ECombatState::ECS_Reloading == CombatState
 		&& EWeaponType::EWT_ScatterGun == EquippedWeapon->GetWeaponType()) return true;
-	return !EquippedWeapon->IsAmmoEmpty() && bCanAttack && ECombatState::ECS_Unoccupied == CombatState;
+	return !EquippedWeapon->IsChamberEmpty() && bCanAttack && ECombatState::ECS_Unoccupied == CombatState;
 }

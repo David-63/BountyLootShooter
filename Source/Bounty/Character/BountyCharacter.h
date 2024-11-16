@@ -87,6 +87,8 @@ protected:
 public:
 	void PlayFireMontage(bool _bADS);
 	void PlayReloadMontage();
+	void PlayAmmoInsertion();
+	void PlayChamberingRound();
 	void SetOverlappingWeapon(ABaseWeapon* _weapon);
 	void PlayThrowMontage();
 
@@ -122,7 +124,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction", meta = (AllowPrivateAccess = "true"))
 	UInputAction* IA_Sprint;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction", meta = (AllowPrivateAccess = "true"))
-	UInputAction* IA_ReloadNSwap;
+	UInputAction* IA_Reload;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputAction", meta = (AllowPrivateAccess = "true"))
 	UInputAction* IA_Throw;
 protected:
@@ -134,8 +136,9 @@ protected:
 	void InputFireDown(const FInputActionValue& Value);
 	void InputFireRelease(const FInputActionValue& Value);
 	virtual void Jump() override;
-	void InputReload();
 	void InputThrow();
+	void InputChamberingRound();
+	void InputAmmoInsertion();
 
 
 
