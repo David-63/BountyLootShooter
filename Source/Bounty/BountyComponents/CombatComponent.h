@@ -188,31 +188,22 @@ private:
 	void OnRep_ExtraAmmo();
 
 	void UpdateMagazineAmmo();
-	void UpdateSingleRoundAmmo();
 
 protected:
-
-	UFUNCTION(Server, Reliable)
-	void ServerWeaponReload();
 	UFUNCTION(Server, Reliable)
 	void ServerAmmoInsertion();
 	UFUNCTION(Server, Reliable)
 	void ServerChamberingRound();
 
-	void HandleReload();
 	int32 AmountToReload();
 
 public:
-	void WeaponReload();
 	void WeaponAmmoInsertion();
 	void WeaponChamberingRound();
 	UFUNCTION(BlueprintCallable)
 	void WeaponReloadFinish();
 	UFUNCTION(BlueprintCallable)
-	void ReloadSingleRound();
-	UFUNCTION(BlueprintCallable)
 	void ChamberingRound();
-	void JumpToShotGunEnd();
 
 	/*
 	* throw grenade

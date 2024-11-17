@@ -205,10 +205,6 @@ void ABaseWeapon::OnRep_Owner()
 void ABaseWeapon::OnRep_Ammo()
 {
 	BountyOwnerCharacter = nullptr == BountyOwnerCharacter ? Cast<ABountyCharacter>(GetOwner()) : BountyOwnerCharacter;
-	if (BountyOwnerCharacter && BountyOwnerCharacter->GetCombat() && IsAmmoFull())
-	{
-		BountyOwnerCharacter->GetCombat()->JumpToShotGunEnd();
-	}
 	SetHUDCurrentAmmo();
 }
 void ABaseWeapon::SpendRound()
@@ -256,12 +252,8 @@ void ABaseWeapon::ChamberingRound()
 	{
 		Chamber = false;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("before: %d"), AmmoCur);
-
 	AmmoCur = FMath::Clamp(AmmoCur - 1, 0, AmmoMax);
-	UE_LOG(LogTemp, Warning, TEXT("after: %d"), AmmoCur);
 	SetHUDCurrentAmmo();
-	UE_LOG(LogTemp, Warning, TEXT("Chamber Load!"));
 }
 
 void ABaseWeapon::AddAmmo(int32 _ammoToAdd)

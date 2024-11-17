@@ -86,7 +86,6 @@ protected:
 
 public:
 	void PlayFireMontage(bool _bADS);
-	void PlayReloadMontage();
 	void PlayAmmoInsertion();
 	void PlayChamberingRound();
 	void SetOverlappingWeapon(ABaseWeapon* _weapon);

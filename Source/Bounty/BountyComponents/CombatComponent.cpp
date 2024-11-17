@@ -196,7 +196,7 @@ void UCombatComponent::OnRep_CombatState()
 		}
 		break;
 	case ECombatState::ECS_Reloading:
-		HandleReload();
+		WeaponAmmoInsertion();
 		break;
 	case ECombatState::ECS_Throwing:
 		if (Character && !Character->IsLocallyControlled())
@@ -289,7 +289,14 @@ void UCombatComponent::ReloadEmptyWeapon()
 {
 	if (EquippedWeapon && EquippedWeapon->IsChamberEmpty())
 	{
-		WeaponReload();
+		if (EquippedWeapon->IsAmmoEmpty())
+		{
+			WeaponAmmoInsertion();
+		}
+		else
+		{
+			WeaponChamberingRound();
+		}
 	}
 }
 
@@ -302,12 +309,6 @@ void UCombatComponent::OnRep_ExtraAmmo()
 	if (PlayerController)
 	{
 		PlayerController->SetHUD_ExtraAmmo(ExtraAmmo);
-	}
-	bool bJumpToShotGunEnd = ECombatState::ECS_Reloading == CombatState && !EquippedWeapon &&
-		!EquippedWeapon->IsUsingMagazine() && 0 == ExtraAmmo;
-	if (bJumpToShotGunEnd)
-	{
-		JumpToShotGunEnd();
 	}
 }
 void UCombatComponent::InitializeExtraAmmo()
@@ -349,29 +350,15 @@ void UCombatComponent::UpdateMagazineAmmo()
 		PlayerController->SetHUD_ExtraAmmo(ExtraAmmo);
 	}
 	
-	EquippedWeapon->AddAmmo(EquippedWeapon->GetMagCapacity());
-	
-}
-void UCombatComponent::UpdateSingleRoundAmmo()
-{
-	if (!Character || !EquippedWeapon) return;
-
-	if (ExtraAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+	if (EquippedWeapon->IsUsingMagazine())
 	{
-		ExtraAmmoMap[EquippedWeapon->GetWeaponType()] -= 1;
-		ExtraAmmo = ExtraAmmoMap[EquippedWeapon->GetWeaponType()];
+		EquippedWeapon->AddAmmo(EquippedWeapon->GetMagCapacity());
 	}
-	PlayerController = nullptr == PlayerController ? Cast<ABountyPlayerController>(Character->Controller) : PlayerController;
-	if (PlayerController)
+	else
 	{
-		PlayerController->SetHUD_ExtraAmmo(ExtraAmmo);
+		EquippedWeapon->AddAmmo(1);
 	}
-	EquippedWeapon->AddAmmo(1);
-	bCanAttack = true;
-	if (EquippedWeapon->IsAmmoFull() || 0 == ExtraAmmo)
-	{
-		JumpToShotGunEnd();
-	}
+	bCanAttack = true;	
 }
 
 int32 UCombatComponent::AmountToReload()
@@ -389,13 +376,6 @@ int32 UCombatComponent::AmountToReload()
 	return 0;
 }
 
-void UCombatComponent::WeaponReload()
-{
-	if (0 < ExtraAmmo && ECombatState::ECS_Unoccupied == CombatState)
-	{
-		ServerWeaponReload();
-	}
-}
 void UCombatComponent::WeaponAmmoInsertion()
 {
 	if (0 < ExtraAmmo && ECombatState::ECS_Unoccupied == CombatState)
@@ -409,13 +389,6 @@ void UCombatComponent::WeaponChamberingRound()
 	{
 		ServerChamberingRound();
 	}
-}
-void UCombatComponent::ServerWeaponReload_Implementation()
-{
-	if (!Character || !EquippedWeapon) return;
-
-	CombatState = ECombatState::ECS_Reloading;
-	HandleReload();
 }
 void UCombatComponent::ServerAmmoInsertion_Implementation()
 {
@@ -432,11 +405,6 @@ void UCombatComponent::ServerChamberingRound_Implementation()
 	Character->PlayChamberingRound();
 }
 
-void UCombatComponent::HandleReload()
-{
-	Character->PlayReloadMontage();
-}
-
 void UCombatComponent::WeaponReloadFinish()
 {
 	if (!Character) return;
@@ -451,14 +419,6 @@ void UCombatComponent::WeaponReloadFinish()
 	}
 }
 
-void UCombatComponent::ReloadSingleRound()
-{
-	if (Character && Character->HasAuthority())
-	{
-		UpdateSingleRoundAmmo();
-	}
-}
-
 void UCombatComponent::ChamberingRound()
 {
 	if (!Character) return;
@@ -470,15 +430,6 @@ void UCombatComponent::ChamberingRound()
 	if (bIsAttackDown)
 	{
 		Attack();
-	}
-}
-
-void UCombatComponent::JumpToShotGunEnd()
-{
-	UAnimMontage* animMontage = Character->GetReloadMontage();
-	if (animMontage)
-	{
-		Character->PlayAnimMontage(animMontage, 1.f, FName("ShotGunEnd"));
 	}
 }
 
@@ -713,6 +664,10 @@ void UCombatComponent::Attack()
 		ServerAttack(HitTarget);
 		CrosshairAttackingFactor = SpreadMOA;
 		StartFireTimer();
+	}
+	else
+	{
+		ReloadEmptyWeapon();
 	}
 }
 void UCombatComponent::ServerAttack_Implementation(const FVector_NetQuantize& _traceHitTarget)

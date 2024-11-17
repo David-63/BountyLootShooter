@@ -183,8 +183,8 @@ void ABountyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(IA_Fire, ETriggerEvent::Started, this, &ABountyCharacter::InputFireDown);
 		EnhancedInputComponent->BindAction(IA_Fire, ETriggerEvent::Completed, this, &ABountyCharacter::InputFireRelease);
 		EnhancedInputComponent->BindAction(IA_Throw, ETriggerEvent::Triggered, this, &ABountyCharacter::InputThrow);
-		EnhancedInputComponent->BindAction(IA_Reload, ETriggerEvent::Canceled, this, &ABountyCharacter::InputChamberingRound);
-		EnhancedInputComponent->BindAction(IA_Reload, ETriggerEvent::Triggered, this, &ABountyCharacter::InputAmmoInsertion);
+		EnhancedInputComponent->BindAction(IA_Reload, ETriggerEvent::Canceled, this, &ABountyCharacter::InputAmmoInsertion);
+		EnhancedInputComponent->BindAction(IA_Reload, ETriggerEvent::Triggered, this, &ABountyCharacter::InputChamberingRound);
 
 	}
 }
@@ -492,46 +492,35 @@ void ABountyCharacter::PlayFireMontage(bool _bADS)
 	}
 }
 
-void ABountyCharacter::PlayReloadMontage()
+void ABountyCharacter::PlayAmmoInsertion()
 {
 	if (nullptr == Combat || nullptr == Combat->EquippedWeapon) return;
-
 	if (!ReloadMontage) return;
 	FName sessionName;
+
 	if (Combat->EquippedWeapon->IsUsingMagazine())
 	{
 		switch (Combat->EquippedWeapon->GetWeaponType())
 		{
 		case EWeaponType::EWT_AssaultRifle:
-		case EWeaponType::EWT_SubmachineGun:
 		case EWeaponType::EWT_RocketLauncher:
 		case EWeaponType::EWT_GrenadeLauncher:
 		case EWeaponType::EWT_ScatterGun:
-			sessionName = FName("Rifle");
+		case EWeaponType::EWT_MarksmanRifle:
+			sessionName = FName("LongGunMagChange");
 			break;
 		case EWeaponType::EWT_Pistol:
-			sessionName = FName("Pistol");
-			break;
-		case EWeaponType::EWT_MarksmanRifle:
-			sessionName = FName("SniperRifle");
+		case EWeaponType::EWT_SubmachineGun:
+			sessionName = FName("ShortGunMagChange");
 			break;
 		}
 	}
 	else
 	{
-		sessionName = FName("ShotGun");
+		sessionName = FName("ReloadShell");
 	}
-
-
-	Super::PlayAnimMontage(ReloadMontage, 1.4f, sessionName);
-}
-
-void ABountyCharacter::PlayAmmoInsertion()
-{
-	if (nullptr == Combat || nullptr == Combat->EquippedWeapon) return;
-	if (!ReloadMontage) return;
 	
-	Super::PlayAnimMontage(ReloadMontage, 1.4f, FName("Rifle"));
+	Super::PlayAnimMontage(ReloadMontage, 1.4f, sessionName);
 }
 void ABountyCharacter::PlayChamberingRound()
 {
@@ -811,7 +800,6 @@ void ABountyCharacter::InputChamberingRound()
 {
 	if (Combat)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("R Tap!"));
 		Combat->WeaponChamberingRound();
 	}
 }
@@ -820,7 +808,6 @@ void ABountyCharacter::InputAmmoInsertion()
 {
 	if (Combat)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("R Hold!"));
 		Combat->WeaponAmmoInsertion();
 	}
 }
