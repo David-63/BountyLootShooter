@@ -196,12 +196,12 @@ protected:
 	void ServerChamberingRound();
 
 	int32 AmountToReload();
-
 public:
 	void WeaponAmmoInsertion();
 	void WeaponChamberingRound();
+public:
 	UFUNCTION(BlueprintCallable)
-	void WeaponReloadFinish();
+	void AmmoInsertion();
 	UFUNCTION(BlueprintCallable)
 	void ChamberingRound();
 

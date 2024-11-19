@@ -44,6 +44,13 @@ void AWeaponPlatform::FireRound(const FVector& _hitTarget)
 		}
 	}
 	EjectCasing();
+	
+	UE_LOG(LogTemp, Warning, TEXT("Ammo Cur : %d"), GetAmmo());
+	if (IsChamberEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("chamber Empty"));
+	}	
+	
 }
 
 void AWeaponPlatform::PlayFireEffect(UWorld& _world)

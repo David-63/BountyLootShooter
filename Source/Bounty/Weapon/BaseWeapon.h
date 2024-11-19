@@ -110,8 +110,6 @@ public:
 	FORCEINLINE virtual bool IsUsingHitScan() const { return false; }
 	FORCEINLINE virtual bool IsUsingMagazine() const { return true; }
 
-	virtual void Fire(const FVector& _hitTarget) { }
-
 	void EnableCustomDepth(bool _bEnable);
 
 

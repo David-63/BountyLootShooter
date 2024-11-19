@@ -287,17 +287,26 @@ void UCombatComponent::PlayEquipWeaponSound()
 }
 void UCombatComponent::ReloadEmptyWeapon()
 {
-	if (EquippedWeapon && EquippedWeapon->IsChamberEmpty())
+	if (!EquippedWeapon) return;
+
+	// 약실이 비여있음
+	if (EquippedWeapon->IsChamberEmpty())
 	{
+		if (0 >= ExtraAmmo) return;
+		
+		
+		// 1. 탄약을 전부 사용해서 탄창 교체
 		if (EquippedWeapon->IsAmmoEmpty())
 		{
 			WeaponAmmoInsertion();
 		}
+		// 2. 탄창을 교체한 경우 노리쇠 이동
 		else
-		{
+		{			
+			UE_LOG(LogTemp, Warning, TEXT("ammo is not empty"));
 			WeaponChamberingRound();
-		}
-	}
+		}		
+	}	
 }
 
 
@@ -405,7 +414,7 @@ void UCombatComponent::ServerChamberingRound_Implementation()
 	Character->PlayChamberingRound();
 }
 
-void UCombatComponent::WeaponReloadFinish()
+void UCombatComponent::AmmoInsertion()
 {
 	if (!Character) return;
 	if (Character->HasAuthority())
@@ -424,8 +433,8 @@ void UCombatComponent::ChamberingRound()
 	if (!Character) return;
 	if (Character->HasAuthority())
 	{
-		CombatState = ECombatState::ECS_Unoccupied;
-		Character->GetEquippedWeapon()->ChamberingRound();
+		CombatState = ECombatState::ECS_Unoccupied;		
+		EquippedWeapon->ChamberingRound();
 	}
 	if (bIsAttackDown)
 	{
@@ -600,7 +609,13 @@ void UCombatComponent::InterpTransition(float _deltaTime)
 		interpLocation = FMath::Lerp(tpsTransform.GetLocation(), fpsTransform.GetLocation(), alpha);
 		interpRotation = FQuat::Slerp(tpsTransform.GetRotation(), fpsTransform.GetRotation(), alpha);		
 		tpsCam->SetWorldLocation(interpLocation);
-		parentComponent->SetWorldRotation(interpRotation);
+
+		// FQuat을 FRotator로 변환 
+		FRotator interpRotator = interpRotation.Rotator(); // pitch 값을 0으로 설정 
+		interpRotator.Pitch = 0.0f; // 수정된 FRotator를 다시 FQuat으로 변환 
+		interpRotation = interpRotator.Quaternion();
+		Character->SetActorRotation(interpRotation);
+		//parentComponent->SetWorldRotation(interpRotation);
 	}
 	else
 	{
@@ -705,7 +720,6 @@ void UCombatComponent::FireTimerFinished()
 	{
 		Attack();
 	}
-	ReloadEmptyWeapon();
 }
 bool UCombatComponent::CanFire()
 {
