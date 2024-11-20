@@ -66,7 +66,29 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(UCombatComponent, CombatState);
 	DOREPLIFETIME(UCombatComponent, GrenadeCur);	
 }
-
+void UCombatComponent::OnRep_CombatState()
+{
+	switch (CombatState)
+	{
+	case ECombatState::ECS_Unoccupied:
+		if (bIsAttackDown)
+		{
+			Attack();
+		}
+		break;
+	case ECombatState::ECS_Reloading:
+		WeaponAmmoInsertion();
+		break;
+	case ECombatState::ECS_Throwing:
+		if (Character && !Character->IsLocallyControlled())
+		{
+			ShowAttachedGrenade(true);
+			Character->PlayThrowMontage();
+			AttachActorToHand(EquippedWeapon, FName("LeftHandSocket"));
+		}
+		break;
+	}
+}
 
 void UCombatComponent::TraceUnderCrosshairs(FHitResult& _traceHitResult)
 {
@@ -184,30 +206,124 @@ void UCombatComponent::SetHUDCrosshairs(float _deltaTime)
 	HUD->SetCrosshairPackage(CrosshairPackage, Character->GetInertiaValue() * InertiaMagnitude);
 }
 
-
-void UCombatComponent::OnRep_CombatState()
+void UCombatComponent::InterpFov(float _deltaTime)
 {
-	switch (CombatState)
+	if (!EquippedWeapon) return;
+
+	if (bIsADS)
 	{
-	case ECombatState::ECS_Unoccupied:
-		if (bIsAttackDown)
-		{
-			Attack();
-		}
-		break;
-	case ECombatState::ECS_Reloading:
-		WeaponAmmoInsertion();
-		break;
-	case ECombatState::ECS_Throwing:
-		if (Character && !Character->IsLocallyControlled())
-		{
-			ShowAttachedGrenade(true);
-			Character->PlayThrowMontage();
-			AttachActorToHand(EquippedWeapon, FName("LeftHandSocket"));
-		}
-		break;
+		CurrentFOV = FMath::FInterpTo(CurrentFOV, EquippedWeapon->GetAdsFov(), _deltaTime, EquippedWeapon->GetAdsInterpSpeed());
+	}
+	else
+	{
+		CurrentFOV = FMath::FInterpTo(CurrentFOV, DefaultFOV, _deltaTime, ZoomInterpSpeed);
+	}
+
+	if (Character && Character->GetTpsCamera())
+	{
+		Character->GetTpsCamera()->SetFieldOfView(CurrentFOV);
 	}
 }
+void UCombatComponent::InterpTransition(float _deltaTime)
+{
+	// interp 할지 말지 정해야함
+	if (!Character->IsInterpTransition()) return;
+
+	// 타이머 진행
+	TransitionTimeCur += _deltaTime;
+
+	float alpha = FMath::Clamp(TransitionTimeCur / TransitionTimeMax, 0.f, 1.f);
+
+	// 정보 가져오기
+	UCameraComponent* fpsCam = Character->GetFpsCamera();
+	UCameraComponent* tpsCam = Character->GetTpsCamera();
+	FTransform fpsTransform = fpsCam->GetComponentTransform();
+	FTransform tpsTransform = tpsCam->GetComponentTransform();
+	UCapsuleComponent* parentComponent = Character->GetCapsuleComponent();
+
+	// 완료 조건
+	if (TransitionTimeCur >= TransitionTimeMax - (TransitionTimeMax / 1.5f))
+	{
+		TransitionTimeCur = 0.f;
+		Character->SetInterpTransition(false);
+
+		if (bIsADS)
+		{
+			tpsCam->SetRelativeTransform(Character->GetTpsRelativeTransform());
+			Character->GetFpsCamera()->SetActive(true);
+			Character->GetTpsCamera()->SetActive(false);
+			Character->bUseControllerRotationYaw = true;
+		}
+		else
+		{
+			fpsCam->SetRelativeTransform(Character->GetFpsRelativeTransform());
+			Character->GetFpsCamera()->SetActive(false);
+			Character->GetTpsCamera()->SetActive(true);
+			Character->bUseControllerRotationYaw = false;
+		}
+		return;
+	}
+
+	// 보간 적용
+	FVector interpLocation;
+	FQuat interpRotation;
+	if (bIsADS)
+	{
+		interpLocation = FMath::Lerp(tpsTransform.GetLocation(), fpsTransform.GetLocation(), alpha);
+		interpRotation = FQuat::Slerp(tpsTransform.GetRotation(), fpsTransform.GetRotation(), alpha);
+		tpsCam->SetWorldLocation(interpLocation);
+
+		// FQuat을 FRotator로 변환 
+		FRotator interpRotator = interpRotation.Rotator(); // pitch 값을 0으로 설정 
+		interpRotator.Pitch = 0.0f; // 수정된 FRotator를 다시 FQuat으로 변환 
+		interpRotation = interpRotator.Quaternion();
+		Character->SetActorRotation(interpRotation);
+		//parentComponent->SetWorldRotation(interpRotation);
+	}
+	else
+	{
+		interpLocation = FMath::Lerp(fpsTransform.GetLocation(), tpsTransform.GetLocation(), alpha);
+		interpRotation = FQuat::Slerp(fpsTransform.GetRotation(), tpsTransform.GetRotation(), alpha);
+		fpsCam->SetWorldLocation(interpLocation);
+		fpsCam->SetWorldRotation(interpRotation);
+	}
+
+}
+void UCombatComponent::SetADS(bool _bIsADS)
+{
+	if (nullptr == Character || nullptr == EquippedWeapon) return;
+
+	bIsADS = _bIsADS;
+	ServerSetADS(_bIsADS);
+	Character->GetCharacterMovement()->MaxWalkSpeed = bIsADS ? ADSMoveSpeed : BaseMoveSpeed;
+
+	// 트렌지션 안햇으면
+	if (!Character->IsInterpTransition())
+	{
+		Character->SetInterpTransition(true);
+	}
+
+	// 스코프 보이기 | 말기
+	if (Character->IsLocallyControlled() && EquippedWeapon->IsUsingScope())
+	{
+		Character->ShowSniperScopeWidget(bIsADS);
+	}
+}
+void UCombatComponent::ServerSetADS_Implementation(bool _bIsADS)
+{
+	bIsADS = _bIsADS;
+	if (!Character) return;
+	Character->GetCharacterMovement()->MaxWalkSpeed = bIsADS ? ADSMoveSpeed : BaseMoveSpeed;
+
+	if (!Character->IsInterpTransition())
+	{
+		Character->SetInterpTransition(true);
+	}
+
+}
+
+
+
 
 void UCombatComponent::EquipWeapon(ABaseWeapon* _weaponToEquip)
 {
@@ -226,12 +342,11 @@ void UCombatComponent::EquipWeapon(ABaseWeapon* _weaponToEquip)
 
 	UpdateExtraAmmo();
 	PlayEquipWeaponSound();
-	ReloadEmptyWeapon();
+	WeaponAutoReload();
 
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
 }
-
 void UCombatComponent::OnRep_EquipWeapon()
 {
 	if (EquippedWeapon && Character)
@@ -252,6 +367,16 @@ void UCombatComponent::DropEquippedWeapon()
 		EquippedWeapon->Dropped();
 	}
 }
+void UCombatComponent::PlayEquipWeaponSound()
+{
+	if (Character && EquippedWeapon && EquippedWeapon->GetEquipSound())
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->GetEquipSound(), Character->GetActorLocation());
+	}
+}
+
+
+
 void UCombatComponent::AttachActorToHand(AActor* _actorToAttach, FName _socket)
 {
 	if (!Character || !Character->GetMesh() || !_actorToAttach) return;
@@ -263,6 +388,77 @@ void UCombatComponent::AttachActorToHand(AActor* _actorToAttach, FName _socket)
 	}
 
 }
+
+
+/* 
+* call by Character
+*/
+void UCombatComponent::InputAttack(bool _presseed)
+{
+	bIsAttackDown = _presseed;
+
+	if (!bIsAttackDown) return;
+
+	Attack();
+
+}
+
+void UCombatComponent::Attack()
+{
+	if (!EquippedWeapon) return;
+	if (CanFire())
+	{
+		bCanAttack = false;
+		ServerAttack(HitTarget);
+		CrosshairAttackingFactor = SpreadMOA;
+		StartFireTimer();
+	}
+	else
+	{
+		WeaponAutoReload();
+	}
+}
+void UCombatComponent::ServerAttack_Implementation(const FVector_NetQuantize& _traceHitTarget)
+{
+	MulticastAttack(_traceHitTarget);
+}
+void UCombatComponent::MulticastAttack_Implementation(const FVector_NetQuantize& _traceHitTarget)
+{
+	if (!Character) return;
+	if (!EquippedWeapon) return;
+	if (ECombatState::ECS_Reloading == CombatState && EWeaponType::EWT_ScatterGun == EquippedWeapon->GetWeaponType())
+	{
+		Character->PlayFireMontage(bIsADS);
+		EquippedWeapon->FireRound(_traceHitTarget);
+		CombatState = ECombatState::ECS_Unoccupied;
+		return;
+	}
+	if (ECombatState::ECS_Unoccupied == CombatState)
+	{
+		Character->PlayFireMontage(bIsADS);
+		EquippedWeapon->FireRound(_traceHitTarget);
+	}
+}
+
+void UCombatComponent::StartFireTimer()
+{
+	if (!EquippedWeapon || !Character) return;
+
+	Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, EquippedWeapon->GetFireRate());
+}
+void UCombatComponent::FireTimerFinished()
+{
+	bCanAttack = true;
+	if (bIsAttackDown && EquippedWeapon->IsUsingAutoFire())
+	{
+		Attack();
+	}
+}
+
+
+
+
+
 void UCombatComponent::UpdateExtraAmmo()
 {
 	if (!EquippedWeapon) return;
@@ -278,35 +474,25 @@ void UCombatComponent::UpdateExtraAmmo()
 		PlayerController->SetHUD_ExtraAmmo(ExtraAmmo);
 	}
 }
-void UCombatComponent::PlayEquipWeaponSound()
-{
-	if (Character && EquippedWeapon && EquippedWeapon->GetEquipSound())
-	{
-		UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->GetEquipSound(), Character->GetActorLocation());
-	}
-}
-void UCombatComponent::ReloadEmptyWeapon()
+
+void UCombatComponent::WeaponAutoReload()
 {
 	if (!EquippedWeapon) return;
 
-	// 약실이 비여있음
-	if (EquippedWeapon->IsChamberEmpty())
+
+	// 약실 장전 조건
+	if (!EquippedWeapon->IsAmmoEmpty())
 	{
-		if (0 >= ExtraAmmo) return;
-		
-		
-		// 1. 탄약을 전부 사용해서 탄창 교체
-		if (EquippedWeapon->IsAmmoEmpty())
+		if (EquippedWeapon->IsChamberEmpty())
 		{
-			WeaponAmmoInsertion();
-		}
-		// 2. 탄창을 교체한 경우 노리쇠 이동
-		else
-		{			
-			UE_LOG(LogTemp, Warning, TEXT("ammo is not empty"));
 			WeaponChamberingRound();
-		}		
-	}	
+		}
+	}
+	// 탄창 교체 조건
+	else if (0 < ExtraAmmo)
+	{
+		WeaponAmmoInsertion();
+	}
 }
 
 
@@ -348,17 +534,20 @@ void UCombatComponent::UpdateMagazineAmmo()
 	}
 	EquippedWeapon->AddAmmo(reloadAmount);*/
 
+	// 여분 탄 까고
 	if (ExtraAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
 	{
 		ExtraAmmoMap[EquippedWeapon->GetWeaponType()] -= 1;
 		ExtraAmmo = ExtraAmmoMap[EquippedWeapon->GetWeaponType()];
 	}
+	// 화면에 출력
 	PlayerController = nullptr == PlayerController ? Cast<ABountyPlayerController>(Character->Controller) : PlayerController;
 	if (PlayerController)
 	{
 		PlayerController->SetHUD_ExtraAmmo(ExtraAmmo);
 	}
 	
+	// 재장전
 	if (EquippedWeapon->IsUsingMagazine())
 	{
 		EquippedWeapon->AddAmmo(EquippedWeapon->GetMagCapacity());
@@ -367,7 +556,7 @@ void UCombatComponent::UpdateMagazineAmmo()
 	{
 		EquippedWeapon->AddAmmo(1);
 	}
-	bCanAttack = true;	
+	bCanAttack = true;
 }
 
 int32 UCombatComponent::AmountToReload()
@@ -387,14 +576,20 @@ int32 UCombatComponent::AmountToReload()
 
 void UCombatComponent::WeaponAmmoInsertion()
 {
-	if (0 < ExtraAmmo && ECombatState::ECS_Unoccupied == CombatState)
+	if (0 >= ExtraAmmo || ECombatState::ECS_Unoccupied != CombatState) return;
+
+	if (EquippedWeapon->IsUsingMagazine())
 	{
 		ServerAmmoInsertion();
 	}
+	else if (!EquippedWeapon->IsAmmoFull())
+	{
+		ServerAmmoInsertion();
+	}	
 }
 void UCombatComponent::WeaponChamberingRound()
 {
-	if (0 < ExtraAmmo && ECombatState::ECS_Unoccupied == CombatState)
+	if (ECombatState::ECS_Unoccupied == CombatState)
 	{
 		ServerChamberingRound();
 	}
@@ -426,6 +621,11 @@ void UCombatComponent::AmmoInsertion()
 	{
 		Attack();
 	}
+	UE_LOG(LogTemp, Warning, TEXT("Ammo Cur : %d"), EquippedWeapon->GetAmmo());
+	if (EquippedWeapon->IsChamberEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("chamber Empty"));
+	}
 }
 
 void UCombatComponent::ChamberingRound()
@@ -441,6 +641,24 @@ void UCombatComponent::ChamberingRound()
 		Attack();
 	}
 }
+
+bool UCombatComponent::CanFire()
+{
+	if (!EquippedWeapon) return false;
+
+
+	const bool bChamberNotEmpty = !EquippedWeapon->IsChamberEmpty();
+	const bool bWeaponReady = bCanAttack && bChamberNotEmpty;
+
+	if (!EquippedWeapon->IsUsingMagazine())
+	{
+		return bWeaponReady;
+	}
+	return bWeaponReady && (CombatState == ECombatState::ECS_Unoccupied);
+}
+
+
+
 
 void UCombatComponent::ThrowGrenade()
 {
@@ -504,7 +722,7 @@ void UCombatComponent::LaunchGrenade()
 
 void UCombatComponent::ServerLaunchGrenade_Implementation(const FVector_NetQuantize& _target)
 {
-	if (Character && GrenadeClass &&Character->GetAttachedGrenade())
+	if (Character && GrenadeClass && Character->GetAttachedGrenade())
 	{
 		const FVector startingLocation = Character->GetAttachedGrenade()->GetComponentLocation();
 		FVector toTarget = _target - startingLocation;
@@ -540,191 +758,4 @@ void UCombatComponent::UpdateHUDGrenades()
 	{
 		PlayerController->SetHUD_GrenadeCount(GrenadeCur);
 	}
-}
-
-
-void UCombatComponent::InterpFov(float _deltaTime)
-{
-	if (!EquippedWeapon) return;
-
-	if (bIsADS)
-	{
-		CurrentFOV = FMath::FInterpTo(CurrentFOV, EquippedWeapon->GetAdsFov(), _deltaTime, EquippedWeapon->GetAdsInterpSpeed());
-	}
-	else
-	{
-		CurrentFOV = FMath::FInterpTo(CurrentFOV, DefaultFOV, _deltaTime, ZoomInterpSpeed);
-	}
-
-	if (Character && Character->GetTpsCamera())
-	{
-		Character->GetTpsCamera()->SetFieldOfView(CurrentFOV);
-	}
-}
-void UCombatComponent::InterpTransition(float _deltaTime)
-{
-	// interp 할지 말지 정해야함
-	if (!Character->IsInterpTransition()) return;
-
-	// 타이머 진행
-	TransitionTimeCur += _deltaTime;
-	
-	float alpha = FMath::Clamp(TransitionTimeCur / TransitionTimeMax, 0.f, 1.f);
-
-	// 정보 가져오기
-	UCameraComponent* fpsCam = Character->GetFpsCamera();
-	UCameraComponent* tpsCam = Character->GetTpsCamera();
-	FTransform fpsTransform = fpsCam->GetComponentTransform();
-	FTransform tpsTransform = tpsCam->GetComponentTransform();
-	UCapsuleComponent* parentComponent = Character->GetCapsuleComponent();
-
-	// 완료 조건
-	if (TransitionTimeCur >= TransitionTimeMax - (TransitionTimeMax / 1.5f))
-	{
-		TransitionTimeCur = 0.f;
-		Character->SetInterpTransition(false);
-
-		if (bIsADS)
-		{
-			tpsCam->SetRelativeTransform(Character->GetTpsRelativeTransform());
-			Character->GetFpsCamera()->SetActive(true);
-			Character->GetTpsCamera()->SetActive(false);
-			Character->bUseControllerRotationYaw = true;
-		}
-		else
-		{
-			fpsCam->SetRelativeTransform(Character->GetFpsRelativeTransform());
-			Character->GetFpsCamera()->SetActive(false);
-			Character->GetTpsCamera()->SetActive(true);
-			Character->bUseControllerRotationYaw = false;
-		}
-		return;
-	}
-
-	// 보간 적용
-	FVector interpLocation;
-	FQuat interpRotation;
-	if (bIsADS)
-	{
-		interpLocation = FMath::Lerp(tpsTransform.GetLocation(), fpsTransform.GetLocation(), alpha);
-		interpRotation = FQuat::Slerp(tpsTransform.GetRotation(), fpsTransform.GetRotation(), alpha);		
-		tpsCam->SetWorldLocation(interpLocation);
-
-		// FQuat을 FRotator로 변환 
-		FRotator interpRotator = interpRotation.Rotator(); // pitch 값을 0으로 설정 
-		interpRotator.Pitch = 0.0f; // 수정된 FRotator를 다시 FQuat으로 변환 
-		interpRotation = interpRotator.Quaternion();
-		Character->SetActorRotation(interpRotation);
-		//parentComponent->SetWorldRotation(interpRotation);
-	}
-	else
-	{
-		interpLocation = FMath::Lerp(fpsTransform.GetLocation(), tpsTransform.GetLocation(), alpha);
-		interpRotation = FQuat::Slerp(fpsTransform.GetRotation(), tpsTransform.GetRotation(), alpha);
-		fpsCam->SetWorldLocation(interpLocation);
-		fpsCam->SetWorldRotation(interpRotation);
-	}
-
-}
-void UCombatComponent::SetADS(bool _bIsADS)
-{
-	if (nullptr == Character || nullptr == EquippedWeapon) return;
-
-	bIsADS = _bIsADS;
-	ServerSetADS(_bIsADS);
-	Character->GetCharacterMovement()->MaxWalkSpeed = bIsADS ? ADSMoveSpeed : BaseMoveSpeed;
-
-	// 트렌지션 안햇으면
-	if (!Character->IsInterpTransition())
-	{
-		Character->SetInterpTransition(true);
-	}
-
-	// 스코프 보이기 | 말기
-	if (Character->IsLocallyControlled() && EquippedWeapon->IsUsingScope())
-	{
-		Character->ShowSniperScopeWidget(bIsADS);
-	}
-}
-void UCombatComponent::ServerSetADS_Implementation(bool _bIsADS)
-{
-	bIsADS = _bIsADS;
-	if (!Character) return;
-	Character->GetCharacterMovement()->MaxWalkSpeed = bIsADS ? ADSMoveSpeed : BaseMoveSpeed;
-
-	if (!Character->IsInterpTransition())
-	{
-		Character->SetInterpTransition(true);
-	}
-	
-}
-
-
-void UCombatComponent::InputAttack(bool _presseed)
-{
-	bIsAttackDown = _presseed;
-
-	if (!bIsAttackDown) return;
-
-	Attack();
-	
-}
-
-void UCombatComponent::Attack()
-{
-	if (!EquippedWeapon) return;
-	if (CanFire())
-	{
-		bCanAttack = false;
-		ServerAttack(HitTarget);
-		CrosshairAttackingFactor = SpreadMOA;
-		StartFireTimer();
-	}
-	else
-	{
-		ReloadEmptyWeapon();
-	}
-}
-void UCombatComponent::ServerAttack_Implementation(const FVector_NetQuantize& _traceHitTarget)
-{
-	MulticastAttack(_traceHitTarget);
-}
-void UCombatComponent::MulticastAttack_Implementation(const FVector_NetQuantize& _traceHitTarget)
-{
-	if (!Character) return;
-	if (!EquippedWeapon) return;
-	if (ECombatState::ECS_Reloading == CombatState && EWeaponType::EWT_ScatterGun == EquippedWeapon->GetWeaponType())
-	{
-		Character->PlayFireMontage(bIsADS);
-		EquippedWeapon->FireRound(_traceHitTarget);
-		CombatState = ECombatState::ECS_Unoccupied;
-		return;
-	}
-	if (ECombatState::ECS_Unoccupied == CombatState)
-	{
-		Character->PlayFireMontage(bIsADS);
-		EquippedWeapon->FireRound(_traceHitTarget);
-	}
-}
-
-void UCombatComponent::StartFireTimer()
-{
-	if (!EquippedWeapon || !Character) return;
-
-	Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, EquippedWeapon->GetFireRate());
-}
-void UCombatComponent::FireTimerFinished()
-{
-	bCanAttack = true;
-	if (bIsAttackDown && EquippedWeapon->IsUsingAutoFire())
-	{
-		Attack();
-	}
-}
-bool UCombatComponent::CanFire()
-{
-	if (!EquippedWeapon) return false;
-	if (!EquippedWeapon->IsChamberEmpty() && bCanAttack && ECombatState::ECS_Reloading == CombatState
-		&& EWeaponType::EWT_ScatterGun == EquippedWeapon->GetWeaponType()) return true;
-	return !EquippedWeapon->IsChamberEmpty() && bCanAttack && ECombatState::ECS_Unoccupied == CombatState;
 }

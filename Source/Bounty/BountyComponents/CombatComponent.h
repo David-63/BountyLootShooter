@@ -45,7 +45,6 @@ protected:
 	void AttachActorToHand(AActor* _actorToAttach, FName _socket);
 	void UpdateExtraAmmo();
 	void PlayEquipWeaponSound();
-	void ReloadEmptyWeapon();
 	UFUNCTION()
 	void OnRep_EquipWeapon();
 public:
@@ -196,6 +195,8 @@ protected:
 	void ServerChamberingRound();
 
 	int32 AmountToReload();
+	void WeaponAutoReload();
+
 public:
 	void WeaponAmmoInsertion();
 	void WeaponChamberingRound();

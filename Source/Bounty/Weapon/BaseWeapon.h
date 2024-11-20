@@ -73,14 +73,13 @@ private:
 	void OnRep_Ammo();
 
 public:
-	void SpendRound();
+	void ChamberingRound();
 	void SetHUDCurrentAmmo();
 	void AddAmmo(int32 _ammoToAdd);
 	bool IsAmmoEmpty();
 	bool IsAmmoFull();
 	FORCEINLINE int32 GetAmmo() const { return AmmoCur; }
 	FORCEINLINE int32 GetMagCapacity() const { return AmmoMax; }
-	FORCEINLINE void ChamberingRound();
 	FORCEINLINE bool IsChamberEmpty() const { return !Chamber; };
 
 public:

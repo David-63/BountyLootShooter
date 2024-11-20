@@ -24,8 +24,7 @@ void AWeaponPlatform::FireRound(const FVector& _hitTarget)
 	// ÀÌÆåÆ® ÀÖÀ¸¸é Àç»ý
     PlayFireEffect(*world);
 	// ÃÑ¾Ë ¼Ò¸ðµÊ
-	SpendRound();
-
+	ChamberingRound();
 	AController* instigatorController = ownerPawn->GetController();
 
 	if (MuzzleFlashSocket)
@@ -43,14 +42,6 @@ void AWeaponPlatform::FireRound(const FVector& _hitTarget)
 			FireProjectile(beginLocation, _hitTarget, *world);
 		}
 	}
-	EjectCasing();
-	
-	UE_LOG(LogTemp, Warning, TEXT("Ammo Cur : %d"), GetAmmo());
-	if (IsChamberEmpty())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("chamber Empty"));
-	}	
-	
 }
 
 void AWeaponPlatform::PlayFireEffect(UWorld& _world)
