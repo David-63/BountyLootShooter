@@ -71,7 +71,7 @@ bool UTP_FirstPersonWeaponComponent::AttachWeapon(ATP_FirstPersonCharacter* Targ
 	Character = TargetCharacter;
 
 	// Check that the character is valid, and has no weapon component yet
-	if (Character == nullptr || Character->GetInstanceComponents().FindItemByClass<UTP_FirstPersonWeaponComponent>())
+	if (Character == nullptr || Character->GetInstanceComponents().FindItemByClass<UTP_FirstPersonWeaponComponent>()) 
 	{
 		return false;
 	}

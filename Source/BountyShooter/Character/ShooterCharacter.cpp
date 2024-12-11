@@ -14,6 +14,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
+#include "ShooterMovementHandler.h"
+
 
 AShooterCharacter::AShooterCharacter()
 {
@@ -38,7 +40,7 @@ AShooterCharacter::AShooterCharacter()
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
-
+	
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
 	OverheadWidget->SetupAttachment(RootComponent);
 
@@ -52,20 +54,22 @@ AShooterCharacter::AShooterCharacter()
 	Camera3P = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera 3P"));
 	Camera3P->SetupAttachment(SpringArm3P, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	Camera3P->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+	
 
+	//MovementHandler = CreateDefaultSubobject<UShooterMovementHandler>(TEXT("MovementHander"));
+	//MovementHandler->MappingMovementContext(this); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 
-	SpringArm1P = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm 1P"));
-	SpringArm1P->SetupAttachment(GetMesh(), FName(TEXT("head")));
-	SpringArm1P->TargetArmLength = 0.0f; // The camera follows at this distance behind the character	
-	SpringArm1P->SetRelativeLocation(FVector(2.f, 5.f, 0.f));
-	SpringArm1P->SetRelativeRotation(FRotator(0.f, 90.f, -90.f).Quaternion()); //FVector(-90.f, 0.f, 90.f)
-	SpringArm1P->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+	//SpringArm1P = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm 1P"));
+	//SpringArm1P->SetupAttachment(GetMesh(), FName(TEXT("head")));
+	//SpringArm1P->TargetArmLength = 0.0f; // The camera follows at this distance behind the character	
+	//SpringArm1P->SetRelativeLocation(FVector(2.f, 5.f, 0.f));
+	//SpringArm1P->SetRelativeRotation(FRotator(0.f, 90.f, -90.f).Quaternion()); //FVector(-90.f, 0.f, 90.f)
+	//SpringArm1P->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
-	Camera1P = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera1P"));
-	Camera1P->SetupAttachment(SpringArm1P); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
-	Camera1P->bAutoActivate = false;
+	//Camera1P = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera1P"));
+	//Camera1P->SetupAttachment(SpringArm1P); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
+	//Camera1P->bAutoActivate = false;
 
-	CharacterTrajectory = CreateDefaultSubobject<UCharacterTrajectoryComponent>(TEXT("Character Trajectory"));
 }
 
 void AShooterCharacter::BeginPlay()
@@ -101,71 +105,15 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AShooterCharacter::Move);
+		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		//EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AShooterCharacter::Move);
 
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AShooterCharacter::Look);
 	}
 	else
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input Component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
-	}
-}
-
-
-FVector2D AShooterCharacter::ClampInputScale(FVector2D& _inputScale)
-{
-	if (RunScale < _inputScale.Size())
-	{
-		return _inputScale.GetSafeNormal() * RunScale;
-	}
-	else if (WalkScale > _inputScale.Size())
-	{
-		return _inputScale.GetSafeNormal() * WalkScale;
-	}
-	else
-	{
-		return _inputScale;
-	}
-}
-
-void AShooterCharacter::Move(const FInputActionValue& Value)
-{
-	// input is a Vector2D
-	FVector2D MovementVector = Value.Get<FVector2D>();
-
-	if (Controller != nullptr)
-	{
-		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-
-		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-		FVector2D clampedVector = ClampInputScale(MovementVector);
-
-		// add movement 
-		AddMovementInput(ForwardDirection, clampedVector.Y);
-		AddMovementInput(RightDirection, clampedVector.X);
-		/*if (IsUsingGamepad())
-		{
-			float magnitudeY = MovementVector.Y / 50.f;
-			float magnitudeX = MovementVector.X / 50.f;
-
-			AddMovementInput(ForwardDirection, magnitudeY);
-			AddMovementInput(RightDirection, magnitudeX);
-		}
-		else
-		{
-			AddMovementInput(ForwardDirection, MovementVector.Y);
-			AddMovementInput(RightDirection, MovementVector.X);
-		}*/
 	}
 }
 
