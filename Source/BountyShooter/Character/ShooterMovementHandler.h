@@ -57,13 +57,25 @@ public:
 	TObjectPtr<UInputAction> CameraSwapAction;
 
 
+private:
+	bool bIsCrouched = false;
+	bool bIsAimed = false;
+
 public:
 	void Move(const FInputActionValue& Value);
 	void Jump();
 	void StopJumping();
 	/* Jump */
-	void Stance();		// Crouch, Dodge로 나눠질 예정
-	void Gait();		// Walk, Sprint로 나눠질 예정
-	void Aim();
+	// Crouch, Dodge로 나눠질 예정
+	//void Stance();
+	void Crouch();
+	void UnCrouch();
+	void Dodge();
+	// Walk, Sprint로 나눠질 예정
+	//void Gait();		
+	void Sprint();
+	void Jog();
+	void AimHold();
+	void AimRelease();
 	void CameraSwap();
 };

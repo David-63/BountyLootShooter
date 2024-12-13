@@ -10,6 +10,9 @@ class AShooterCharacter;
 class UInputAction;
 struct FInputActionValue;
 
+#define TRACE_LENGTH 10000.f
+
+
 UCLASS( ClassGroup=(ShooterHandler), meta=(BlueprintSpawnableComponent) )
 class BOUNTYSHOOTER_API UShooterCombatHandler : public UActorComponent
 {
@@ -49,6 +52,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Move Input")
 	TObjectPtr<UInputAction> ReloadAction;
+
+private:
+	FVector HitTarget;
 
 public:
 	void ChamberingRound();

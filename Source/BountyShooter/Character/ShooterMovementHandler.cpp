@@ -58,16 +58,25 @@ void UShooterMovementHandler::MappingMovementContext(AShooterCharacter* TargetCh
 			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &UShooterMovementHandler::Jump);
 			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &UShooterMovementHandler::StopJumping);
 			EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &UShooterMovementHandler::Move);
+			EnhancedInputComponent->BindAction(StanceAction, ETriggerEvent::Started, this, &UShooterMovementHandler::Crouch);
+			EnhancedInputComponent->BindAction(StanceAction, ETriggerEvent::Completed, this, &UShooterMovementHandler::UnCrouch);
+			EnhancedInputComponent->BindAction(GaitAction, ETriggerEvent::Started, this, &UShooterMovementHandler::Sprint);
+			EnhancedInputComponent->BindAction(GaitAction, ETriggerEvent::Completed, this, &UShooterMovementHandler::Jog);			
+			EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &UShooterMovementHandler::AimHold);
+			EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &UShooterMovementHandler::AimRelease);
 		}
 	}
 	// Configure character movement
 	ShooterCharacter->GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
-	ShooterCharacter->GetCharacterMovement()->RotationRate = FRotator(0.0f, 1000.0f, 0.0f); // ...at this rotation rate
+	ShooterCharacter->GetCharacterMovement()->RotationRate = FRotator(0.0f, 800.0f, 0.0f); // ...at this rotation rate
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
 	// instead of recompiling to adjust them
-	ShooterCharacter->GetCharacterMovement()->JumpZVelocity = 700.f;
+	ShooterCharacter->GetCharacterMovement()->JumpZVelocity = 1000.f;
+	ShooterCharacter->GetCharacterMovement()->GravityScale = 3.f;
 	ShooterCharacter->GetCharacterMovement()->AirControl = 0.15f;
-	ShooterCharacter->GetCharacterMovement()->MaxWalkSpeed = 600.f;
+
+	ShooterCharacter->GetCharacterMovement()->MaxWalkSpeed = 450.f;
+	ShooterCharacter->GetCharacterMovement()->MaxWalkSpeedCrouched = 200.f;
 	ShooterCharacter->GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	ShooterCharacter->GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	ShooterCharacter->GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
@@ -108,16 +117,51 @@ void UShooterMovementHandler::StopJumping()
 	ShooterCharacter->StopJumping();
 }
 
-void UShooterMovementHandler::Stance()
+void UShooterMovementHandler::Crouch()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Crouched"));
+
+	bIsCrouched = true;
+	ShooterCharacter->Crouch();
 }
 
-void UShooterMovementHandler::Gait()
+void UShooterMovementHandler::UnCrouch()
 {
+	UE_LOG(LogTemp, Warning, TEXT("UnCrouched"));
+	bIsCrouched = false;
+	ShooterCharacter->UnCrouch();
+
 }
 
-void UShooterMovementHandler::Aim()
+void UShooterMovementHandler::Dodge()
 {
+	
+}
+
+void UShooterMovementHandler::Sprint()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Sprint"));
+	ShooterCharacter->GetCharacterMovement()->MaxWalkSpeed = 800.f;
+}
+
+void UShooterMovementHandler::Jog()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Jog"));
+	ShooterCharacter->GetCharacterMovement()->MaxWalkSpeed = 450.f;
+}
+
+void UShooterMovementHandler::AimHold()
+{
+	UE_LOG(LogTemp, Warning, TEXT("AimHold"));
+	bIsAimed = true;
+	ShooterCharacter->bUseControllerRotationYaw = true;
+}
+
+void UShooterMovementHandler::AimRelease()
+{
+	UE_LOG(LogTemp, Warning, TEXT("AimRelease"));
+	bIsAimed = false;
+	ShooterCharacter->bUseControllerRotationYaw = false;
 }
 
 void UShooterMovementHandler::CameraSwap()

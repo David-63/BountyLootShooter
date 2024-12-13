@@ -7,6 +7,9 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 
+#include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"
+
 // Sets default values for this component's properties
 UShooterCombatHandler::UShooterCombatHandler()
 {
@@ -32,6 +35,71 @@ void UShooterCombatHandler::BeginPlay()
 void UShooterCombatHandler::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	FHitResult result;
+
+	
+	// center location
+	FVector2D viewportSize;
+	if (GEngine && GEngine->GameViewport)
+	{
+		GEngine->GameViewport->GetViewportSize(viewportSize);
+	}
+	FVector2D crossHairLocation(viewportSize.X / 2.f, viewportSize.Y / 2.f);
+
+
+
+
+	// Increase the size of inertia by multiplying inertiaMagnitude
+	//FVector2D inertiaValue = Character->GetInertiaValue() * InertiaMagnitude;
+	//crossHairLocation.X += inertiaValue.X;
+	//crossHairLocation.Y += inertiaValue.Y;
+
+	// Calculate inverse matrix from the crosshair position with inertia applied | screen -> World
+	FVector crossHairWorldPosition, crossHairWorldDirection;
+	bool isScreenToWorld = UGameplayStatics::DeprojectScreenToWorld
+	(UGameplayStatics::GetPlayerController(this, 0), crossHairLocation, crossHairWorldPosition, crossHairWorldDirection);
+
+	if (!isScreenToWorld) return;
+
+	FVector begin = crossHairWorldPosition;
+
+	if (ShooterCharacter)
+	{
+		float distanceToCharacter = (ShooterCharacter->GetActorLocation() - begin).Size();
+		begin += crossHairWorldDirection * (distanceToCharacter + 100.f);
+	}
+	FVector end = begin + crossHairWorldDirection * TRACE_LENGTH;
+
+
+	// Ray result return
+	GetWorld()->LineTraceSingleByChannel(result, begin, end, ECollisionChannel::ECC_Visibility);
+
+	// crosshair color change
+	/*if (_traceHitResult.GetActor() && _traceHitResult.GetActor()->Implements<UCrosshairInteractor>())
+	{
+		CrosshairPackage.CrosshairsColor = FLinearColor::Yellow;
+	}
+	else
+	{
+		CrosshairPackage.CrosshairsColor = FLinearColor::White;
+	}*/
+
+	if (!result.bBlockingHit)
+	{
+		result.ImpactPoint = end;
+	}
+
+
+	HitTarget = end;
+
+
+
+
+
+
+
+
+
 
 	// ...
 }
@@ -74,6 +142,12 @@ void UShooterCombatHandler::AmmoInsertion()
 
 void UShooterCombatHandler::Fire()
 {
+	// 시작지점
+	FVector beginPoint = ShooterCharacter->GetActorLocation();
+	beginPoint.Z += 60.f;
+	// 종료지점
+	HitTarget;
+	DrawDebugLine(GetWorld(), beginPoint, HitTarget, FColor::Red, false, -1, 0, 12.333);
 }
 
 void UShooterCombatHandler::Melee()
