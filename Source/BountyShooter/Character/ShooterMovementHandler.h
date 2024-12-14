@@ -10,7 +10,7 @@ class AShooterCharacter;
 class UInputAction;
 struct FInputActionValue;
 
-UCLASS( ClassGroup=(ShooterHandler), meta=(BlueprintSpawnableComponent) )
+UCLASS(Blueprintable, BlueprintType, ClassGroup=(ShooterHandler), meta=(BlueprintSpawnableComponent) )
 class BOUNTYSHOOTER_API UShooterMovementHandler : public UActorComponent
 {
 	GENERATED_BODY()

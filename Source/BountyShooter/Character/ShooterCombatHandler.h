@@ -13,7 +13,7 @@ struct FInputActionValue;
 #define TRACE_LENGTH 10000.f
 
 
-UCLASS( ClassGroup=(ShooterHandler), meta=(BlueprintSpawnableComponent) )
+UCLASS(Blueprintable, BlueprintType, ClassGroup=(ShooterHandler), meta=(BlueprintSpawnableComponent) )
 class BOUNTYSHOOTER_API UShooterCombatHandler : public UActorComponent
 {
 	GENERATED_BODY()
@@ -38,24 +38,21 @@ private:
 	TObjectPtr<AShooterCharacter> ShooterCharacter;
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Move Input")
-	class UInputMappingContext* IMC_MovementHandler;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat Input")
+	class UInputMappingContext* IMC_CombatHandler;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Move Input")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat Input")
 	TObjectPtr<UInputAction> FireAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Move Input")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat Input")
 	TObjectPtr<UInputAction> MeleeAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Move Input")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat Input")
 	TObjectPtr<UInputAction> ThrowAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Move Input")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat Input")
 	TObjectPtr<UInputAction> ReloadAction;
-
-private:
-	FVector HitTarget;
-
+		
 public:
 	void ChamberingRound();
 	void AmmoInsertion();

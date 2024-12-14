@@ -40,6 +40,7 @@ void UShooterMovementHandler::TickComponent(float DeltaTime, ELevelTick TickType
 void UShooterMovementHandler::MappingMovementContext(AShooterCharacter* TargetCharacter)
 {
 	ShooterCharacter = TargetCharacter;
+	ShooterCharacter->MovementHandler = this;
 
 	// Check that the character is valid, and has no weapon component yet
 	if (ShooterCharacter == nullptr || ShooterCharacter->GetInstanceComponents().FindItemByClass<UShooterMovementHandler>()) return;

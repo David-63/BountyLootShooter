@@ -15,7 +15,12 @@ class USpringArmComponent;
 class UCameraComponent;
 class UCharacterTrajectoryComponent;
 class UWidgetComponent;
+
 class UShooterMovementHandler;
+class UShooterCombatHandler;
+class UShooterInventoryHandler;
+
+class AItemBase;
 
 UCLASS()
 class BOUNTYSHOOTER_API AShooterCharacter : public ACharacter
@@ -32,36 +37,55 @@ protected:
 	virtual void NotifyControllerChanged() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+
+	// components
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))	 
 	TObjectPtr<UWidgetComponent> OverheadWidget = nullptr;
-	
-
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USpringArmComponent> SpringArm3P = nullptr;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCameraComponent> Camera3P = nullptr;
-
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	//TObjectPtr<USpringArmComponent> SpringArm1P = nullptr;
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	//TObjectPtr<UCameraComponent> Camera1P = nullptr;
-
-	//FTransform TpsRelativeTransform;
-	//FTransform FpsRelativeTransform;
 public:
 	FORCEINLINE TObjectPtr<USpringArmComponent> GetTpsSpringArm() const { return SpringArm3P; }
 	FORCEINLINE TObjectPtr<UCameraComponent> GetTpsCamera() const { return Camera3P; }
-	//FORCEINLINE TObjectPtr<USpringArmComponent> GetFpsSpringArm() const { return SpringArm1P; }
-	//FORCEINLINE TObjectPtr<UCameraComponent> GetFpsCamera() const { return Camera1P; }
-	//FORCEINLINE FTransform GetTpsRelativeTransform() const { return TpsRelativeTransform; }
-	//FORCEINLINE FTransform GetFpsRelativeTransform() const { return FpsRelativeTransform; }
+
+
 
 
 private:
-	TObjectPtr<UShooterMovementHandler> MovementHandler;
+	FVector HitLocation;
+	TObjectPtr<AActor> HitTarget;
+	void LineTraceViewDirection(FHitResult& result);
+public:
+	FORCEINLINE const FVector& GetHitLocation() { return HitLocation; }
+	FORCEINLINE const TObjectPtr<AActor>& GetHitTarget() { return HitTarget; }	
+	
+	// actor components
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Handler, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UShooterMovementHandler> MovementHandler = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Handler, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UShooterCombatHandler> CombatHandler = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Handler, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UShooterInventoryHandler> InventoryHandler = nullptr;
 
+
+	// inventory function
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
+	TArray<AItemBase*> OverlappingItems;
+	
+public:
+	void SetOverlappingItems(AItemBase* Item, bool bShouldAdd = true);
+
+
+
+
+	/*
+	*	inputs
+	*/
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputMappingContext> DefaultMappingContext = nullptr;
@@ -70,9 +94,11 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> InterAction = nullptr;
 
-protected:	
+protected:
 	void Look(const FInputActionValue& Value);
+	void Interaction();
 
 	bool IsUsingGamepad() const;
+
 
 };
