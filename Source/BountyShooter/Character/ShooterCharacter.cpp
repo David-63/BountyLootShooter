@@ -14,6 +14,7 @@
 #include "Components/WidgetComponent.h"
 
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 #include "ShooterMovementHandler.h"
 #include "ShooterCombatHandler.h"
@@ -21,6 +22,8 @@
 
 #include "BountyShooter/Items/ItemBase.h"
 #include "BountyShooter/Items/Weapons/WeaponBase.h"
+#include "BountyShooter/UI/InteractDotWidget.h"
+#include "BountyShooter/UI/InteractInterface.h"
 
 AShooterCharacter::AShooterCharacter()
 {
@@ -119,6 +122,26 @@ void AShooterCharacter::LineTraceViewDirection(FHitResult& result)
 	}
 	HitLocation = end;
 	HitTarget = result.GetActor();
+
+
+	// 여기 아래부터는 Interact UI 표시하는 기능
+	if (!InteractDotWidget) return;
+
+	AWeaponBase* targetWeapon = Cast<AWeaponBase>(HitTarget);
+	if (targetWeapon)
+	{		
+		if (UKismetSystemLibrary::DoesImplementInterface(targetWeapon, UInteractInterface::StaticClass()))
+		{
+			if (!InteractDotWidget->IsInViewport())
+			{
+				InteractDotWidget->AddToViewport();
+			}
+		}
+	}
+	else
+	{
+		InteractDotWidget->RemoveFromParent();
+	}
 }
 
 void AShooterCharacter::Look(const FInputActionValue& Value)

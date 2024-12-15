@@ -20,6 +20,7 @@ class UShooterMovementHandler;
 class UShooterCombatHandler;
 class UShooterInventoryHandler;
 
+class UInteractDotWidget;
 class AItemBase;
 
 UCLASS()
@@ -70,6 +71,12 @@ public:
 	TObjectPtr<UShooterCombatHandler> CombatHandler = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Handler, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UShooterInventoryHandler> InventoryHandler = nullptr;
+
+
+	// UI
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShooterUI, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInteractDotWidget> InteractDotWidget = nullptr;
+	
 
 
 	// inventory function

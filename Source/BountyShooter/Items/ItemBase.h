@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "BountyShooter/UI/InteractInterface.h"
 #include "ItemBase.generated.h"
 
 class AShooterCharacter;
@@ -11,7 +12,7 @@ class UPickupComponent;
 class UItemMeshComponent;
 
 UCLASS()
-class BOUNTYSHOOTER_API AItemBase : public AActor
+class BOUNTYSHOOTER_API AItemBase : public AActor, public IInteractInterface
 {
 	GENERATED_BODY()
 	
@@ -27,6 +28,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+public:
+	// interface
+	virtual void Interact() override { return; }
 
 protected:
 	UPROPERTY()
