@@ -86,6 +86,10 @@ void UShooterCombatHandler::Fire()
 
 	// 종료지점	
 	DrawDebugLine(GetWorld(), beginPoint, ShooterCharacter->GetHitLocation(), FColor::Red, false, -1, 0, 12.333);
+	if (ShooterCharacter->GetHitTarget())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Target Name: %s"), *ShooterCharacter->GetHitTarget()->GetName());
+	}
 }
 
 void UShooterCombatHandler::Melee()

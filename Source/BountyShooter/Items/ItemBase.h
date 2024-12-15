@@ -8,6 +8,7 @@
 
 class AShooterCharacter;
 class UPickupComponent;
+class UItemMeshComponent;
 
 UCLASS()
 class BOUNTYSHOOTER_API AItemBase : public AActor
@@ -31,7 +32,11 @@ protected:
 	UPROPERTY()
 	TObjectPtr<AShooterCharacter> ShooterCharacter;
 	UPROPERTY()
-	TObjectPtr<UPickupComponent> PickupArea;
+	TObjectPtr<UPickupComponent> PickupArea = nullptr;
+	UPROPERTY()
+	TObjectPtr<UItemMeshComponent> ItemMesh = nullptr;
+
+	
 
 
 public:

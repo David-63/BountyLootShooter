@@ -20,6 +20,7 @@
 #include "ShooterInventoryHandler.h"
 
 #include "BountyShooter/Items/ItemBase.h"
+#include "BountyShooter/Items/Weapons/WeaponBase.h"
 
 AShooterCharacter::AShooterCharacter()
 {
@@ -109,6 +110,7 @@ void AShooterCharacter::LineTraceViewDirection(FHitResult& result)
 
 
 	// Ray result return
+		
 	GetWorld()->LineTraceSingleByChannel(result, begin, end, ECollisionChannel::ECC_Visibility);
 
 	if (!result.bBlockingHit)
@@ -143,25 +145,37 @@ void AShooterCharacter::Interaction()
 
 	if (!OverlappingItems.IsEmpty())
 	{
-		AItemBase* targetItem = Cast<AItemBase>(HitTarget);
-		if (OverlappingItems.Contains(targetItem))
+		if (HitTarget)
 		{
-			OverlappingItems.Remove(targetItem);
+			UE_LOG(LogTemp, Warning, TEXT("Target Name: %s"), *HitTarget->GetName());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Wrong Direction"));
+		}
 
+		AWeaponBase* targetWeapon = Cast<AWeaponBase>(HitTarget);
+		if (!targetWeapon)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("cant find weapon"));
+			return;
+		}
+
+		if (OverlappingItems.Contains(targetWeapon))
+		{
+			// 추후에 isEmpty 함수 만들것
 			if (!InventoryHandler->Primary)
 			{
-				InventoryHandler->Primary = targetItem;
-				targetItem->PickupDisable();
+				InventoryHandler->Primary = targetWeapon;
 				UE_LOG(LogTemp, Warning, TEXT("Inventory primary added: %s"), *InventoryHandler->Primary->GetName());
+				
+				targetWeapon->AttachWeapon(this);
+				OverlappingItems.Remove(targetWeapon);
 			}
 			else
 			{
 				UE_LOG(LogTemp, Warning, TEXT("Already have item"));
 			}
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Wrong Direction"));
 		}
 	}
 }

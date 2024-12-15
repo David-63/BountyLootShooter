@@ -107,7 +107,6 @@ void AWeaponPlatform::FireHitscan(FVector& beginLocation, const FVector& _hitTar
 			{
 				hitMap.Emplace(victimCharacter, 1);
 			}
-
 		}
 		if (hitInfo.bBlockingHit)
 		{
