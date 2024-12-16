@@ -6,12 +6,9 @@
 #include "Animation/AnimInstance.h"
 #include "MoveStateEnums.h"
 #include "AnimStructs.h"
-#include "PoseSearch/PoseSearchLibrary.h"
-#include "PoseSearch/PoseSearchDatabase.h"
 #include "ShooterAnimInstance.generated.h"
 
 class AShooterCharacter;
-class UCharacterTrajectoryComponent;
 class UCharacterMovementComponent;
 
 

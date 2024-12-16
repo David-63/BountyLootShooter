@@ -81,7 +81,7 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AShooterCharacter::Look);
-		EnhancedInputComponent->BindAction(InterAction, ETriggerEvent::Triggered, this, &AShooterCharacter::Interaction);
+		EnhancedInputComponent->BindAction(InterAction, ETriggerEvent::Canceled, this, &AShooterCharacter::Interaction);
 	}
 	else
 	{
@@ -168,37 +168,27 @@ void AShooterCharacter::Interaction()
 
 	if (!OverlappingItems.IsEmpty())
 	{
-		if (HitTarget)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Target Name: %s"), *HitTarget->GetName());
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Wrong Direction"));
-		}
-
 		AWeaponBase* targetWeapon = Cast<AWeaponBase>(HitTarget);
 		if (!targetWeapon)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("cant find weapon"));
 			return;
 		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Inventory primary added: %s"), *targetWeapon->GetName());
+		}
 
 		if (OverlappingItems.Contains(targetWeapon))
 		{
-			// 추후에 isEmpty 함수 만들것
-			if (!InventoryHandler->Primary)
-			{
-				InventoryHandler->Primary = targetWeapon;
-				UE_LOG(LogTemp, Warning, TEXT("Inventory primary added: %s"), *InventoryHandler->Primary->GetName());
-				
-				targetWeapon->AttachWeapon(this);
-				OverlappingItems.Remove(targetWeapon);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Already have item"));
-			}
+			// overlap 배열에서 제외시키고
+			OverlappingItems.Remove(targetWeapon);
+			// 아이템 알아서 바인딩
+			InventoryHandler->EquippWeapon(targetWeapon);
+			
+			// 바인딩 결과 확인해보기
+			targetWeapon = InventoryHandler->GetSelectedWeapon();
+			UE_LOG(LogTemp, Warning, TEXT("Inventory primary added: %s"), *targetWeapon->GetName());
 		}
 	}
 }
@@ -212,6 +202,16 @@ bool AShooterCharacter::IsUsingGamepad() const
 		return device.PrimaryDeviceType == EHardwareDevicePrimaryType::Gamepad;
 	}
 	return false;
+}
+
+void AShooterCharacter::EnableCombatAction()
+{
+	CombatHandler->EnableCombatAction();
+}
+
+void AShooterCharacter::DisableCombatAction()
+{
+	CombatHandler->DisableCombatAction();
 }
 
 void AShooterCharacter::SetOverlappingItems(AItemBase* Item, bool bShouldAdd)

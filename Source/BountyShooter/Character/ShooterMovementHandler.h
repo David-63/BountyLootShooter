@@ -28,7 +28,11 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable)
-	void MappingMovementContext(AShooterCharacter* TargetCharacter);
+	void BindMovementHandler(AShooterCharacter* TargetCharacter);
+
+	void EnableMovementAction();
+	void DisableMovementAction();
+
 
 private:
 	UPROPERTY()

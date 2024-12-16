@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "../ItemBase.h"
+#include "BountyShooter/Character/ShooterEnums.h"
 #include "WeaponBase.generated.h"
 
 /**
@@ -16,6 +17,21 @@ class BOUNTYSHOOTER_API AWeaponBase : public AItemBase
 
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void AttachWeapon(AShooterCharacter* Character);
+	UFUNCTION(BlueprintCallable, Category = "Switching")
+	void BindOwner(AShooterCharacter* Character);
+
+	// 아래 두 함수는 메쉬의 기능으로 옮길 예정
+	UFUNCTION(BlueprintCallable, Category = "Switching")
+	void DrawWeapon(FName SocketName);
+	UFUNCTION(BlueprintCallable, Category = "Switching")
+	void HolsterWeapon(FName SocketName);
+
+
+private:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Base Value", meta = (AllowPrivateAccess = "true"))
+	EWeaponCategory WeaponCategory = EWeaponCategory::EWC_MAX;
+
+public:
+	FORCEINLINE EWeaponCategory GetWeaponCategory() { return WeaponCategory; }
+
 };

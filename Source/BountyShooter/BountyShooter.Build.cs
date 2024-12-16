@@ -11,7 +11,7 @@ public class BountyShooter : ModuleRules
 		PublicDependencyModuleNames.AddRange(new string[]
 		{
 			"Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput",
-			"Niagara", "MotionTrajectory", "PoseSearch", "AnimGraphRuntime"
+			"Niagara",
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

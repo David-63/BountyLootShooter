@@ -4,12 +4,21 @@
 #include "WeaponBase.h"
 #include "BountyShooter/Character/ShooterCharacter.h"
 
-
-void AWeaponBase::AttachWeapon(AShooterCharacter* Character)
+void AWeaponBase::BindOwner(AShooterCharacter* Character)
 {
 	ShooterCharacter = Character;
-	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-	AttachToComponent(Character->GetMesh(), AttachmentRules, FName(TEXT("Hand")));
-
 	PickupDisable();
+}
+
+void AWeaponBase::DrawWeapon(FName SocketName)
+{
+	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+	AttachToComponent(ShooterCharacter->GetMesh(), AttachmentRules, SocketName);
+}
+
+
+void AWeaponBase::HolsterWeapon(FName SocketName)
+{
+	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+	AttachToComponent(ShooterCharacter->GetMesh(), AttachmentRules, SocketName);
 }

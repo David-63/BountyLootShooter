@@ -108,4 +108,8 @@ protected:
 	bool IsUsingGamepad() const;
 
 
+public:
+	void EnableCombatAction();
+	void DisableCombatAction();
+
 };

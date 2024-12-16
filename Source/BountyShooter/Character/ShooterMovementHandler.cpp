@@ -37,11 +37,32 @@ void UShooterMovementHandler::TickComponent(float DeltaTime, ELevelTick TickType
 	// ...
 }
 
-void UShooterMovementHandler::MappingMovementContext(AShooterCharacter* TargetCharacter)
+void UShooterMovementHandler::BindMovementHandler(AShooterCharacter* TargetCharacter)
 {
 	ShooterCharacter = TargetCharacter;
 	ShooterCharacter->MovementHandler = this;
 
+	// Configure character movement
+	ShooterCharacter->GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
+	ShooterCharacter->GetCharacterMovement()->RotationRate = FRotator(0.0f, 800.0f, 0.0f); // ...at this rotation rate
+	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
+	// instead of recompiling to adjust them
+	ShooterCharacter->GetCharacterMovement()->JumpZVelocity = 1000.f;
+	ShooterCharacter->GetCharacterMovement()->GravityScale = 3.f;
+	ShooterCharacter->GetCharacterMovement()->AirControl = 0.15f;
+
+	ShooterCharacter->GetCharacterMovement()->MaxWalkSpeed = 450.f;
+	ShooterCharacter->GetCharacterMovement()->MaxWalkSpeedCrouched = 200.f;
+	ShooterCharacter->GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
+	ShooterCharacter->GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
+	ShooterCharacter->GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
+
+	// Active movement
+	EnableMovementAction();
+}
+
+void UShooterMovementHandler::EnableMovementAction()
+{
 	// Check that the character is valid, and has no weapon component yet
 	if (ShooterCharacter == nullptr || ShooterCharacter->GetInstanceComponents().FindItemByClass<UShooterMovementHandler>()) return;
 
@@ -62,25 +83,26 @@ void UShooterMovementHandler::MappingMovementContext(AShooterCharacter* TargetCh
 			EnhancedInputComponent->BindAction(StanceAction, ETriggerEvent::Started, this, &UShooterMovementHandler::Crouch);
 			EnhancedInputComponent->BindAction(StanceAction, ETriggerEvent::Completed, this, &UShooterMovementHandler::UnCrouch);
 			EnhancedInputComponent->BindAction(GaitAction, ETriggerEvent::Started, this, &UShooterMovementHandler::Sprint);
-			EnhancedInputComponent->BindAction(GaitAction, ETriggerEvent::Completed, this, &UShooterMovementHandler::Jog);			
+			EnhancedInputComponent->BindAction(GaitAction, ETriggerEvent::Completed, this, &UShooterMovementHandler::Jog);
 			EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &UShooterMovementHandler::AimHold);
 			EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &UShooterMovementHandler::AimRelease);
 		}
 	}
-	// Configure character movement
-	ShooterCharacter->GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
-	ShooterCharacter->GetCharacterMovement()->RotationRate = FRotator(0.0f, 800.0f, 0.0f); // ...at this rotation rate
-	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
-	// instead of recompiling to adjust them
-	ShooterCharacter->GetCharacterMovement()->JumpZVelocity = 1000.f;
-	ShooterCharacter->GetCharacterMovement()->GravityScale = 3.f;
-	ShooterCharacter->GetCharacterMovement()->AirControl = 0.15f;
+}
 
-	ShooterCharacter->GetCharacterMovement()->MaxWalkSpeed = 450.f;
-	ShooterCharacter->GetCharacterMovement()->MaxWalkSpeedCrouched = 200.f;
-	ShooterCharacter->GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
-	ShooterCharacter->GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
-	ShooterCharacter->GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
+void UShooterMovementHandler::DisableMovementAction()
+{
+	if (ShooterCharacter != nullptr)
+	{
+		// remove the input mapping context from the Player Controller
+		if (APlayerController* PlayerController = Cast<APlayerController>(ShooterCharacter->GetController()))
+		{
+			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+			{
+				Subsystem->RemoveMappingContext(IMC_MovementHandler);
+			}
+		}
+	}
 }
 
 void UShooterMovementHandler::Move(const FInputActionValue& Value)

@@ -31,11 +31,17 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable)
-	void MappingCombatContext(AShooterCharacter* TargetCharacter);
+	void BindCombatHandler(AShooterCharacter* TargetCharacter);
+
+	void EnableCombatAction();
+	void DisableCombatAction();
 
 private:
 	UPROPERTY()
 	TObjectPtr<AShooterCharacter> ShooterCharacter;
+
+	// 아마 안쓰게 될 기능
+	bool bIsWeaponDrawn = false;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat Input")
@@ -52,11 +58,15 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat Input")
 	TObjectPtr<UInputAction> ReloadAction;
-		
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat Input")
+	TObjectPtr<UInputAction> InterAction;
+	
 public:
 	void ChamberingRound();
 	void AmmoInsertion();
 	void Fire();
 	void Melee();
 	void Throw();
+	void WeaponDraw();
 };

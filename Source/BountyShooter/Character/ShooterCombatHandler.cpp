@@ -39,12 +39,14 @@ void UShooterCombatHandler::TickComponent(float DeltaTime, ELevelTick TickType, 
 	// ...
 }
 
-
-void UShooterCombatHandler::MappingCombatContext(AShooterCharacter* TargetCharacter)
+void UShooterCombatHandler::BindCombatHandler(AShooterCharacter* TargetCharacter)
 {
 	ShooterCharacter = TargetCharacter;
 	ShooterCharacter->CombatHandler = this;
+}
 
+void UShooterCombatHandler::EnableCombatAction()
+{
 	// Check that the character is valid, and has no weapon component yet
 	if (ShooterCharacter == nullptr || ShooterCharacter->GetInstanceComponents().FindItemByClass<UShooterMovementHandler>()) return;
 
@@ -63,7 +65,23 @@ void UShooterCombatHandler::MappingCombatContext(AShooterCharacter* TargetCharac
 			EnhancedInputComponent->BindAction(ThrowAction, ETriggerEvent::Triggered, this, &UShooterCombatHandler::Throw);
 			EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &UShooterCombatHandler::ChamberingRound);
 			EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &UShooterCombatHandler::AmmoInsertion);
-			
+
+			EnhancedInputComponent->BindAction(InterAction, ETriggerEvent::Canceled, this, &UShooterCombatHandler::WeaponDraw);
+		}
+	}
+}
+
+void UShooterCombatHandler::DisableCombatAction()
+{
+	if (ShooterCharacter != nullptr)
+	{
+		// remove the input mapping context from the Player Controller
+		if (APlayerController* PlayerController = Cast<APlayerController>(ShooterCharacter->GetController()))
+		{
+			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+			{
+				Subsystem->RemoveMappingContext(IMC_CombatHandler);
+			}
 		}
 	}
 }
@@ -98,5 +116,23 @@ void UShooterCombatHandler::Melee()
 
 void UShooterCombatHandler::Throw()
 {
+}
+
+void UShooterCombatHandler::WeaponDraw()
+{
+	// 이미 무기를 들고있음
+	if (bIsWeaponDrawn)
+	{
+		bIsWeaponDrawn = false;
+
+		// 무기를 수납함
+	}
+	// 무기를 보관하고 있음
+	else
+	{
+		bIsWeaponDrawn = true;
+
+		// 무기를 꺼냄
+	}
 }
 
