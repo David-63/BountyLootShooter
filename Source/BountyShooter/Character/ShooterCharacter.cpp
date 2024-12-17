@@ -127,10 +127,10 @@ void AShooterCharacter::LineTraceViewDirection(FHitResult& result)
 	// 여기 아래부터는 Interact UI 표시하는 기능
 	if (!InteractDotWidget) return;
 
-	AWeaponBase* targetWeapon = Cast<AWeaponBase>(HitTarget);
-	if (targetWeapon)
+	AItemBase* hitItem = Cast<AItemBase>(HitTarget);
+	if (hitItem)
 	{		
-		if (UKismetSystemLibrary::DoesImplementInterface(targetWeapon, UInteractInterface::StaticClass()))
+		if (UKismetSystemLibrary::DoesImplementInterface(hitItem, UInteractInterface::StaticClass()))
 		{
 			if (!InteractDotWidget->IsInViewport())
 			{
