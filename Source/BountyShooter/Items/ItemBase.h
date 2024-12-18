@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "BountyShooter/UI/InteractInterface.h"
+#include "BountyShooter/Character/ShooterEnums.h"
+
 #include "ItemBase.generated.h"
 
 class AShooterCharacter;
@@ -32,19 +34,36 @@ public:
 	// interface
 	virtual void Interact() override { return; }
 
+	/*
+	*	Actor Components
+	*/
 protected:
-	UPROPERTY()
-	TObjectPtr<AShooterCharacter> ShooterCharacter;
 	UPROPERTY()
 	TObjectPtr<UPickupComponent> PickupArea = nullptr;
 	UPROPERTY()
-	TObjectPtr<UItemMeshComponent> ItemMesh = nullptr;
-
-	
-
+	TObjectPtr<UItemMeshComponent> ItemMeshComponent = nullptr;
 
 public:
-	void PickupDisable();
-	void PickupEnable();
+	UFUNCTION(BlueprintCallable, Category = "Item Initialize")
+	void SetPicupComponent(UPickupComponent* Pickup);
+	UFUNCTION(BlueprintCallable, Category = "Item Initialize")
+	void SetItemMeshComponent(UItemMeshComponent* Mesh);
 	
+
+	/*
+	*	Actors
+	*/
+protected:
+	UPROPERTY()
+	TObjectPtr<AShooterCharacter> ShooterCharacter = nullptr;
+
+protected:
+	UPROPERTY()
+	EItemState ItemState = EItemState::EIS_Initial;
+
+public:
+	void ChangeItemState(EItemState State);
+	virtual void Equip(AShooterCharacter* Owner, FName Socket = FName());
+	virtual void Drop();
+
 };

@@ -3,7 +3,7 @@
 
 #include "ItemBase.h"
 #include "PickupComponent.h"
-#include "Components/SkeletalMeshComponent.h"
+#include "ItemMeshComponent.h"
 
 // Sets default values
 AItemBase::AItemBase()
@@ -26,20 +26,54 @@ void AItemBase::Tick(float DeltaTime)
 
 }
 
-void AItemBase::PickupDisable()
+void AItemBase::SetPicupComponent(UPickupComponent* Pickup)
 {
-	if (PickupArea)
-	{
-		PickupArea->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	PickupArea = Pickup;
+}
 
+void AItemBase::SetItemMeshComponent(UItemMeshComponent* Mesh)
+{
+	ItemMeshComponent = Mesh;
+}
+
+void AItemBase::ChangeItemState(EItemState State)
+{
+	switch (State)
+	{
+	case EItemState::EIS_Initial:
+		break;
+	case EItemState::EIS_Equipped:
+		PickupArea->PickupDisable();
+		ItemMeshComponent->ItemCollisionDisable();
+		break;
+	case EItemState::EIS_Dropped:
+		PickupArea->PickupEnable();
+		ItemMeshComponent->ItemCollisionEnable();
+		break;
+	case EItemState::EIS_MAX:
+		break;
+	default:
+		break;
 	}
 }
 
-void AItemBase::PickupEnable()
+void AItemBase::Equip(AShooterCharacter* Owner, FName Socket)
+{	
+	SetOwner(Owner);
+	ChangeItemState(EItemState::EIS_Equipped);
+	// Attach or hide
+	ItemMeshComponent->SetVisibility(false);
+	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+	AttachToComponent(ShooterCharacter->GetMesh(), AttachmentRules, Socket);		// 따로 지정하진 않을태니, 발바닥에 붙어있을 것임
+}
+
+void AItemBase::Drop()
 {
-	if (PickupArea)
-	{
-		PickupArea->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	}
+	SetOwner(nullptr);
+	ChangeItemState(EItemState::EIS_Equipped);
+	ItemMeshComponent->SetVisibility(true);
+	// Detach
+	FDetachmentTransformRules detachRules(EDetachmentRule::KeepWorld, true);
+	ItemMeshComponent->DetachFromComponent(detachRules);
 }
 

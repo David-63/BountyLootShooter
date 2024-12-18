@@ -22,4 +22,12 @@ protected:
 	/** Ends gameplay for this component. */
 	UFUNCTION()
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+public:
+	UFUNCTION()
+	void ItemCollisionDisable();
+
+	// 만약 문제가 생긴다면 충돌 응답 채널을 수정하도록
+	UFUNCTION()
+	void ItemCollisionEnable();
 };

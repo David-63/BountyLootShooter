@@ -184,7 +184,7 @@ void AShooterCharacter::Interaction()
 			// overlap 배열에서 제외시키고
 			OverlappingItems.Remove(targetWeapon);
 			// 아이템 알아서 바인딩
-			InventoryHandler->EquippWeapon(targetWeapon);
+			InventoryHandler->EquipWeapon(targetWeapon);
 			
 			// 바인딩 결과 확인해보기
 			targetWeapon = InventoryHandler->GetSelectedWeapon();

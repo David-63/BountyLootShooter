@@ -71,7 +71,7 @@ public:
 	*	This function is called when a weapon is acquired or equipped,
 	*	and it handles equipping the weapon to the appropriate slot.
 	*/ 
-	void EquippWeapon(AWeaponBase* Weapon);
+	void EquipWeapon(AWeaponBase* Weapon);
 	// and equip other items function (s00n)
 
 

@@ -7,7 +7,7 @@
 
 UPickupComponent::UPickupComponent()
 {
-	SphereRadius = 128.f;
+	SphereRadius = 160.f;
 
 	SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	SetCollisionEnabled(ECollisionEnabled::QueryOnly);
@@ -44,4 +44,14 @@ void UPickupComponent::OnSphereEndOverlap(UPrimitiveComponent* OverlappedCompone
 
 		shooter->SetOverlappingItems(thisItem, false);
 	}
+}
+
+void UPickupComponent::PickupDisable()
+{
+	SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void UPickupComponent::PickupEnable()
+{
+	SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 }

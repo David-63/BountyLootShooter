@@ -15,3 +15,17 @@ void UItemMeshComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 }
+
+void UItemMeshComponent::ItemCollisionDisable()
+{
+	SetSimulatePhysics(false);
+	SetEnableGravity(false);
+	SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void UItemMeshComponent::ItemCollisionEnable()
+{
+	SetSimulatePhysics(true);
+	SetEnableGravity(true);
+	SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+}

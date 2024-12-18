@@ -169,7 +169,7 @@ EInventorySlot UShooterInventoryHandler::GetOccupiedWeaponSlot()
 
 
 
-void UShooterInventoryHandler::EquippWeapon(AWeaponBase* Weapon)
+void UShooterInventoryHandler::EquipWeapon(AWeaponBase* Weapon)
 {
 	if (EWeaponCategory::EWC_MAX == Weapon->GetWeaponCategory()) return;
 	// 플레이어 등록

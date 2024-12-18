@@ -30,4 +30,12 @@ protected:
 	UFUNCTION()
 	virtual void OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+
+public:
+	UFUNCTION()
+	void PickupDisable();
+
+	UFUNCTION()
+	void PickupEnable();
+	
 };

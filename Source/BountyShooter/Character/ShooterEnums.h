@@ -28,5 +28,14 @@ enum class EWeaponSpecificType : uint8
 	EWST_SubmachineGun UMETA(DisplayName = "Submachine Gun"),
 	EWST_Pistol UMETA(DisplayName = "Pistol"),
 	EWST_MAX UMETA(DisplayName = "DefaultMAX"),
+};
 
+UENUM(BlueprintType)
+enum class EItemState : uint8
+{
+	EIS_Initial UMETA(DisplayName = "Initial State"),
+	EIS_Equipped UMETA(DisplayName = "Equipped"),
+	EIS_Dropped UMETA(DisplayName = "Dropped"),
+
+	EIS_MAX UMETA(DisplayName = "DefaultMAX")
 };

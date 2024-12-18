@@ -4,8 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "../ItemBase.h"
-#include "BountyShooter/Character/ShooterEnums.h"
+
+
 #include "WeaponBase.generated.h"
+
+class AWeaponPlatform;
+class AWeaponAmmo;
+class UWeaponMeshComponent;
 
 /**
  * 
@@ -17,21 +22,42 @@ class BOUNTYSHOOTER_API AWeaponBase : public AItemBase
 
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "Switching")
-	void BindOwner(AShooterCharacter* Character);
+	virtual void Equip(AShooterCharacter* Owner, FName Socket) override;
 
-	// 아래 두 함수는 메쉬의 기능으로 옮길 예정
-	UFUNCTION(BlueprintCallable, Category = "Switching")
+public:
+	UFUNCTION(BlueprintCallable, Category = "Weapon Function")
 	void DrawWeapon(FName SocketName);
-	UFUNCTION(BlueprintCallable, Category = "Switching")
+	UFUNCTION(BlueprintCallable, Category = "Weapon Function")
 	void HolsterWeapon(FName SocketName);
 
 
+	// 무기 카테고리
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Base Value", meta = (AllowPrivateAccess = "true"))
 	EWeaponCategory WeaponCategory = EWeaponCategory::EWC_MAX;
-
 public:
 	FORCEINLINE EWeaponCategory GetWeaponCategory() { return WeaponCategory; }
 
+	// 하위 컴포넌트
+private:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Attachment", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<AWeaponPlatform> WeaponPlatform = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Attachment", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<AWeaponAmmo> WeaponAmmo = nullptr;
+
+
+	// 사격에 필요한 변수
+private:
+	const USkeletalMeshSocket* MuzzleFlashSocket = nullptr;
+	bool bUsingHitScan = false;
+	bool bChamber = true;
+	// 사격 함수
+public:
+	void FireRound(const FVector& _hitTarget);
+	void ChamberingRound();
+private:
+	FVector TraceEndWithScatter(const FVector& _traceStart, const FVector& _hitTarget);
+	FVector WeaponTraceHit(const FVector& _traceStart, const FVector& _hitTarget, FHitResult& _inOutHit);
+	void FireHitscan(FVector& beginLocation, const FVector& _hitTarget, const UWorld& world, AController* instigatorController, TMap<AShooterCharacter*, uint32>& hitMap);
+	void FireProjectile(FVector& beginLocation, const FVector& _hitTarget, UWorld& world);
 };
