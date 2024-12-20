@@ -92,7 +92,7 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 void AShooterCharacter::LineTraceViewDirection(FHitResult& result)
 {
 	// center location
-	FVector2D viewportSize;
+	FVector2D viewportSize = FVector2D::Zero();
 	if (GEngine && GEngine->GameViewport)
 	{
 		GEngine->GameViewport->GetViewportSize(viewportSize);
@@ -168,27 +168,28 @@ void AShooterCharacter::Interaction()
 
 	if (!OverlappingItems.IsEmpty())
 	{
-		AWeaponBase* targetWeapon = Cast<AWeaponBase>(HitTarget);
-		if (!targetWeapon)
+		
+		AItemBase* targetItem = Cast<AItemBase>(HitTarget);
+		if (!targetItem)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("cant find weapon"));
+			UE_LOG(LogTemp, Warning, TEXT("cant find item"));
 			return;
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Inventory primary added: %s"), *targetWeapon->GetName());
+			UE_LOG(LogTemp, Warning, TEXT("Find item: %s"), *targetItem->GetName());
 		}
 
-		if (OverlappingItems.Contains(targetWeapon))
+		if (OverlappingItems.Contains(targetItem))
 		{
 			// overlap 배열에서 제외시키고
-			OverlappingItems.Remove(targetWeapon);
+			OverlappingItems.Remove(targetItem);
 			// 아이템 알아서 바인딩
-			InventoryHandler->EquipWeapon(targetWeapon);
+			InventoryHandler->PickupItem(targetItem);
 			
 			// 바인딩 결과 확인해보기
-			targetWeapon = InventoryHandler->GetSelectedWeapon();
-			UE_LOG(LogTemp, Warning, TEXT("Inventory primary added: %s"), *targetWeapon->GetName());
+			//targetWeapon = InventoryHandler->GetSelectedWeapon();
+			//UE_LOG(LogTemp, Warning, TEXT("Inventory primary added: %s"), *targetWeapon->GetName());
 		}
 	}
 }

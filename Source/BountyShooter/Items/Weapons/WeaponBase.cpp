@@ -3,17 +3,28 @@
 
 #include "WeaponBase.h"
 #include "BountyShooter/Character/ShooterCharacter.h"
+#include "BountyShooter/Character/ShooterInventoryHandler.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "../ItemMeshComponent.h"
 #include "WeaponAmmo.h"
 #include "WeaponPlatform.h"
 
-void AWeaponBase::Equip(AShooterCharacter* Owner, FName Socket)
+void AWeaponBase::Equip(AShooterCharacter* Character, FName Socket)
 {
-	SetOwner(Owner);
+	UE_LOG(LogTemp, Warning, TEXT("Weapon Equip"));
+	ShooterCharacter = Character;
+	SetOwner(Character);
 	ChangeItemState(EItemState::EIS_Equipped);
-	// 습득하면 바로 무장하는거로 합시다
-	DrawWeapon(Socket);
+
+	EInventorySlot slot = ShooterCharacter->InventoryHandler->FindEmptyWeaponSlot(WeaponCategory);
+	if (EInventorySlot::EIS_MAX != slot)
+	{
+		ShooterCharacter->InventoryHandler->BindWeaponSlot(this, slot);
+	}
+	else
+	{
+		ShooterCharacter->InventoryHandler->ReplaceWeaponSlot(this, slot);
+	}
 
 	// Todo
 	/*

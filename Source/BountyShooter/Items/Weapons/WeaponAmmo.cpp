@@ -25,3 +25,7 @@ void AWeaponAmmo::Tick(float DeltaTime)
 
 }
 
+void AWeaponAmmo::EjectCasing()
+{
+}
+

@@ -26,7 +26,7 @@ void AItemBase::Tick(float DeltaTime)
 
 }
 
-void AItemBase::SetPicupComponent(UPickupComponent* Pickup)
+void AItemBase::SetPickupComponent(UPickupComponent* Pickup)
 {
 	PickupArea = Pickup;
 }
@@ -57,20 +57,22 @@ void AItemBase::ChangeItemState(EItemState State)
 	}
 }
 
-void AItemBase::Equip(AShooterCharacter* Owner, FName Socket)
-{	
-	SetOwner(Owner);
+void AItemBase::Equip(AShooterCharacter* Character, FName Socket)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Item Equip"));
+	ShooterCharacter = Character;
+	SetOwner(Character);
 	ChangeItemState(EItemState::EIS_Equipped);
 	// Attach or hide
 	ItemMeshComponent->SetVisibility(false);
 	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-	AttachToComponent(ShooterCharacter->GetMesh(), AttachmentRules, Socket);		// 따로 지정하진 않을태니, 발바닥에 붙어있을 것임
+	AttachToComponent(ShooterCharacter->GetMesh(), AttachmentRules, Socket);	// 따로 지정하진 않을태니, 발바닥에 붙어있을 것임
 }
 
 void AItemBase::Drop()
 {
 	SetOwner(nullptr);
-	ChangeItemState(EItemState::EIS_Equipped);
+	ChangeItemState(EItemState::EIS_Dropped);
 	ItemMeshComponent->SetVisibility(true);
 	// Detach
 	FDetachmentTransformRules detachRules(EDetachmentRule::KeepWorld, true);

@@ -39,3 +39,13 @@ enum class EItemState : uint8
 
 	EIS_MAX UMETA(DisplayName = "DefaultMAX")
 };
+
+UENUM(BlueprintType)
+enum class EItemType : uint8
+{
+	EIT_Weapon UMETA(DisplayName = "Weapon"),
+	//EIT_Equipped UMETA(DisplayName = "Equipped"),
+	//EIT_Dropped UMETA(DisplayName = "Dropped"),
+
+	EIS_MAX UMETA(DisplayName = "DefaultMAX")
+};

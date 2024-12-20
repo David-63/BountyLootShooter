@@ -39,44 +39,49 @@ private:
 	TObjectPtr<AShooterCharacter> ShooterCharacter;
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat Input")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input Action")
 	class UInputMappingContext* IMC_InventoryHandler;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat Input")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input Action")
 	TObjectPtr<UInputAction> PrimaryAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat Input")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input Action")
 	TObjectPtr<UInputAction> SecondaryAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat Input")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input Action")
 	TObjectPtr<UInputAction> SidarmAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat Input")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input Action")
 	TObjectPtr<UInputAction> InterAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input Action")
+	TObjectPtr<UInputAction> DropAction;
 
 private:
 	void SelectPrimary();
 	void SelectSecondary();
 	void SelectSidarm();
+	void SelectWeaponDrop();
 
 	void SwapWeapon(EInventorySlot NextWeaponSlot);
 	bool isWeaponArmed = false;
 	
 	void ToggleWeapon();
+	EInventorySlot GetOccupiedWeaponSlot();
 	
 
-	EInventorySlot GetOccupiedWeaponSlot();
-public:
-	/* 
-	*	This function is called when a weapon is acquired or equipped,
-	*	and it handles equipping the weapon to the appropriate slot.
-	*/ 
-	void EquipWeapon(AWeaponBase* Weapon);
-	// and equip other items function (s00n)
+public:	
+	void PickupItem(AItemBase* Item);
 
+	EInventorySlot FindEmptyWeaponSlot(EWeaponCategory WeaponCategory);
+	void BindWeaponSlot(AWeaponBase* Item, EInventorySlot EquippableSlot);
+	void ReplaceWeaponSlot(AWeaponBase* Item, EInventorySlot EquippableSlot);
+	
 
 protected:
-	EInventorySlot FindEmptyWeaponSlot(EWeaponCategory WeaponCategory);
+	bool DrawSelectWeapon();
+	bool HolsterSelectWeapon();
+
 	void ReplaceAndDestroyWeapon(EInventorySlot EquippableSlot, AWeaponBase* Weapon);
 	void ReplaceWeapon(EInventorySlot EquippableSlot, AWeaponBase* Weapon);
 

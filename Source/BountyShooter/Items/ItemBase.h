@@ -45,7 +45,7 @@ protected:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Item Initialize")
-	void SetPicupComponent(UPickupComponent* Pickup);
+	void SetPickupComponent(UPickupComponent* Pickup);
 	UFUNCTION(BlueprintCallable, Category = "Item Initialize")
 	void SetItemMeshComponent(UItemMeshComponent* Mesh);
 	
@@ -60,10 +60,15 @@ protected:
 protected:
 	UPROPERTY()
 	EItemState ItemState = EItemState::EIS_Initial;
+	UPROPERTY()
+	EItemType ItemType = EItemType::EIT_Weapon;
+
+public:
+	FORCEINLINE EItemType GetItemType() { return ItemType; }
 
 public:
 	void ChangeItemState(EItemState State);
-	virtual void Equip(AShooterCharacter* Owner, FName Socket = FName());
+	virtual void Equip(AShooterCharacter* Character, FName Socket = FName());
 	virtual void Drop();
 
 };

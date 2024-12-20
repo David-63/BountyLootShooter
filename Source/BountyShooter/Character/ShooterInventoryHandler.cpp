@@ -76,7 +76,7 @@ void UShooterInventoryHandler::EnableInventoryAction()
 			EnhancedInputComponent->BindAction(SecondaryAction, ETriggerEvent::Started, this, &UShooterInventoryHandler::SelectSecondary);
 			EnhancedInputComponent->BindAction(SidarmAction, ETriggerEvent::Started, this, &UShooterInventoryHandler::SelectSidarm);
 			EnhancedInputComponent->BindAction(InterAction, ETriggerEvent::Triggered, this, &UShooterInventoryHandler::ToggleWeapon);
-			;
+			EnhancedInputComponent->BindAction(DropAction, ETriggerEvent::Triggered, this, &UShooterInventoryHandler::SelectWeaponDrop);
 		}
 	}
 }
@@ -117,15 +117,10 @@ void UShooterInventoryHandler::ToggleWeapon()
 
 	if (!isWeaponArmed)
 	{
-		isWeaponArmed = true;
 		// 현재 슬롯에 무기가 있으면 꺼내고
-		if (WeaponSlots[SelectedWeaponSlot])
-		{
-			WeaponSlots[SelectedWeaponSlot]->DrawWeapon(FName(TEXT("Hand")));
-			ShooterCharacter->EnableCombatAction();
-		}
+		bool fail = DrawSelectWeapon();
 		// 없는경우 있는 무기 찾아서 슬롯 변경한 다음에 꺼내기
-		else
+		if (fail)
 		{
 			EInventorySlot otherSlot = GetOccupiedWeaponSlot();
 			if (EInventorySlot::EIS_MAX == otherSlot) return;
@@ -135,15 +130,45 @@ void UShooterInventoryHandler::ToggleWeapon()
 		}
 	}
 	else
+	{		
+		// 무기 집어넣기
+		HolsterSelectWeapon();
+	}
+}
+
+void UShooterInventoryHandler::SelectWeaponDrop()
+{
+	HolsterSelectWeapon();
+	if (WeaponSlots[SelectedWeaponSlot])
+	{
+		WeaponSlots[SelectedWeaponSlot]->Drop();
+		WeaponSlots[SelectedWeaponSlot] = nullptr;
+	}
+}
+
+
+
+bool UShooterInventoryHandler::DrawSelectWeapon()
+{
+	if (WeaponSlots[SelectedWeaponSlot])
+	{
+		isWeaponArmed = true;
+		WeaponSlots[SelectedWeaponSlot]->DrawWeapon(FName(TEXT("Hand")));
+		ShooterCharacter->EnableCombatAction();
+		return true;
+	}
+	return false;
+}
+bool UShooterInventoryHandler::HolsterSelectWeapon()
+{
+	if (WeaponSlots[SelectedWeaponSlot])
 	{
 		isWeaponArmed = false;
-		// 무기 집어넣기
-		if (WeaponSlots[SelectedWeaponSlot])
-		{
-			WeaponSlots[SelectedWeaponSlot]->HolsterWeapon(GetHolsterSocketName());
-			ShooterCharacter->DisableCombatAction();
-		}
+		WeaponSlots[SelectedWeaponSlot]->HolsterWeapon(GetHolsterSocketName());
+		ShooterCharacter->DisableCombatAction();
+		return true;
 	}
+	return false;
 }
 
 EInventorySlot UShooterInventoryHandler::GetOccupiedWeaponSlot()
@@ -166,27 +191,9 @@ EInventorySlot UShooterInventoryHandler::GetOccupiedWeaponSlot()
 	return EInventorySlot::EIS_MAX;
 }
 
-
-
-
-void UShooterInventoryHandler::EquipWeapon(AWeaponBase* Weapon)
+void UShooterInventoryHandler::PickupItem(AItemBase* Item)
 {
-	if (EWeaponCategory::EWC_MAX == Weapon->GetWeaponCategory()) return;
-	// 플레이어 등록
-	Weapon->BindOwner(ShooterCharacter);
-	// 무기 빈자리 찾기
-	EInventorySlot equippableSlot = FindEmptyWeaponSlot(Weapon->GetWeaponCategory());
-	if (EInventorySlot::EIS_MAX != equippableSlot)
-	{
-		ReplaceWeapon(equippableSlot, Weapon);
-	}
-	else
-	{
-		equippableSlot = EWeaponCategory::EWC_Compact == Weapon->GetWeaponCategory()
-			? EInventorySlot::EIS_Sidearm : SelectedWeaponSlot;
-
-		ReplaceAndDestroyWeapon(equippableSlot, Weapon);		
-	}
+	Item->Equip(ShooterCharacter);
 }
 
 
@@ -219,6 +226,32 @@ EInventorySlot UShooterInventoryHandler::FindEmptyWeaponSlot(EWeaponCategory Wea
 
 	return EInventorySlot::EIS_MAX;
 }
+void UShooterInventoryHandler::BindWeaponSlot(AWeaponBase* Item, EInventorySlot EquippableSlot)
+{
+	// 기존 무기 집어놓고
+	HolsterSelectWeapon();
+
+	// 무기 할당해 준 다음에
+	WeaponSlots[EquippableSlot] = Item;
+	SelectedWeaponSlot = EquippableSlot;
+
+	// 현재 슬롯을 변경해주고 무기 꺼내기
+	DrawSelectWeapon();
+}
+void UShooterInventoryHandler::ReplaceWeaponSlot(AWeaponBase* Item, EInventorySlot EquippableSlot)
+{
+	// 현재 사용중인 무기 집어넣고
+	SelectWeaponDrop();
+
+	// 슬롯에 아이템 넣기
+	WeaponSlots[SelectedWeaponSlot] = Item;
+
+	DrawSelectWeapon();
+}
+
+
+
+
 
 void UShooterInventoryHandler::ReplaceAndDestroyWeapon(EInventorySlot EquippableSlot, AWeaponBase* Weapon)
 {
@@ -243,12 +276,8 @@ void UShooterInventoryHandler::ReplaceAndDestroyWeapon(EInventorySlot Equippable
 		UE_LOG(LogTemp, Warning, TEXT("EIS_Sidearm"));
 		break;
 	}
-	if (WeaponSlots[SelectedWeaponSlot])
-	{
-		isWeaponArmed = true;
-		WeaponSlots[SelectedWeaponSlot]->DrawWeapon(GetHolsterSocketName());
-		ShooterCharacter->EnableCombatAction();
-	}
+
+	DrawSelectWeapon();
 }
 
 void UShooterInventoryHandler::ReplaceWeapon(EInventorySlot EquippableSlot, AWeaponBase* Weapon)
@@ -275,15 +304,11 @@ void UShooterInventoryHandler::ReplaceWeapon(EInventorySlot EquippableSlot, AWea
 		UE_LOG(LogTemp, Warning, TEXT("EIS_Sidearm"));
 		break;
 	}
-
 	
-	if (WeaponSlots[SelectedWeaponSlot])
-	{
-		isWeaponArmed = true;
-		WeaponSlots[SelectedWeaponSlot]->DrawWeapon(FName(TEXT("Hand")));
-		ShooterCharacter->EnableCombatAction();
-	}
+	DrawSelectWeapon();
 }
+
+
 
 
 
@@ -294,6 +319,7 @@ void UShooterInventoryHandler::SwapWeapon(EInventorySlot NextWeaponSlot)
 	
 	if (WeaponSlots[SelectedWeaponSlot])
 	{
+		isWeaponArmed = false;
 		WeaponSlots[SelectedWeaponSlot]->HolsterWeapon(GetHolsterSocketName());
 	}
 	SelectedWeaponSlot = NextWeaponSlot;
@@ -311,11 +337,7 @@ void UShooterInventoryHandler::SwapWeapon(EInventorySlot NextWeaponSlot)
 		break;
 	}
 
-	if (WeaponSlots[SelectedWeaponSlot])
-	{
-		WeaponSlots[SelectedWeaponSlot]->DrawWeapon(FName(TEXT("Hand")));
-		ShooterCharacter->EnableCombatAction();
-	}
+	DrawSelectWeapon();
 }
 
 

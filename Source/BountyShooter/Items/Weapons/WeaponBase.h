@@ -22,7 +22,7 @@ class BOUNTYSHOOTER_API AWeaponBase : public AItemBase
 
 
 public:
-	virtual void Equip(AShooterCharacter* Owner, FName Socket) override;
+	virtual void Equip(AShooterCharacter* Character, FName Socket) override;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon Function")
