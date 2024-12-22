@@ -25,15 +25,7 @@ void AWeaponBase::Equip(AShooterCharacter* Character, FName Socket)
 	{
 		ShooterCharacter->InventoryHandler->ReplaceWeaponSlot(this, slot);
 	}
-
-	// Todo
-	/*
-	UpdateExtraAmmo();
-	PlayEquipWeaponSound();
-	WeaponAutoReload();	
-	*/
 }
-
 
 void AWeaponBase::DrawWeapon(FName SocketName)
 {
@@ -48,86 +40,51 @@ void AWeaponBase::HolsterWeapon(FName SocketName)
 	AttachToComponent(ShooterCharacter->GetMesh(), AttachmentRules, SocketName);
 }
 
+void AWeaponBase::SetPlatform(AWeaponPlatform* Platform)
+{
+	WeaponPlatform = Platform;
+}
+
+void AWeaponBase::SetAmmo(AWeaponAmmo* Ammo)
+{
+	WeaponAmmo = Ammo;
+}
+
+UItemMeshComponent* AWeaponBase::GetItemMeshComponent()
+{
+	return ItemMeshComponent;
+}
+
+AWeaponPlatform* AWeaponBase::GetPlatform()
+{
+	return WeaponPlatform;
+}
+
+AWeaponAmmo* AWeaponBase::GetAmmo()
+{
+	return WeaponAmmo;
+}
+
 void AWeaponBase::FireRound(const FVector& _hitTarget)
 {
 	// 최소 조건
 	APawn* ownerPawn = Cast<APawn>(GetOwner());
-	if (nullptr == ownerPawn) return;
+	if (nullptr == ownerPawn) { UE_LOG(LogTemp, Warning, TEXT("Owner pawn is null.")); return; }
 	UWorld* world = GetWorld();
-	if (nullptr == world) return;
+	if (nullptr == world) { UE_LOG(LogTemp, Warning, TEXT("World is null.")); return; }
 
-	// 이펙트 있으면 재생
-	//PlayFireEffect(*world);
-	// 총알 소모됨
-	ChamberingRound();
-	
+	// 사격 이팩트 재생 (탄약에서 해줘야함)
+	WeaponAmmo->PlayFireParticle();
 
+	// 타격
 	AController* instigatorController = ownerPawn->GetController();
-
-	if (MuzzleFlashSocket)
+	const USkeletalMeshSocket* muzzleSocket = ItemMeshComponent->GetSocketByName(FName("Muzzle"));
+	if (muzzleSocket)
 	{
-		// 총구 위치 찾기
-		FTransform socketTransform = MuzzleFlashSocket->GetSocketTransform(ItemMeshComponent);
-		FVector beginLocation = socketTransform.GetLocation();
-		TMap<AShooterCharacter*, uint32> hitMap;
-		if (bUsingHitScan)
-		{
-			FireHitscan(beginLocation, _hitTarget, *world, instigatorController, hitMap);
-		}
-		else
-		{
-			FireProjectile(beginLocation, _hitTarget, *world);
-		}
+		WeaponPlatform->FireHitscan(_hitTarget, instigatorController, muzzleSocket);
 	}
-}
+	else { UE_LOG(LogTemp, Warning, TEXT("Muzzle socket not found.")); }
 
-void AWeaponBase::ChamberingRound()
-{
-	// 약실 있으면 탄피 날리기
-	if (bChamber)
-	{
-		WeaponAmmo->EjectCasing();
-	}
-
-
-
-	/*
-	
-
-	if (0 != AmmoCur)
-	{
-		bChamber = true;
-	}
-	else
-	{
-		bChamber = false;
-	}
-	AmmoCur = FMath::Clamp(AmmoCur - 1, 0, AmmoMax);
-	SetHUDCurrentAmmo();
-	UE_LOG(LogTemp, Warning, TEXT("Ammo Cur : %d"), GetAmmo());
-	if (IsChamberEmpty())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("chamber Empty"));
-	}
-
-
-	*/
-}
-
-FVector AWeaponBase::TraceEndWithScatter(const FVector& _traceStart, const FVector& _hitTarget)
-{
-	return FVector();
-}
-
-FVector AWeaponBase::WeaponTraceHit(const FVector& _traceStart, const FVector& _hitTarget, FHitResult& _inOutHit)
-{
-	return FVector();
-}
-
-void AWeaponBase::FireHitscan(FVector& beginLocation, const FVector& _hitTarget, const UWorld& world, AController* instigatorController, TMap<AShooterCharacter*, uint32>& hitMap)
-{
-}
-
-void AWeaponBase::FireProjectile(FVector& beginLocation, const FVector& _hitTarget, UWorld& world)
-{
+	// 총알 소모됨
+	WeaponPlatform->CycleCartridge();
 }

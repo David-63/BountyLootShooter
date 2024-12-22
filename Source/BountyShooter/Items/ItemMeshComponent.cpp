@@ -27,5 +27,5 @@ void UItemMeshComponent::ItemCollisionEnable()
 {
 	SetSimulatePhysics(true);
 	SetEnableGravity(true);
-	SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 }

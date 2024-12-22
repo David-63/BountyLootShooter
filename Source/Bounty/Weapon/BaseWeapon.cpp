@@ -268,7 +268,6 @@ void ABaseWeapon::AddAmmo(int32 _ammoToAdd)
 	SetHUDCurrentAmmo();
 }
 
-
 void ABaseWeapon::EnableCustomDepth(bool _bEnable)
 {
 	if (WeaponMesh)

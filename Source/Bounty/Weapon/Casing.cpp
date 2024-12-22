@@ -15,7 +15,7 @@ ACasing::ACasing()
 
 	CasingMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	CasingMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-	CasingMesh->SetCollisionResponseToChannel(ECC_SkeletalMesh, ECollisionResponse::ECR_Ignore);
+	CasingMesh->SetCollisionResponseToChannel(ECC_SkeletalMesh , ECollisionResponse::ECR_Ignore);
 	CasingMesh->SetSimulatePhysics(true);
 	CasingMesh->SetEnableGravity(true);
 	CasingMesh->SetNotifyRigidBodyCollision(true);

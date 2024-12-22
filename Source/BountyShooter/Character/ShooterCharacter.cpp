@@ -23,7 +23,7 @@
 #include "BountyShooter/Items/ItemBase.h"
 #include "BountyShooter/Items/Weapons/WeaponBase.h"
 #include "BountyShooter/UI/InteractDotWidget.h"
-#include "BountyShooter/UI/InteractInterface.h"
+#include "BountyShooter/BountyComponents/InteractInterface.h"
 
 AShooterCharacter::AShooterCharacter()
 {

@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "BountyShooter/UI/InteractInterface.h"
-#include "BountyShooter/Character/ShooterEnums.h"
+#include "BountyShooter/BountyComponents/InteractInterface.h"
+#include "BountyShooter/BountyComponents/ShooterEnums.h"
 
 #include "ItemBase.generated.h"
 
@@ -38,9 +38,9 @@ public:
 	*	Actor Components
 	*/
 protected:
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UPickupComponent> PickupArea = nullptr;
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)~
 	TObjectPtr<UItemMeshComponent> ItemMeshComponent = nullptr;
 
 public:

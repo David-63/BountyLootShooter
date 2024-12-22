@@ -45,19 +45,22 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Attachment", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<AWeaponAmmo> WeaponAmmo = nullptr;
 
+public:
+	UFUNCTION(BlueprintCallable, Category = "Item Initialize")
+	void SetPlatform(AWeaponPlatform* Platform);
+	UFUNCTION(BlueprintCallable, Category = "Item Initialize")
+	void SetAmmo(AWeaponAmmo* Ammo);
+
+	UItemMeshComponent* GetItemMeshComponent();
+	AWeaponPlatform* GetPlatform();
+	AWeaponAmmo* GetAmmo();
 
 	// 사격에 필요한 변수
 private:
-	const USkeletalMeshSocket* MuzzleFlashSocket = nullptr;
-	bool bUsingHitScan = false;
-	bool bChamber = true;
+	
+	
 	// 사격 함수
 public:
 	void FireRound(const FVector& _hitTarget);
-	void ChamberingRound();
-private:
-	FVector TraceEndWithScatter(const FVector& _traceStart, const FVector& _hitTarget);
-	FVector WeaponTraceHit(const FVector& _traceStart, const FVector& _hitTarget, FHitResult& _inOutHit);
-	void FireHitscan(FVector& beginLocation, const FVector& _hitTarget, const UWorld& world, AController* instigatorController, TMap<AShooterCharacter*, uint32>& hitMap);
-	void FireProjectile(FVector& beginLocation, const FVector& _hitTarget, UWorld& world);
+
 };

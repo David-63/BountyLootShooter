@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "MoveStateEnums.h"
-#include "AnimStructs.h"
 #include "ShooterCharacter.generated.h"
 
 struct FInputActionValue;

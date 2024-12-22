@@ -10,6 +10,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
 
+#include "ShooterInventoryHandler.h"
+#include "BountyShooter/Items/Weapons/WeaponBase.h"
+
 // Sets default values for this component's properties
 UShooterCombatHandler::UShooterCombatHandler()
 {
@@ -96,7 +99,13 @@ void UShooterCombatHandler::AmmoInsertion()
 
 void UShooterCombatHandler::Fire()
 {
-	// 나중에 무기에서 제공하는 함수를 호출하기만 할 예정
+	// 인벤토리로부터 현재 무기정보 요청
+	AWeaponBase* weapon = ShooterCharacter->InventoryHandler->GetSelectedWeapon();
+
+	// 공격
+	weapon->FireRound(ShooterCharacter->GetHitLocation());
+
+
 	
 	// 시작지점
 	FVector beginPoint = ShooterCharacter->GetActorLocation();

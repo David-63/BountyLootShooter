@@ -6,6 +6,9 @@
 #include "GameFramework/Actor.h"
 #include "WeaponAmmo.generated.h"
 
+class AWeaponBase;
+class ACartridgeCase;
+
 UCLASS()
 class BOUNTYSHOOTER_API AWeaponAmmo : public AActor
 {
@@ -23,7 +26,23 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+public:
+	void Initialize(AWeaponBase* Base);
+
+private:
+	TObjectPtr<AWeaponBase> WeaponBase = nullptr;
+	TSubclassOf<ACartridgeCase> CartridgeCase;
 
 public:
-	void EjectCasing();
+	void EjectCase(const USkeletalMeshSocket* EjectSocket);
+	void UpdateChamber(uint32& ClipSize, uint32 ClipCapacity, bool& bChamberLoaded);
+
+
+public:
+	void PlayFireParticle();
+	void PlayTrailParticle();
+	void PlayImpactParticle();
+
+
+
 };

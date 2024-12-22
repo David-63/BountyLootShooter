@@ -252,76 +252,10 @@ void UShooterInventoryHandler::ReplaceWeaponSlot(AWeaponBase* Item, EInventorySl
 
 
 
-
-void UShooterInventoryHandler::ReplaceAndDestroyWeapon(EInventorySlot EquippableSlot, AWeaponBase* Weapon)
-{
-	if (WeaponSlots[EquippableSlot])
-	{
-		isWeaponArmed = false;
-		WeaponSlots[EquippableSlot]->Destroy();
-		WeaponSlots[EquippableSlot] = nullptr;
-	}
-
-	WeaponSlots[EquippableSlot] = Weapon;
-	SelectedWeaponSlot = EquippableSlot;
-	switch (SelectedWeaponSlot)
-	{
-	case EInventorySlot::EIS_Primary:
-		UE_LOG(LogTemp, Warning, TEXT("EIS_Primary"));
-		break;
-	case EInventorySlot::EIS_Secondary:
-		UE_LOG(LogTemp, Warning, TEXT("EIS_Secondary"));
-		break;
-	case EInventorySlot::EIS_Sidearm:
-		UE_LOG(LogTemp, Warning, TEXT("EIS_Sidearm"));
-		break;
-	}
-
-	DrawSelectWeapon();
-}
-
-void UShooterInventoryHandler::ReplaceWeapon(EInventorySlot EquippableSlot, AWeaponBase* Weapon)
-{
-	// 기존 무기 집어놓고
-	if (WeaponSlots[SelectedWeaponSlot])
-	{
-		isWeaponArmed = false;
-		WeaponSlots[SelectedWeaponSlot]->HolsterWeapon(GetHolsterSocketName());
-	}
-	// 무기 할당해 준 다음에
-	WeaponSlots[EquippableSlot] = Weapon;
-	// 현재 슬롯을 변경해주고 무기 꺼내기
-	SelectedWeaponSlot = EquippableSlot;
-	switch (SelectedWeaponSlot)
-	{
-	case EInventorySlot::EIS_Primary:
-		UE_LOG(LogTemp, Warning, TEXT("EIS_Primary"));
-		break;
-	case EInventorySlot::EIS_Secondary:
-		UE_LOG(LogTemp, Warning, TEXT("EIS_Secondary"));
-		break;
-	case EInventorySlot::EIS_Sidearm:
-		UE_LOG(LogTemp, Warning, TEXT("EIS_Sidearm"));
-		break;
-	}
-	
-	DrawSelectWeapon();
-}
-
-
-
-
-
 void UShooterInventoryHandler::SwapWeapon(EInventorySlot NextWeaponSlot)
 {
 	if (NextWeaponSlot == SelectedWeaponSlot) return;
-
-	
-	if (WeaponSlots[SelectedWeaponSlot])
-	{
-		isWeaponArmed = false;
-		WeaponSlots[SelectedWeaponSlot]->HolsterWeapon(GetHolsterSocketName());
-	}
+	HolsterSelectWeapon();
 	SelectedWeaponSlot = NextWeaponSlot;
 
 	switch (SelectedWeaponSlot)

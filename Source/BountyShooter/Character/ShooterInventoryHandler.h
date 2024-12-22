@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "ShooterEnums.h"
+#include "BountyShooter/BountyComponents/ShooterEnums.h"
 #include "ShooterInventoryHandler.generated.h"
 
 class AItemBase;
@@ -82,11 +82,6 @@ protected:
 	bool DrawSelectWeapon();
 	bool HolsterSelectWeapon();
 
-	void ReplaceAndDestroyWeapon(EInventorySlot EquippableSlot, AWeaponBase* Weapon);
-	void ReplaceWeapon(EInventorySlot EquippableSlot, AWeaponBase* Weapon);
-
-
-
 public:
 	UPROPERTY()
 	TMap<EInventorySlot, TObjectPtr<AWeaponBase>> WeaponSlots;
@@ -94,6 +89,16 @@ public:
 	UPROPERTY()
 	EInventorySlot SelectedWeaponSlot = EInventorySlot::EIS_Primary;
 
+	UPROPERTY()
+	TMap<EWeaponSpecificType, int32> ExtraAmmoMap;
+	UPROPERTY(EditAnywhere, Category = "Extra Ammo")
+	int32 StartingAmmoAR = 6;
+	UPROPERTY(EditAnywhere, Category = "Extra Ammo")
+	int32 StartingAmmoPistol = 5;
+	UPROPERTY(EditAnywhere, Category = "Extra Ammo")
+	int32 StartingAmmoSMG = 6;
+	UPROPERTY(EditAnywhere, Category = "Extra Ammo")
+	int32 StartingAmmoScatterGun = 20;
 public:
 	AWeaponBase* GetSelectedWeapon();
 	FName GetHolsterSocketName();

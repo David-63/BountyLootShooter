@@ -4,8 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
-#include "MoveStateEnums.h"
-#include "AnimStructs.h"
+
 #include "ShooterAnimInstance.generated.h"
 
 class AShooterCharacter;
