@@ -6,8 +6,8 @@
 #include "BountyShooter/Character/ShooterInventoryHandler.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "../ItemMeshComponent.h"
-#include "WeaponAmmo.h"
-#include "WeaponPlatform.h"
+#include "AmmunitionComponent.h"
+#include "PlatformComponent.h"
 
 void AWeaponBase::Equip(AShooterCharacter* Character, FName Socket)
 {
@@ -40,14 +40,16 @@ void AWeaponBase::HolsterWeapon(FName SocketName)
 	AttachToComponent(ShooterCharacter->GetMesh(), AttachmentRules, SocketName);
 }
 
-void AWeaponBase::SetPlatform(AWeaponPlatform* Platform)
+void AWeaponBase::SetPlatformComponent(UPlatformComponent* Platform)
 {
 	WeaponPlatform = Platform;
+	WeaponPlatform->Initialize(this);
 }
 
-void AWeaponBase::SetAmmo(AWeaponAmmo* Ammo)
+void AWeaponBase::SetAmmunitionComponent(UAmmunitionComponent* Ammo)
 {
-	WeaponAmmo = Ammo;
+	WeaponAmmunition = Ammo;
+	WeaponAmmunition->Initialize(this);
 }
 
 UItemMeshComponent* AWeaponBase::GetItemMeshComponent()
@@ -55,14 +57,14 @@ UItemMeshComponent* AWeaponBase::GetItemMeshComponent()
 	return ItemMeshComponent;
 }
 
-AWeaponPlatform* AWeaponBase::GetPlatform()
+UPlatformComponent* AWeaponBase::GetPlatformComponent()
 {
 	return WeaponPlatform;
 }
 
-AWeaponAmmo* AWeaponBase::GetAmmo()
+UAmmunitionComponent* AWeaponBase::GetAmmunitionComponent()
 {
-	return WeaponAmmo;
+	return WeaponAmmunition;
 }
 
 void AWeaponBase::FireRound(const FVector& _hitTarget)
@@ -74,17 +76,17 @@ void AWeaponBase::FireRound(const FVector& _hitTarget)
 	if (nullptr == world) { UE_LOG(LogTemp, Warning, TEXT("World is null.")); return; }
 
 	// »ç°Ý ÀÌÆÑÆ® Àç»ý (Åº¾à¿¡¼­ ÇØÁà¾ßÇÔ)
-	WeaponAmmo->PlayFireParticle();
+	WeaponAmmunition->PlayFireParticle();
 
 	// Å¸°Ý
 	AController* instigatorController = ownerPawn->GetController();
 	const USkeletalMeshSocket* muzzleSocket = ItemMeshComponent->GetSocketByName(FName("Muzzle"));
 	if (muzzleSocket)
 	{
-		WeaponPlatform->FireHitscan(_hitTarget, instigatorController, muzzleSocket);
+		WeaponPlatform->FireHitscan(world, _hitTarget, instigatorController, muzzleSocket);
 	}
 	else { UE_LOG(LogTemp, Warning, TEXT("Muzzle socket not found.")); }
 
 	// ÃÑ¾Ë ¼Ò¸ðµÊ
-	WeaponPlatform->CycleCartridge();
+	WeaponPlatform->CycleCartridge(world);
 }

@@ -7,7 +7,7 @@
 
 UPickupComponent::UPickupComponent()
 {
-	SphereRadius = 160.f;
+	SphereRadius = 300.f;
 
 	SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	SetCollisionEnabled(ECollisionEnabled::QueryOnly);

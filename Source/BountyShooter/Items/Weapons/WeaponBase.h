@@ -5,11 +5,10 @@
 #include "CoreMinimal.h"
 #include "../ItemBase.h"
 
-
 #include "WeaponBase.generated.h"
 
-class AWeaponPlatform;
-class AWeaponAmmo;
+class UPlatformComponent;
+class UAmmunitionComponent;
 class UWeaponMeshComponent;
 
 /**
@@ -19,7 +18,6 @@ UCLASS()
 class BOUNTYSHOOTER_API AWeaponBase : public AItemBase
 {
 	GENERATED_BODY()
-
 
 public:
 	virtual void Equip(AShooterCharacter* Character, FName Socket) override;
@@ -39,25 +37,21 @@ public:
 	FORCEINLINE EWeaponCategory GetWeaponCategory() { return WeaponCategory; }
 
 	// 하위 컴포넌트
-private:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Attachment", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<AWeaponPlatform> WeaponPlatform = nullptr;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Attachment", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<AWeaponAmmo> WeaponAmmo = nullptr;
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Attachment")
+	TObjectPtr<UPlatformComponent> WeaponPlatform = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Attachment")
+	TObjectPtr<UAmmunitionComponent> WeaponAmmunition = nullptr;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Item Initialize")
-	void SetPlatform(AWeaponPlatform* Platform);
+	void SetPlatformComponent(UPlatformComponent* Platform);
 	UFUNCTION(BlueprintCallable, Category = "Item Initialize")
-	void SetAmmo(AWeaponAmmo* Ammo);
+	void SetAmmunitionComponent(UAmmunitionComponent* Ammo);
 
 	UItemMeshComponent* GetItemMeshComponent();
-	AWeaponPlatform* GetPlatform();
-	AWeaponAmmo* GetAmmo();
-
-	// 사격에 필요한 변수
-private:
-	
+	UPlatformComponent* GetPlatformComponent();
+	UAmmunitionComponent* GetAmmunitionComponent();
 	
 	// 사격 함수
 public:

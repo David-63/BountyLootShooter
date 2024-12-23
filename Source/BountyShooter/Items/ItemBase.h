@@ -40,7 +40,7 @@ public:
 protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UPickupComponent> PickupArea = nullptr;
-	UPROPERTY(VisibleAnywhere)~
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UItemMeshComponent> ItemMeshComponent = nullptr;
 
 public:
