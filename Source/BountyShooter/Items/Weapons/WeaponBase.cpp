@@ -16,8 +16,8 @@ void AWeaponBase::Equip(AShooterCharacter* Character, FName Socket)
 	SetOwner(Character);
 	ChangeItemState(EItemState::EIS_Equipped);
 
-	EInventorySlot slot = ShooterCharacter->InventoryHandler->FindEmptyWeaponSlot(WeaponCategory);
-	if (EInventorySlot::EIS_MAX != slot)
+	ELoadoutSlot slot = ShooterCharacter->InventoryHandler->FindEmptyWeaponSlot(WeaponCategory);
+	if (ELoadoutSlot::ELS_MAX != slot)
 	{
 		ShooterCharacter->InventoryHandler->BindWeaponSlot(this, slot);
 	}

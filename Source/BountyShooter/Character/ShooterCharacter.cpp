@@ -16,6 +16,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 
+#include "ShooterAnimInstance.h"
 #include "ShooterMovementHandler.h"
 #include "ShooterCombatHandler.h"
 #include "ShooterInventoryHandler.h"
@@ -87,6 +88,15 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input Component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+}
+
+UShooterAnimInstance* AShooterCharacter::GetCharacterAnimInstance() const
+{
+	if (USkeletalMeshComponent* meshComponent = GetMesh())
+	{
+		return Cast<UShooterAnimInstance>(meshComponent->GetAnimInstance());
+	}
+	return nullptr;
 }
 
 void AShooterCharacter::LineTraceViewDirection(FHitResult& result)

@@ -1,13 +1,23 @@
 #pragma once
 
 UENUM(BlueprintType)
-enum class EInventorySlot : uint8
+enum class ELoadoutSlot : uint8
 {
-	EIS_Primary UMETA(DisplayName = "Primary"),
-	EIS_Secondary UMETA(DisplayName = "Secondary"),
-	EIS_Sidearm UMETA(DisplayName = "Sidearm"),
-	EIS_MAX UMETA(DisplayName = "DefaultMAX"),
+	ELS_Primary UMETA(DisplayName = "Primary"),
+	ELS_Secondary UMETA(DisplayName = "Secondary"),
+	ELS_Sidearm UMETA(DisplayName = "Sidearm"),
+	ELS_MAX UMETA(DisplayName = "DefaultMAX"),
 };
+
+UENUM(BlueprintType)
+enum class EEquippedState : uint8
+{
+	EES_TwoHands UMETA(DisplayName = "TwoHands"),
+	EES_OneHand UMETA(DisplayName = "OneHand"),
+	EES_Unarmed UMETA(DisplayName = "Unarmed"),
+	EES_MAX UMETA(DisplayName = "DefaultMAX"),
+};
+
 
 UENUM(BlueprintType)
 enum class EWeaponCategory : uint8
@@ -47,7 +57,7 @@ enum class EItemType : uint8
 	//EIT_Equipped UMETA(DisplayName = "Equipped"),
 	//EIT_Dropped UMETA(DisplayName = "Dropped"),
 
-	EIS_MAX UMETA(DisplayName = "DefaultMAX")
+	EIT_MAX UMETA(DisplayName = "DefaultMAX")
 };
 
 

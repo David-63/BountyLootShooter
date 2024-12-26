@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "ShooterCharacter.generated.h"
 
+#define TRACE_LENGTH 10000.f
+
 struct FInputActionValue;
 class UInputMappingContext;
 class UInputAction;
@@ -14,6 +16,7 @@ class UCameraComponent;
 class UCharacterTrajectoryComponent;
 class UWidgetComponent;
 
+class UShooterAnimInstance;
 class UShooterMovementHandler;
 class UShooterCombatHandler;
 class UShooterInventoryHandler;
@@ -49,7 +52,8 @@ private:
 public:
 	FORCEINLINE TObjectPtr<USpringArmComponent> GetTpsSpringArm() const { return SpringArm3P; }
 	FORCEINLINE TObjectPtr<UCameraComponent> GetTpsCamera() const { return Camera3P; }
-
+	UFUNCTION(BlueprintCallable, Category = "Animation")
+	UShooterAnimInstance* GetCharacterAnimInstance() const;
 
 
 

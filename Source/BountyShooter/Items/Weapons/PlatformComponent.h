@@ -9,9 +9,6 @@
 
 class AWeaponBase;
 
-#define TRACE_LENGTH 10000
-
-
 UCLASS( Blueprintable, BlueprintType, ClassGroup = (Weapon), meta=(BlueprintSpawnableComponent) )
 class BOUNTYSHOOTER_API UPlatformComponent : public UActorComponent
 {

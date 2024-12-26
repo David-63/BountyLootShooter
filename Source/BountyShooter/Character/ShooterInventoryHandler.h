@@ -7,10 +7,11 @@
 #include "BountyShooter/BountyComponents/ShooterEnums.h"
 #include "ShooterInventoryHandler.generated.h"
 
+struct FInputActionValue;
+class UInputAction;
 class AItemBase;
 class AWeaponBase;
 class AShooterCharacter;
-class UInputAction;
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup = (ShooterHandler), meta=(BlueprintSpawnableComponent) )
 class BOUNTYSHOOTER_API UShooterInventoryHandler : public UActorComponent
@@ -43,13 +44,7 @@ public:
 	class UInputMappingContext* IMC_InventoryHandler;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input Action")
-	TObjectPtr<UInputAction> PrimaryAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input Action")
-	TObjectPtr<UInputAction> SecondaryAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input Action")
-	TObjectPtr<UInputAction> SidarmAction;
+	TObjectPtr<UInputAction> WeaponSwapAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input Action")
 	TObjectPtr<UInputAction> InterAction;
@@ -58,24 +53,22 @@ public:
 	TObjectPtr<UInputAction> DropAction;
 
 private:
-	void SelectPrimary();
-	void SelectSecondary();
-	void SelectSidarm();
+	void WeaponSwap(const FInputActionValue& Value);
 	void SelectWeaponDrop();
 
-	void SwapWeapon(EInventorySlot NextWeaponSlot);
+	void SwapWeapon(ELoadoutSlot NextWeaponSlot);
 	bool isWeaponArmed = false;
 	
 	void ToggleWeapon();
-	EInventorySlot GetOccupiedWeaponSlot();
+	ELoadoutSlot GetOccupiedWeaponSlot();
 	
 
 public:	
 	void PickupItem(AItemBase* Item);
 
-	EInventorySlot FindEmptyWeaponSlot(EWeaponCategory WeaponCategory);
-	void BindWeaponSlot(AWeaponBase* Item, EInventorySlot EquippableSlot);
-	void ReplaceWeaponSlot(AWeaponBase* Item, EInventorySlot EquippableSlot);
+	ELoadoutSlot FindEmptyWeaponSlot(EWeaponCategory WeaponCategory);
+	void BindWeaponSlot(AWeaponBase* Item, ELoadoutSlot EquippableSlot);
+	void ReplaceWeaponSlot(AWeaponBase* Item, ELoadoutSlot EquippableSlot);
 	
 
 protected:
@@ -84,10 +77,10 @@ protected:
 
 public:
 	UPROPERTY()
-	TMap<EInventorySlot, TObjectPtr<AWeaponBase>> WeaponSlots;
+	TMap<ELoadoutSlot, TObjectPtr<AWeaponBase>> WeaponSlots;
 	
 	UPROPERTY()
-	EInventorySlot SelectedWeaponSlot = EInventorySlot::EIS_Primary;
+	ELoadoutSlot SelectedWeaponSlot = ELoadoutSlot::ELS_MAX;
 
 	UPROPERTY()
 	TMap<EWeaponSpecificType, int32> ExtraAmmoMap;

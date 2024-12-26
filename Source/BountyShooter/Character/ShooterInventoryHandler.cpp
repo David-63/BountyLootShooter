@@ -7,6 +7,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 
+#include "ShooterAnimInstance.h"
 
 
 #include "BountyShooter/Items/Weapons/WeaponBase.h"
@@ -48,11 +49,11 @@ void UShooterInventoryHandler::BindInventoryHandler(AShooterCharacter* TargetCha
 
 	EnableInventoryAction();
 
-	WeaponSlots.Add(EInventorySlot::EIS_Primary, nullptr);
-	WeaponSlots.Add(EInventorySlot::EIS_Secondary, nullptr);
-	WeaponSlots.Add(EInventorySlot::EIS_Sidearm, nullptr);
+	WeaponSlots.Add(ELoadoutSlot::ELS_Primary, nullptr);
+	WeaponSlots.Add(ELoadoutSlot::ELS_Secondary, nullptr);
+	WeaponSlots.Add(ELoadoutSlot::ELS_Sidearm, nullptr);
 
-	SelectedWeaponSlot = EInventorySlot::EIS_Primary;
+	SelectedWeaponSlot = ELoadoutSlot::ELS_Primary;
 
 }
 
@@ -72,13 +73,11 @@ void UShooterInventoryHandler::EnableInventoryAction()
 
 		if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent))
 		{
-			EnhancedInputComponent->BindAction(PrimaryAction, ETriggerEvent::Started, this, &UShooterInventoryHandler::SelectPrimary);
-			EnhancedInputComponent->BindAction(SecondaryAction, ETriggerEvent::Started, this, &UShooterInventoryHandler::SelectSecondary);
-			EnhancedInputComponent->BindAction(SidarmAction, ETriggerEvent::Started, this, &UShooterInventoryHandler::SelectSidarm);
+			EnhancedInputComponent->BindAction(WeaponSwapAction, ETriggerEvent::Triggered, this, &UShooterInventoryHandler::WeaponSwap);
 			EnhancedInputComponent->BindAction(InterAction, ETriggerEvent::Triggered, this, &UShooterInventoryHandler::ToggleWeapon);
 			EnhancedInputComponent->BindAction(DropAction, ETriggerEvent::Triggered, this, &UShooterInventoryHandler::SelectWeaponDrop);
 		}
-	}
+	}	
 }
 
 void UShooterInventoryHandler::DisableInventoryAction()
@@ -96,25 +95,33 @@ void UShooterInventoryHandler::DisableInventoryAction()
 	}
 }
 
-void UShooterInventoryHandler::SelectPrimary()
-{
-	SwapWeapon(EInventorySlot::EIS_Primary);
-}
 
-void UShooterInventoryHandler::SelectSecondary()
+void UShooterInventoryHandler::WeaponSwap(const FInputActionValue& Value)
 {
-	SwapWeapon(EInventorySlot::EIS_Secondary);
-}
-
-void UShooterInventoryHandler::SelectSidarm()
-{
-	SwapWeapon(EInventorySlot::EIS_Sidearm);
+	float ScalarValue = Value.Get<float>();
+	uint32 slot = static_cast<uint32>(ScalarValue);
+	switch (slot)
+	{
+	case 1:
+		SwapWeapon(ELoadoutSlot::ELS_Primary);
+		break;
+	case 2:
+		SwapWeapon(ELoadoutSlot::ELS_Secondary);
+		break;
+	case 3:
+		SwapWeapon(ELoadoutSlot::ELS_Sidearm);
+		break;
+	default:
+		UE_LOG(LogTemp, Warning, TEXT("Invalid weapon slot: %f"), ScalarValue);
+		break;
+	}
+	ShooterCharacter->GetCharacterAnimInstance()->RecieveEquippedState(SelectedWeaponSlot);
 }
 
 
 void UShooterInventoryHandler::ToggleWeapon()
 {
-
+	UE_LOG(LogTemp, Warning, TEXT("Hold E called ToggleWeapon function"));
 	if (!isWeaponArmed)
 	{
 		// 현재 슬롯에 무기가 있으면 꺼내고
@@ -122,17 +129,19 @@ void UShooterInventoryHandler::ToggleWeapon()
 		// 없는경우 있는 무기 찾아서 슬롯 변경한 다음에 꺼내기
 		if (fail)
 		{
-			EInventorySlot otherSlot = GetOccupiedWeaponSlot();
-			if (EInventorySlot::EIS_MAX == otherSlot) return;
+			ELoadoutSlot otherSlot = GetOccupiedWeaponSlot();
+			if (ELoadoutSlot::ELS_MAX == otherSlot) return;
 
 			WeaponSlots[otherSlot]->DrawWeapon(FName(TEXT("Hand")));
 			ShooterCharacter->EnableCombatAction();
+			ShooterCharacter->GetCharacterAnimInstance()->RecieveEquippedState(SelectedWeaponSlot);
 		}
 	}
 	else
 	{		
 		// 무기 집어넣기
 		HolsterSelectWeapon();
+		ShooterCharacter->GetCharacterAnimInstance()->RecieveEquippedState(ELoadoutSlot::ELS_MAX);
 	}
 }
 
@@ -143,6 +152,7 @@ void UShooterInventoryHandler::SelectWeaponDrop()
 	{
 		WeaponSlots[SelectedWeaponSlot]->Drop();
 		WeaponSlots[SelectedWeaponSlot] = nullptr;
+		SelectedWeaponSlot = ELoadoutSlot::ELS_MAX;
 	}
 }
 
@@ -171,24 +181,24 @@ bool UShooterInventoryHandler::HolsterSelectWeapon()
 	return false;
 }
 
-EInventorySlot UShooterInventoryHandler::GetOccupiedWeaponSlot()
+ELoadoutSlot UShooterInventoryHandler::GetOccupiedWeaponSlot()
 {
-	if (WeaponSlots[EInventorySlot::EIS_Primary])
+	if (WeaponSlots[ELoadoutSlot::ELS_Primary])
 	{
-		return EInventorySlot::EIS_Primary;
+		return ELoadoutSlot::ELS_Primary;
 	}
 	
-	if (WeaponSlots[EInventorySlot::EIS_Secondary])
+	if (WeaponSlots[ELoadoutSlot::ELS_Secondary])
 	{
-		return EInventorySlot::EIS_Secondary;
+		return ELoadoutSlot::ELS_Secondary;
 	}
 		
-	if (WeaponSlots[EInventorySlot::EIS_Sidearm])
+	if (WeaponSlots[ELoadoutSlot::ELS_Sidearm])
 	{
-		return EInventorySlot::EIS_Sidearm;
+		return ELoadoutSlot::ELS_Sidearm;
 	}
 
-	return EInventorySlot::EIS_MAX;
+	return ELoadoutSlot::ELS_MAX;
 }
 
 void UShooterInventoryHandler::PickupItem(AItemBase* Item)
@@ -197,36 +207,36 @@ void UShooterInventoryHandler::PickupItem(AItemBase* Item)
 }
 
 
-EInventorySlot UShooterInventoryHandler::FindEmptyWeaponSlot(EWeaponCategory WeaponCategory)
+ELoadoutSlot UShooterInventoryHandler::FindEmptyWeaponSlot(EWeaponCategory WeaponCategory)
 {
 	TObjectPtr<AWeaponBase>* targetItem = nullptr;
 	
 	if (EWeaponCategory::EWC_Large == WeaponCategory)
 	{
-		targetItem = WeaponSlots.Find(EInventorySlot::EIS_Primary);
+		targetItem = WeaponSlots.Find(ELoadoutSlot::ELS_Primary);
 		if (!*targetItem)
 		{
-			return EInventorySlot::EIS_Primary;
+			return ELoadoutSlot::ELS_Primary;
 		}
-		targetItem = WeaponSlots.Find(EInventorySlot::EIS_Secondary);
+		targetItem = WeaponSlots.Find(ELoadoutSlot::ELS_Secondary);
 		if (!*targetItem)
 		{
-			return EInventorySlot::EIS_Secondary;
+			return ELoadoutSlot::ELS_Secondary;
 		}
 	}
 	
 	else if (EWeaponCategory::EWC_Compact == WeaponCategory)
 	{
-		targetItem = WeaponSlots.Find(EInventorySlot::EIS_Sidearm);
+		targetItem = WeaponSlots.Find(ELoadoutSlot::ELS_Sidearm);
 		if (!*targetItem)
 		{
-			return EInventorySlot::EIS_Sidearm;
+			return ELoadoutSlot::ELS_Sidearm;
 		}
 	}
 
-	return EInventorySlot::EIS_MAX;
+	return ELoadoutSlot::ELS_MAX;
 }
-void UShooterInventoryHandler::BindWeaponSlot(AWeaponBase* Item, EInventorySlot EquippableSlot)
+void UShooterInventoryHandler::BindWeaponSlot(AWeaponBase* Item, ELoadoutSlot EquippableSlot)
 {
 	// 기존 무기 집어놓고
 	HolsterSelectWeapon();
@@ -238,7 +248,7 @@ void UShooterInventoryHandler::BindWeaponSlot(AWeaponBase* Item, EInventorySlot 
 	// 현재 슬롯을 변경해주고 무기 꺼내기
 	DrawSelectWeapon();
 }
-void UShooterInventoryHandler::ReplaceWeaponSlot(AWeaponBase* Item, EInventorySlot EquippableSlot)
+void UShooterInventoryHandler::ReplaceWeaponSlot(AWeaponBase* Item, ELoadoutSlot EquippableSlot)
 {
 	// 현재 사용중인 무기 집어넣고
 	SelectWeaponDrop();
@@ -252,25 +262,14 @@ void UShooterInventoryHandler::ReplaceWeaponSlot(AWeaponBase* Item, EInventorySl
 
 
 
-void UShooterInventoryHandler::SwapWeapon(EInventorySlot NextWeaponSlot)
+void UShooterInventoryHandler::SwapWeapon(ELoadoutSlot NextWeaponSlot)
 {
 	if (NextWeaponSlot == SelectedWeaponSlot) return;
+	if (!WeaponSlots[NextWeaponSlot]) return;
+	// 이전에 사용중인 무기는 집어놓고
 	HolsterSelectWeapon();
+	// 다음 로직 수행
 	SelectedWeaponSlot = NextWeaponSlot;
-
-	switch (SelectedWeaponSlot)
-	{
-	case EInventorySlot::EIS_Primary:
-		UE_LOG(LogTemp, Warning, TEXT("EIS_Primary"));
-		break;
-	case EInventorySlot::EIS_Secondary:
-		UE_LOG(LogTemp, Warning, TEXT("EIS_Secondary"));
-		break;
-	case EInventorySlot::EIS_Sidearm:
-		UE_LOG(LogTemp, Warning, TEXT("EIS_Sidearm"));
-		break;
-	}
-
 	DrawSelectWeapon();
 }
 
@@ -287,13 +286,13 @@ FName UShooterInventoryHandler::GetHolsterSocketName()
 	FName socketName;
 	switch (SelectedWeaponSlot)
 	{
-	case EInventorySlot::EIS_Primary:
+	case ELoadoutSlot::ELS_Primary:
 		socketName = FName(TEXT("Primary"));
 		break;
-	case EInventorySlot::EIS_Secondary:
+	case ELoadoutSlot::ELS_Secondary:
 		socketName = FName(TEXT("Secondary"));
 		break;
-	case EInventorySlot::EIS_Sidearm:
+	case ELoadoutSlot::ELS_Sidearm:
 		socketName = FName(TEXT("Sidearm"));
 		break;
 	}

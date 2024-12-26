@@ -10,7 +10,6 @@ class AShooterCharacter;
 class UInputAction;
 struct FInputActionValue;
 
-#define TRACE_LENGTH 10000.f
 
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup=(ShooterHandler), meta=(BlueprintSpawnableComponent) )
