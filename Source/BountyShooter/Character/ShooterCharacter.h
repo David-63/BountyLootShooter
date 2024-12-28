@@ -7,7 +7,7 @@
 #include "ShooterCharacter.generated.h"
 
 #define TRACE_LENGTH 10000.f
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponSwap, EEquippedState, EquipState);
 struct FInputActionValue;
 class UInputMappingContext;
 class UInputAction;
@@ -55,7 +55,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Animation")
 	UShooterAnimInstance* GetCharacterAnimInstance() const;
 
-
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnWeaponSwap OnWeaponSwapDelegate;
 
 private:
 	FVector HitLocation;

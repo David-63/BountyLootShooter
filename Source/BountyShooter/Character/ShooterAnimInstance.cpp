@@ -4,10 +4,11 @@
 #include "ShooterAnimInstance.h"
 #include "ShooterCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 
 void UShooterAnimInstance::RecieveEquippedState(ELoadoutSlot Loadout)
 {
-	EEquippedState equippedState;
+	EEquippedState equippedState = EEquippedState::EES_Unarmed;
 	switch (Loadout)
 	{
 	case ELoadoutSlot::ELS_Primary:

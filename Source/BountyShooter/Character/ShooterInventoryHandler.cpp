@@ -115,7 +115,7 @@ void UShooterInventoryHandler::WeaponSwap(const FInputActionValue& Value)
 		UE_LOG(LogTemp, Warning, TEXT("Invalid weapon slot: %f"), ScalarValue);
 		break;
 	}
-	ShooterCharacter->GetCharacterAnimInstance()->RecieveEquippedState(SelectedWeaponSlot);
+	//ShooterCharacter->GetCharacterAnimInstance()->RecieveEquippedState(SelectedWeaponSlot);
 }
 
 
@@ -125,23 +125,61 @@ void UShooterInventoryHandler::ToggleWeapon()
 	if (!isWeaponArmed)
 	{
 		// 현재 슬롯에 무기가 있으면 꺼내고
-		bool fail = DrawSelectWeapon();
-		// 없는경우 있는 무기 찾아서 슬롯 변경한 다음에 꺼내기
-		if (fail)
+		if (DrawSelectWeapon())
+		{
+			switch (SelectedWeaponSlot)
+			{
+			case ELoadoutSlot::ELS_Primary:
+			case ELoadoutSlot::ELS_Secondary:
+				ShooterCharacter->OnWeaponSwapDelegate.Broadcast(EEquippedState::EES_TwoHands);
+				UE_LOG(LogTemp, Warning, TEXT("Broadcast TwoHands"));
+				break;
+			case ELoadoutSlot::ELS_Sidearm:
+				ShooterCharacter->OnWeaponSwapDelegate.Broadcast(EEquippedState::EES_OneHand);
+				UE_LOG(LogTemp, Warning, TEXT("Broadcast OneHand"));
+				break;
+			case ELoadoutSlot::ELS_MAX:
+				ShooterCharacter->OnWeaponSwapDelegate.Broadcast(EEquippedState::EES_Unarmed);
+				UE_LOG(LogTemp, Warning, TEXT("Broadcast Unarmed"));
+				break;
+			default:
+				break;
+			}
+		}
+		else
 		{
 			ELoadoutSlot otherSlot = GetOccupiedWeaponSlot();
 			if (ELoadoutSlot::ELS_MAX == otherSlot) return;
 
 			WeaponSlots[otherSlot]->DrawWeapon(FName(TEXT("Hand")));
-			ShooterCharacter->EnableCombatAction();
-			ShooterCharacter->GetCharacterAnimInstance()->RecieveEquippedState(SelectedWeaponSlot);
+			switch (otherSlot)
+			{
+			case ELoadoutSlot::ELS_Primary:
+			case ELoadoutSlot::ELS_Secondary:
+				ShooterCharacter->OnWeaponSwapDelegate.Broadcast(EEquippedState::EES_TwoHands);
+				UE_LOG(LogTemp, Warning, TEXT("Broadcast TwoHands"));
+				break;
+			case ELoadoutSlot::ELS_Sidearm:
+				ShooterCharacter->OnWeaponSwapDelegate.Broadcast(EEquippedState::EES_OneHand);
+				UE_LOG(LogTemp, Warning, TEXT("Broadcast OneHand"));
+				break;
+			case ELoadoutSlot::ELS_MAX:
+				ShooterCharacter->OnWeaponSwapDelegate.Broadcast(EEquippedState::EES_Unarmed);
+				UE_LOG(LogTemp, Warning, TEXT("Broadcast Unarmed"));
+				break;
+			default:
+				break;
+			}
 		}
 	}
 	else
 	{		
 		// 무기 집어넣기
 		HolsterSelectWeapon();
-		ShooterCharacter->GetCharacterAnimInstance()->RecieveEquippedState(ELoadoutSlot::ELS_MAX);
+		
+		ShooterCharacter->OnWeaponSwapDelegate.Broadcast(EEquippedState::EES_Unarmed);
+		UE_LOG(LogTemp, Warning, TEXT("Broadcast Unarmed"));
+		//ShooterCharacter->GetCharacterAnimInstance()->RecieveEquippedState(ELoadoutSlot::ELS_MAX);
 	}
 }
 
@@ -203,6 +241,7 @@ ELoadoutSlot UShooterInventoryHandler::GetOccupiedWeaponSlot()
 
 void UShooterInventoryHandler::PickupItem(AItemBase* Item)
 {
+	HolsterSelectWeapon();
 	Item->Equip(ShooterCharacter);
 }
 
@@ -236,6 +275,7 @@ ELoadoutSlot UShooterInventoryHandler::FindEmptyWeaponSlot(EWeaponCategory Weapo
 
 	return ELoadoutSlot::ELS_MAX;
 }
+
 void UShooterInventoryHandler::BindWeaponSlot(AWeaponBase* Item, ELoadoutSlot EquippableSlot)
 {
 	// 기존 무기 집어놓고
@@ -246,7 +286,27 @@ void UShooterInventoryHandler::BindWeaponSlot(AWeaponBase* Item, ELoadoutSlot Eq
 	SelectedWeaponSlot = EquippableSlot;
 
 	// 현재 슬롯을 변경해주고 무기 꺼내기
-	DrawSelectWeapon();
+	if (DrawSelectWeapon())
+	{
+		switch (SelectedWeaponSlot)
+		{
+		case ELoadoutSlot::ELS_Primary:
+		case ELoadoutSlot::ELS_Secondary:
+			ShooterCharacter->OnWeaponSwapDelegate.Broadcast(EEquippedState::EES_TwoHands);
+			UE_LOG(LogTemp, Warning, TEXT("Broadcast TwoHands"));
+			break;
+		case ELoadoutSlot::ELS_Sidearm:
+			ShooterCharacter->OnWeaponSwapDelegate.Broadcast(EEquippedState::EES_OneHand);
+			UE_LOG(LogTemp, Warning, TEXT("Broadcast OneHand"));
+			break;
+		case ELoadoutSlot::ELS_MAX:
+			ShooterCharacter->OnWeaponSwapDelegate.Broadcast(EEquippedState::EES_Unarmed);
+			UE_LOG(LogTemp, Warning, TEXT("Broadcast Unarmed"));
+			break;
+		default:
+			break;
+		}
+	}
 }
 void UShooterInventoryHandler::ReplaceWeaponSlot(AWeaponBase* Item, ELoadoutSlot EquippableSlot)
 {
@@ -256,7 +316,27 @@ void UShooterInventoryHandler::ReplaceWeaponSlot(AWeaponBase* Item, ELoadoutSlot
 	// 슬롯에 아이템 넣기
 	WeaponSlots[SelectedWeaponSlot] = Item;
 
-	DrawSelectWeapon();
+	if (DrawSelectWeapon())
+	{
+		switch (SelectedWeaponSlot)
+		{
+		case ELoadoutSlot::ELS_Primary:
+		case ELoadoutSlot::ELS_Secondary:
+			ShooterCharacter->OnWeaponSwapDelegate.Broadcast(EEquippedState::EES_TwoHands);
+			UE_LOG(LogTemp, Warning, TEXT("Broadcast TwoHands"));
+			break;
+		case ELoadoutSlot::ELS_Sidearm:
+			ShooterCharacter->OnWeaponSwapDelegate.Broadcast(EEquippedState::EES_OneHand);
+			UE_LOG(LogTemp, Warning, TEXT("Broadcast OneHand"));
+			break;
+		case ELoadoutSlot::ELS_MAX:
+			ShooterCharacter->OnWeaponSwapDelegate.Broadcast(EEquippedState::EES_Unarmed);
+			UE_LOG(LogTemp, Warning, TEXT("Broadcast Unarmed"));
+			break;
+		default:
+			break;
+		}
+	}
 }
 
 
@@ -264,13 +344,31 @@ void UShooterInventoryHandler::ReplaceWeaponSlot(AWeaponBase* Item, ELoadoutSlot
 
 void UShooterInventoryHandler::SwapWeapon(ELoadoutSlot NextWeaponSlot)
 {
-	if (NextWeaponSlot == SelectedWeaponSlot) return;
 	if (!WeaponSlots[NextWeaponSlot]) return;
-	// 이전에 사용중인 무기는 집어놓고
+	
 	HolsterSelectWeapon();
-	// 다음 로직 수행
 	SelectedWeaponSlot = NextWeaponSlot;
-	DrawSelectWeapon();
+	if (DrawSelectWeapon())
+	{
+		switch (SelectedWeaponSlot)
+		{
+		case ELoadoutSlot::ELS_Primary:
+		case ELoadoutSlot::ELS_Secondary:
+			ShooterCharacter->OnWeaponSwapDelegate.Broadcast(EEquippedState::EES_TwoHands);
+			UE_LOG(LogTemp, Warning, TEXT("Broadcast TwoHands"));
+			break;
+		case ELoadoutSlot::ELS_Sidearm:
+			ShooterCharacter->OnWeaponSwapDelegate.Broadcast(EEquippedState::EES_OneHand);
+			UE_LOG(LogTemp, Warning, TEXT("Broadcast OneHand"));
+			break;
+		case ELoadoutSlot::ELS_MAX:
+			ShooterCharacter->OnWeaponSwapDelegate.Broadcast(EEquippedState::EES_Unarmed);
+			UE_LOG(LogTemp, Warning, TEXT("Broadcast Unarmed"));
+			break;
+		default:
+			break;
+		}
+	}
 }
 
 
