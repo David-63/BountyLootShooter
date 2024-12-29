@@ -53,8 +53,12 @@ public:
 	UPlatformComponent* GetPlatformComponent();
 	UAmmunitionComponent* GetAmmunitionComponent();
 	
-	// 사격 함수
 public:
 	void FireRound(const FVector& _hitTarget);
+
+	
+public:
+	float GetFireRate() const;
+	bool IsChamberEnable() const;
 
 };

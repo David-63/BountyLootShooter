@@ -153,7 +153,17 @@ void UPlatformComponent::CycleCartridge(UWorld* World)
 		}
 	}
 
-	WeaponBase->GetAmmunitionComponent()->UpdateChamber(ClipSize, ClipCapacity, bChamberLoaded);
+	WeaponBase->GetAmmunitionComponent()->UpdateChamber(CurrentClipSize, PlatformBaseClipCapacity, bChamberLoaded);
+
+	UE_LOG(LogTemp, Warning, TEXT("CurrentClip %d"), CurrentClipSize);
+	if (bChamberLoaded)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Chamber Enable"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Chamber Empty"));
+	}
 }
 
 float UPlatformComponent::GetTotalDamage()

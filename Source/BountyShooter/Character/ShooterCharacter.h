@@ -55,18 +55,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Animation")
 	UShooterAnimInstance* GetCharacterAnimInstance() const;
 
+	// 델리게이트로 BP에 EquipState를 전달하여 애니메이션 레이어 변경하는 용도
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnWeaponSwap OnWeaponSwapDelegate;
 
+	// raycast 값을 Combat에 전달 (비무장 상태에서도 사용하기 위해 여기에서 구현함)
 private:
 	FVector HitLocation;
 	TObjectPtr<AActor> HitTarget;
 	void LineTraceViewDirection(FHitResult& result);
+
 public:
 	FORCEINLINE const FVector& GetHitLocation() { return HitLocation; }
 	FORCEINLINE const TObjectPtr<AActor>& GetHitTarget() { return HitTarget; }	
 	
-	// actor components
+	// BP에서 제어할 수 있도록 추가함 (자체적으로 Init함수를 가짐)
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Handler, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UShooterMovementHandler> MovementHandler = nullptr;
@@ -76,13 +79,13 @@ public:
 	TObjectPtr<UShooterInventoryHandler> InventoryHandler = nullptr;
 
 
-	// UI
+	// InteractInterface를 상속받은 객체가 Ray에 닿으면 UI를 화면에 출력됨
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ShooterUI, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInteractDotWidget> InteractDotWidget = nullptr;
 	
 
 
-	// inventory function
+	// 플레이어가 습득 가능한 범위내의 아이템이 있으면 후보 배열에 추가됨
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
 	TArray<AItemBase*> OverlappingItems;
@@ -114,5 +117,4 @@ protected:
 public:
 	void EnableCombatAction();
 	void DisableCombatAction();
-
 };

@@ -22,6 +22,7 @@ class BOUNTYSHOOTER_API UShooterAnimInstance : public UAnimInstance, public ISho
 {
 	GENERATED_BODY()
 	
+	// 인터페이스 테스트용 (지금은 안쓰는 기능)
 public:
 	virtual void RecieveEquippedState(ELoadoutSlot Loadout) override;
 

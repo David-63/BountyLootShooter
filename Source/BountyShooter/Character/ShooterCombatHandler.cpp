@@ -69,7 +69,6 @@ void UShooterCombatHandler::EnableCombatAction()
 			EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &UShooterCombatHandler::ChamberingRound);
 			EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &UShooterCombatHandler::AmmoInsertion);
 
-			EnhancedInputComponent->BindAction(InterAction, ETriggerEvent::Canceled, this, &UShooterCombatHandler::WeaponDraw);
 		}
 	}
 }
@@ -99,23 +98,14 @@ void UShooterCombatHandler::AmmoInsertion()
 
 void UShooterCombatHandler::Fire()
 {
-	// 인벤토리로부터 현재 무기정보 요청
-	AWeaponBase* weapon = ShooterCharacter->InventoryHandler->GetSelectedWeapon();
-
-	// 공격
-	weapon->FireRound(ShooterCharacter->GetHitLocation());
-
-
 	
-	// 시작지점
-	FVector beginPoint = ShooterCharacter->GetActorLocation();
-	beginPoint.Z += 60.f;
-
-	// 종료지점	
-	DrawDebugLine(GetWorld(), beginPoint, ShooterCharacter->GetHitLocation(), FColor::Red, false, -1, 0, 12.333);
-	if (ShooterCharacter->GetHitTarget())
+	AWeaponBase* weapon = ShooterCharacter->InventoryHandler->GetSelectedWeapon();
+	if (!weapon) return;
+	
+	if (CanFire())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Target Name: %s"), *ShooterCharacter->GetHitTarget()->GetName());
+		FireTimerStart();
+		weapon->FireRound(ShooterCharacter->GetHitLocation());
 	}
 }
 
@@ -127,21 +117,34 @@ void UShooterCombatHandler::Throw()
 {
 }
 
-void UShooterCombatHandler::WeaponDraw()
+void UShooterCombatHandler::FireTimerStart()
 {
-	// 이미 무기를 들고있음
-	if (bIsWeaponDrawn)
+	AWeaponBase* weapon = ShooterCharacter->InventoryHandler->GetSelectedWeapon();
+	if (ShooterCharacter && weapon)
 	{
-		bIsWeaponDrawn = false;
-
-		// 무기를 수납함
-	}
-	// 무기를 보관하고 있음
-	else
-	{
-		bIsWeaponDrawn = true;
-
-		// 무기를 꺼냄
+		bFireCooldownFinished = false;
+		float totalFireRate = 1 / weapon->GetFireRate();
+		ShooterCharacter->GetWorldTimerManager().SetTimer(FireTimer, this, &UShooterCombatHandler::FireTimerFinished, totalFireRate);
 	}
 }
+
+void UShooterCombatHandler::FireTimerFinished()
+{
+	bFireCooldownFinished = true;
+	if (bIsAttackDown)
+	{
+		Fire();
+	}
+}
+
+bool UShooterCombatHandler::CanFire()
+{
+	AWeaponBase* weapon = ShooterCharacter->InventoryHandler->GetSelectedWeapon();
+
+	const bool bChamberEnable = weapon->IsChamberEnable();
+	const bool bWeaponReady = bFireCooldownFinished && bChamberEnable;
+
+	return bWeaponReady;
+}
+
 

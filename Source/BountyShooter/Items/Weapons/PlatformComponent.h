@@ -43,21 +43,31 @@ private:
 		uint32 PelletCount = 2;
 
 	UPROPERTY(EditAnywhere, Category = "Platform Property")
-	float PlatformBaseDamage = 5.f;
-
-
+	uint32 PlatformBaseClipCapacity = 25.f;	
 	UPROPERTY(EditAnywhere, Category = "Platform Property")
-	uint32 ClipCapacity = 25.f;
-	UPROPERTY(EditAnywhere, Category = "Platform Property")
-	uint32 ClipSize = 25.f;
+	uint32 CurrentClipSize = 25.f;
 
 	bool bChamberLoaded = true;
+
+	UPROPERTY(EditAnywhere, Category = "Platform Property")
+	float PlatformBaseDamage = 5.f;
+	UPROPERTY(EditAnywhere, Category = "Platform Property")
+	float PlatformBaseFireRate = 6.f;
 public:
+	FORCEINLINE float GetBaseFireRate() const { return PlatformBaseFireRate; }
+	FORCEINLINE bool IsChamberLoaded() const { return bChamberLoaded; }
+
+public:
+	// Hit Ray 로직 1, 2, 3
 	void FireHitscan(UWorld* World, const FVector& _hitTarget, AController* InstigatorController, const USkeletalMeshSocket* MuzzleSocket);
 	FVector WeaponTraceHit(const FVector& _traceStart, const FVector& _hitTarget, FHitResult& _inOutHit);
 	FVector TraceEndWithScatter(const FVector& _traceStart, const FVector& _hitTarget);
+	
+	// 매 사격마다 약실 갱신 및 탄피 배출 (Ammunition 에서 진행)
 	void CycleCartridge(UWorld* World);
 
+
+	// 여기서 계산하지 말고, Combat으로 전달할 예정
 	float GetTotalDamage();
 		
 };

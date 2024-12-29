@@ -39,9 +39,7 @@ private:
 	UPROPERTY()
 	TObjectPtr<AShooterCharacter> ShooterCharacter;
 
-	// 아마 안쓰게 될 기능
-	bool bIsWeaponDrawn = false;
-
+	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat Input")
 	class UInputMappingContext* IMC_CombatHandler;
@@ -58,8 +56,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat Input")
 	TObjectPtr<UInputAction> ReloadAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat Input")
-	TObjectPtr<UInputAction> InterAction;
 	
 public:
 	void ChamberingRound();
@@ -67,5 +63,14 @@ public:
 	void Fire();
 	void Melee();
 	void Throw();
-	void WeaponDraw();
+
+
+protected:
+	FTimerHandle FireTimer = FTimerHandle();
+
+	bool bFireCooldownFinished = true;
+	bool bIsAttackDown;
+	void FireTimerStart();
+	void FireTimerFinished();
+	bool CanFire();
 };

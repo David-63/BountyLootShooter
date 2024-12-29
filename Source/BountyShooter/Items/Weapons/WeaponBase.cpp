@@ -90,3 +90,14 @@ void AWeaponBase::FireRound(const FVector& _hitTarget)
 	// 총알 소모됨
 	WeaponPlatform->CycleCartridge(world);
 }
+
+float AWeaponBase::GetFireRate() const
+{
+	// 추후에 추가될 예정?
+	return WeaponPlatform->GetBaseFireRate();
+}
+
+bool AWeaponBase::IsChamberEnable() const
+{	
+	return WeaponPlatform->IsChamberLoaded();
+}
