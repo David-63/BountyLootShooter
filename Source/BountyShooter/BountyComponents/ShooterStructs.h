@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Animation/AnimSequence.h"
 #include "ShooterStructs.generated.h"
 
 /**
@@ -26,6 +27,7 @@ struct BOUNTYSHOOTER_API FGateSetting
 	UPROPERTY(BlueprintReadWrite)
 	bool UseSeperateBrakingFriction;
 };
+
 USTRUCT(BlueprintType)
 struct BOUNTYSHOOTER_API FDebugOptions
 {
@@ -35,4 +37,19 @@ struct BOUNTYSHOOTER_API FDebugOptions
 	bool ShowLocomotionData;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool ShowGateData;
+};
+
+USTRUCT(BlueprintType)
+struct BOUNTYSHOOTER_API FDirectionalAnimations
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimSequence* ForwardAnim;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimSequence* BackwardAnim;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimSequence* RightAnim;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimSequence* LeftAnim;
 };
