@@ -26,3 +26,13 @@ struct BOUNTYSHOOTER_API FGateSetting
 	UPROPERTY(BlueprintReadWrite)
 	bool UseSeperateBrakingFriction;
 };
+USTRUCT(BlueprintType)
+struct BOUNTYSHOOTER_API FDebugOptions
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool ShowLocomotionData;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool ShowGateData;
+};

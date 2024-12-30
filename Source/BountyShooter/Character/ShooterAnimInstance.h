@@ -6,6 +6,7 @@
 #include "Animation/AnimInstance.h"
 #include "ShooterAnimationInterface.h"
 #include "BountyShooter/BountyComponents/ShooterEnums.h"
+#include "BountyShooter/BountyComponents/ShooterStructs.h"
 
 #include "ShooterAnimInstance.generated.h"
 
@@ -37,4 +38,7 @@ public:
 	EEquippedState EquippedState = EEquippedState::EES_Unarmed;
 	UPROPERTY(BlueprintReadWrite, category = "Character enums")
 	EGate CurrentGate = EGate::EG_Jog;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, category = "Character Structs")
+	FDebugOptions DebugOptions;
 };
