@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "BountyShooter/BountyComponents/ShooterStructs.h"
+#include "BountyShooter/BountyComponents/ShooterEnums.h"
+
 #include "ShooterMovementHandler.generated.h"
 
 class AShooterCharacter;
@@ -64,6 +67,15 @@ public:
 private:
 	bool bIsCrouched = false;
 	bool bIsAimed = false;
+
+	float BaseMovespeed = 450.f;
+	float SprintMovespeed = 800.f;
+	float AdsMovespeed = 250.f;
+
+	EGate CurrentGate;
+	TMap<EGate, FGateSetting> GateSetting;
+public:
+	void UpdateGate(EGate Gate);
 
 public:
 	void Move(const FInputActionValue& Value);

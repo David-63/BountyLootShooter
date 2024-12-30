@@ -7,6 +7,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "BountyShooter/BountyComponents/ShooterEnums.h"
+#include "ShooterAnimInstance.h"
 
 // Sets default values for this component's properties
 UShooterMovementHandler::UShooterMovementHandler()
@@ -24,8 +26,32 @@ void UShooterMovementHandler::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
-	
+	FGateSetting walkSetting;
+	walkSetting.MaxMoveSpeed = 200.f;
+	walkSetting.MaxAcceleration = 400.f;
+	walkSetting.BrakingDeceleration = 400.f;
+	walkSetting.BrakingFrictionFactor = 1.0f;
+	walkSetting.BrakingFriction = 1.0f;
+	walkSetting.UseSeperateBrakingFriction = true;
+	GateSetting.Add(EGate::EG_Walk, walkSetting);
+
+	FGateSetting jogSetting;
+	jogSetting.MaxMoveSpeed = 450.f;
+	jogSetting.MaxAcceleration = 900.f;
+	jogSetting.BrakingDeceleration = 900.f;
+	jogSetting.BrakingFrictionFactor = 1.0f;
+	jogSetting.BrakingFriction = 1.0f;
+	jogSetting.UseSeperateBrakingFriction = true;
+	GateSetting.Add(EGate::EG_Jog, jogSetting);
+
+	FGateSetting sprintSetting;
+	sprintSetting.MaxMoveSpeed = 800.f;
+	sprintSetting.MaxAcceleration = 1600.f;
+	sprintSetting.BrakingDeceleration = 2400.f;
+	sprintSetting.BrakingFrictionFactor = 1.0f;
+	sprintSetting.BrakingFriction = 0.5f;
+	sprintSetting.UseSeperateBrakingFriction = true;
+	GateSetting.Add(EGate::EG_Sprint, sprintSetting);	
 }
 
 
@@ -51,7 +77,7 @@ void UShooterMovementHandler::BindMovementHandler(AShooterCharacter* TargetChara
 	ShooterCharacter->GetCharacterMovement()->GravityScale = 3.f;
 	ShooterCharacter->GetCharacterMovement()->AirControl = 0.15f;
 
-	ShooterCharacter->GetCharacterMovement()->MaxWalkSpeed = 450.f;
+	ShooterCharacter->GetCharacterMovement()->MaxWalkSpeed = BaseMovespeed;
 	ShooterCharacter->GetCharacterMovement()->MaxWalkSpeedCrouched = 200.f;
 	ShooterCharacter->GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	ShooterCharacter->GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
@@ -59,6 +85,8 @@ void UShooterMovementHandler::BindMovementHandler(AShooterCharacter* TargetChara
 
 	// Active movement
 	EnableMovementAction();
+
+	UpdateGate(EGate::EG_Jog);
 }
 
 void UShooterMovementHandler::EnableMovementAction()
@@ -105,6 +133,38 @@ void UShooterMovementHandler::DisableMovementAction()
 	}
 }
 
+void UShooterMovementHandler::UpdateGate(EGate Gate)
+{
+	CurrentGate = Gate;
+	FGateSetting* gateSetting = GateSetting.Find(CurrentGate);
+	
+	UCharacterMovementComponent* movement = ShooterCharacter->GetCharacterMovement();
+	movement->MaxWalkSpeed = gateSetting->MaxMoveSpeed;
+	movement->MaxAcceleration = gateSetting->MaxAcceleration;
+	movement->BrakingDecelerationWalking = gateSetting->BrakingDeceleration;
+	movement->BrakingFrictionFactor = gateSetting->BrakingFrictionFactor;
+	movement->BrakingFriction = gateSetting->BrakingFriction;
+	movement->bUseSeparateBrakingFriction = gateSetting->UseSeperateBrakingFriction;
+	switch (CurrentGate)
+	{
+	case EGate::EG_Walk:
+		UE_LOG(LogTemp, Warning, TEXT("EG_Walk"));
+		break;
+	case EGate::EG_Jog:
+		UE_LOG(LogTemp, Warning, TEXT("EG_Jog"));
+		break;
+	case EGate::EG_Sprint:
+		UE_LOG(LogTemp, Warning, TEXT("EG_Sprint"));
+		break;
+	case EGate::EG_MAX:
+		break;
+	default:
+		break;
+	}
+	ShooterCharacter->GetCharacterAnimInstance()->ReceiveCurrentGate(CurrentGate);
+	ShooterCharacter->OnChangeGateDelegate.Broadcast(CurrentGate);
+}
+
 void UShooterMovementHandler::Move(const FInputActionValue& Value)
 {
 	if (!ShooterCharacter || !ShooterCharacter->GetController()) return;
@@ -142,15 +202,14 @@ void UShooterMovementHandler::StopJumping()
 
 void UShooterMovementHandler::Crouch()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Crouched"));
-
+	UpdateGate(EGate::EG_Walk);
 	bIsCrouched = true;
 	ShooterCharacter->Crouch();
 }
 
 void UShooterMovementHandler::UnCrouch()
 {
-	UE_LOG(LogTemp, Warning, TEXT("UnCrouched"));
+	UpdateGate(EGate::EG_Jog);
 	bIsCrouched = false;
 	ShooterCharacter->UnCrouch();
 
@@ -163,28 +222,26 @@ void UShooterMovementHandler::Dodge()
 
 void UShooterMovementHandler::Sprint()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Sprint"));
-	ShooterCharacter->GetCharacterMovement()->MaxWalkSpeed = 800.f;
+	UpdateGate(EGate::EG_Sprint);
 }
 
 void UShooterMovementHandler::Jog()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Jog"));
-	ShooterCharacter->GetCharacterMovement()->MaxWalkSpeed = 450.f;
+	UpdateGate(EGate::EG_Jog);
 }
 
 void UShooterMovementHandler::AimHold()
 {
-	UE_LOG(LogTemp, Warning, TEXT("AimHold"));
+	UpdateGate(EGate::EG_Walk);
 	bIsAimed = true;
 	ShooterCharacter->bUseControllerRotationYaw = true;
 }
 
 void UShooterMovementHandler::AimRelease()
 {
-	UE_LOG(LogTemp, Warning, TEXT("AimRelease"));
+	UpdateGate(EGate::EG_Jog);
 	bIsAimed = false;
-	ShooterCharacter->bUseControllerRotationYaw = false;
+	ShooterCharacter->bUseControllerRotationYaw = false;	
 }
 
 void UShooterMovementHandler::CameraSwap()

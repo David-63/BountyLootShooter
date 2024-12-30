@@ -60,7 +60,7 @@ void UAmmunitionComponent::EjectCase(const USkeletalMeshSocket* EjectSocket, UWo
 
 void UAmmunitionComponent::UpdateChamber(uint32& ClipSize, uint32 ClipCapacity, bool& bChamberLoaded)
 {
-	if (ClipSize > 0)
+	if (0 < ClipSize)
 	{
 		bChamberLoaded = true;
 	}
@@ -69,6 +69,8 @@ void UAmmunitionComponent::UpdateChamber(uint32& ClipSize, uint32 ClipCapacity, 
 		bChamberLoaded = false;
 	}
 
+	if (0 == ClipSize) return;
+	// clamp의 min 값이 적용안됨
 	ClipSize = FMath::Clamp(ClipSize - 1, 0, ClipCapacity);
 }
 

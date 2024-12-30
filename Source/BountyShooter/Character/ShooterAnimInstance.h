@@ -24,8 +24,8 @@ class BOUNTYSHOOTER_API UShooterAnimInstance : public UAnimInstance, public ISho
 	
 	// 인터페이스 테스트용 (지금은 안쓰는 기능)
 public:
-	virtual void RecieveEquippedState(ELoadoutSlot Loadout) override;
-
+	virtual void ReceiveEquippedState(EEquippedState EquipState) override;
+	virtual void ReceiveCurrentGate(EGate Gate) override;
 protected:
 	UPROPERTY(BlueprintReadWrite, category = "References")
 	TObjectPtr<AShooterCharacter> ShooterCharacter = nullptr;
@@ -35,4 +35,6 @@ protected:
 public:
 	UPROPERTY(BlueprintReadWrite, category = "Character enums")
 	EEquippedState EquippedState = EEquippedState::EES_Unarmed;
+	UPROPERTY(BlueprintReadWrite, category = "Character enums")
+	EGate CurrentGate = EGate::EG_Jog;
 };

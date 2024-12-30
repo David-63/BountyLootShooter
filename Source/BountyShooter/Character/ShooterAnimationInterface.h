@@ -23,5 +23,6 @@ class BOUNTYSHOOTER_API IShooterAnimationInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual void RecieveEquippedState(ELoadoutSlot Loadout) = 0;
+	virtual void ReceiveEquippedState(EEquippedState EquipState) = 0;
+	virtual void ReceiveCurrentGate(EGate Gate) = 0;
 };

@@ -132,14 +132,17 @@ void UShooterInventoryHandler::ToggleWeapon()
 			case ELoadoutSlot::ELS_Primary:
 			case ELoadoutSlot::ELS_Secondary:
 				ShooterCharacter->OnWeaponSwapDelegate.Broadcast(EEquippedState::EES_TwoHands);
+				ShooterCharacter->GetCharacterAnimInstance()->ReceiveEquippedState(EEquippedState::EES_TwoHands);
 				UE_LOG(LogTemp, Warning, TEXT("Broadcast TwoHands"));
 				break;
 			case ELoadoutSlot::ELS_Sidearm:
 				ShooterCharacter->OnWeaponSwapDelegate.Broadcast(EEquippedState::EES_OneHand);
+				ShooterCharacter->GetCharacterAnimInstance()->ReceiveEquippedState(EEquippedState::EES_OneHand);
 				UE_LOG(LogTemp, Warning, TEXT("Broadcast OneHand"));
 				break;
 			case ELoadoutSlot::ELS_MAX:
 				ShooterCharacter->OnWeaponSwapDelegate.Broadcast(EEquippedState::EES_Unarmed);
+				ShooterCharacter->GetCharacterAnimInstance()->ReceiveEquippedState(EEquippedState::EES_Unarmed);
 				UE_LOG(LogTemp, Warning, TEXT("Broadcast Unarmed"));
 				break;
 			default:

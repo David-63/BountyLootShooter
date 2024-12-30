@@ -7,7 +7,10 @@
 #include "ShooterCharacter.generated.h"
 
 #define TRACE_LENGTH 10000.f
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponSwap, EEquippedState, EquipState);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangeGate, EGate, CurrentGate);
+
 struct FInputActionValue;
 class UInputMappingContext;
 class UInputAction;
@@ -58,6 +61,15 @@ public:
 	// 델리게이트로 BP에 EquipState를 전달하여 애니메이션 레이어 변경하는 용도
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnWeaponSwap OnWeaponSwapDelegate;
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnChangeGate OnChangeGateDelegate;
+
+	// 이건 안쓸듯
+private:
+	EEquippedState EquippedState;
+	EGate CurrentGate;
+
+
 
 	// raycast 값을 Combat에 전달 (비무장 상태에서도 사용하기 위해 여기에서 구현함)
 private:

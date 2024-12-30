@@ -18,6 +18,16 @@ enum class EEquippedState : uint8
 	EES_MAX UMETA(DisplayName = "DefaultMAX"),
 };
 
+UENUM(BlueprintType)
+enum class EGate : uint8
+{
+	EG_Walk UMETA(DisplayName = "Walking"),
+	EG_Jog UMETA(DisplayName = "Jogging"),
+	EG_Sprint UMETA(DisplayName = "Sprinting"),
+	EG_MAX UMETA(DisplayName = "DefaultMAX"),
+};
+
+
 
 UENUM(BlueprintType)
 enum class EWeaponCategory : uint8
