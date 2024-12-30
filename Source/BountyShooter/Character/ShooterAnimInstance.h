@@ -41,4 +41,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, category = "Character Structs")
 	FDebugOptions DebugOptions;
+
+	UPROPERTY(BlueprintReadWrite, category = "Character Structs")
+	ELocomotionDirections LocomotionDirection;
 };

@@ -234,6 +234,7 @@ void UShooterMovementHandler::AimHold()
 {
 	UpdateGate(EGate::EG_Walk);
 	bIsAimed = true;
+	
 	ShooterCharacter->bUseControllerRotationYaw = true;
 }
 
@@ -241,7 +242,10 @@ void UShooterMovementHandler::AimRelease()
 {
 	UpdateGate(EGate::EG_Jog);
 	bIsAimed = false;
-	ShooterCharacter->bUseControllerRotationYaw = false;	
+	if (EEquippedState::EES_Unarmed == ShooterCharacter->GetCharacterAnimInstance()->EquippedState)
+	{
+		ShooterCharacter->bUseControllerRotationYaw = false;
+	}	
 }
 
 void UShooterMovementHandler::CameraSwap()

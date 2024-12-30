@@ -27,7 +27,18 @@ enum class EGate : uint8
 	EG_MAX UMETA(DisplayName = "DefaultMAX"),
 };
 
+UENUM(BlueprintType)
+enum class ELocomotionDirections : uint8
+{
+	ELD_Forward UMETA(DisplayName = "Forward"),
+	ELD_Backward UMETA(DisplayName = "Backward"),
+	ELD_Right UMETA(DisplayName = "Right"),
+	ELD_Left UMETA(DisplayName = "Left"),
+	ELD_MAX UMETA(DisplayName = "DefaultMAX"),
+};
 
+
+//
 
 UENUM(BlueprintType)
 enum class EWeaponCategory : uint8
