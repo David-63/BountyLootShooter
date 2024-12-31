@@ -33,7 +33,7 @@ AShooterCharacter::AShooterCharacter()
 	SetMinNetUpdateFrequency(33.f);
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = false;
+	bUseControllerRotationYaw = true;	// 전투시에만 true로 하고싶은데 나중에 구현할것
 	bUseControllerRotationRoll = false;
 	
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
