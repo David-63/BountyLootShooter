@@ -27,7 +27,7 @@ void UShooterMovementHandler::BeginPlay()
 	Super::BeginPlay();
 
 	FGateSetting walkSetting;
-	walkSetting.MaxMoveSpeed = 200.f;
+	walkSetting.MaxMoveSpeed = 300.f;
 	walkSetting.MaxAcceleration = 400.f;
 	walkSetting.BrakingDeceleration = 400.f;
 	walkSetting.BrakingFrictionFactor = 1.0f;
@@ -38,7 +38,7 @@ void UShooterMovementHandler::BeginPlay()
 	FGateSetting jogSetting;
 	jogSetting.MaxMoveSpeed = 450.f;
 	jogSetting.MaxAcceleration = 900.f;
-	jogSetting.BrakingDeceleration = 900.f;
+	jogSetting.BrakingDeceleration = 700.f;
 	jogSetting.BrakingFrictionFactor = 1.0f;
 	jogSetting.BrakingFriction = 1.0f;
 	jogSetting.UseSeperateBrakingFriction = true;
@@ -46,8 +46,8 @@ void UShooterMovementHandler::BeginPlay()
 
 	FGateSetting sprintSetting;
 	sprintSetting.MaxMoveSpeed = 800.f;
-	sprintSetting.MaxAcceleration = 1600.f;
-	sprintSetting.BrakingDeceleration = 2400.f;
+	sprintSetting.MaxAcceleration = 1400.f;
+	sprintSetting.BrakingDeceleration = 1400.f;
 	sprintSetting.BrakingFrictionFactor = 1.0f;
 	sprintSetting.BrakingFriction = 0.5f;
 	sprintSetting.UseSeperateBrakingFriction = true;

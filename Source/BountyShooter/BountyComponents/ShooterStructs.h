@@ -37,6 +37,8 @@ struct BOUNTYSHOOTER_API FDebugOptions
 	bool ShowLocomotionData;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool ShowGateData;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool DistanceMatching;
 };
 
 USTRUCT(BlueprintType)
