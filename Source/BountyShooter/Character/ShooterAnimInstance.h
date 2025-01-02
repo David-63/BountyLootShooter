@@ -36,8 +36,11 @@ protected:
 public:
 	UPROPERTY(BlueprintReadWrite, category = "Character enums")
 	EEquippedState EquippedState = EEquippedState::EES_Unarmed;
+
 	UPROPERTY(BlueprintReadWrite, category = "Character enums")
-	EGate CurrentGate = EGate::EG_Jog;
+	EGate InComingGate = EGate::EG_Walk;
+	UPROPERTY(BlueprintReadWrite, category = "Character enums")
+	EGate CurrentGate = EGate::EG_Walk;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, category = "Character Structs")
 	FDebugOptions DebugOptions;

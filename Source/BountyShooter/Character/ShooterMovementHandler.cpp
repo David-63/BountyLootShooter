@@ -36,7 +36,7 @@ void UShooterMovementHandler::BeginPlay()
 	GateSetting.Add(EGate::EG_Walk, walkSetting);
 
 	FGateSetting jogSetting;
-	jogSetting.MaxMoveSpeed = 450.f;
+	jogSetting.MaxMoveSpeed = 300.f;
 	jogSetting.MaxAcceleration = 900.f;
 	jogSetting.BrakingDeceleration = 700.f;
 	jogSetting.BrakingFrictionFactor = 1.0f;
@@ -77,11 +77,11 @@ void UShooterMovementHandler::BindMovementHandler(AShooterCharacter* TargetChara
 	ShooterCharacter->GetCharacterMovement()->GravityScale = 3.f;
 	ShooterCharacter->GetCharacterMovement()->AirControl = 0.15f;
 
-	ShooterCharacter->GetCharacterMovement()->MaxWalkSpeed = BaseMovespeed;
+	ShooterCharacter->GetCharacterMovement()->MaxWalkSpeed = 300.f;
 	ShooterCharacter->GetCharacterMovement()->MaxWalkSpeedCrouched = 200.f;
 	ShooterCharacter->GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	ShooterCharacter->GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
-	ShooterCharacter->GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
+	ShooterCharacter->GetCharacterMovement()->BrakingDecelerationFalling = 500.0f;
 
 	// Active movement
 	EnableMovementAction();

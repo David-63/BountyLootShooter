@@ -13,5 +13,5 @@ void UShooterAnimInstance::ReceiveEquippedState(EEquippedState EquipState)
 
 void UShooterAnimInstance::ReceiveCurrentGate(EGate Gate)
 {
-	this->CurrentGate = Gate;
+	this->InComingGate = Gate;
 }
