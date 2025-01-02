@@ -27,29 +27,29 @@ void UShooterMovementHandler::BeginPlay()
 	Super::BeginPlay();
 
 	FGateSetting walkSetting;
-	walkSetting.MaxMoveSpeed = 300.f;
-	walkSetting.MaxAcceleration = 400.f;
-	walkSetting.BrakingDeceleration = 400.f;
-	walkSetting.BrakingFrictionFactor = 1.0f;
-	walkSetting.BrakingFriction = 1.0f;
+	walkSetting.MaxMoveSpeed = 250.f;
+	walkSetting.MaxAcceleration = 250.f;
+	walkSetting.BrakingDeceleration = 150.f;
+	walkSetting.BrakingFrictionFactor = 1.1f;
+	walkSetting.BrakingFriction = 1.f;
 	walkSetting.UseSeperateBrakingFriction = true;
 	GateSetting.Add(EGate::EG_Walk, walkSetting);
 
 	FGateSetting jogSetting;
-	jogSetting.MaxMoveSpeed = 300.f;
-	jogSetting.MaxAcceleration = 900.f;
-	jogSetting.BrakingDeceleration = 700.f;
-	jogSetting.BrakingFrictionFactor = 1.0f;
-	jogSetting.BrakingFriction = 1.0f;
+	jogSetting.MaxMoveSpeed = 400.f;
+	jogSetting.MaxAcceleration = 250.f;
+	jogSetting.BrakingDeceleration = 150.f;
+	jogSetting.BrakingFrictionFactor = 1.1f;
+	jogSetting.BrakingFriction = 1.f;
 	jogSetting.UseSeperateBrakingFriction = true;
 	GateSetting.Add(EGate::EG_Jog, jogSetting);
 
 	FGateSetting sprintSetting;
 	sprintSetting.MaxMoveSpeed = 800.f;
-	sprintSetting.MaxAcceleration = 1400.f;
+	sprintSetting.MaxAcceleration = 800.f;
 	sprintSetting.BrakingDeceleration = 1400.f;
 	sprintSetting.BrakingFrictionFactor = 1.0f;
-	sprintSetting.BrakingFriction = 0.5f;
+	sprintSetting.BrakingFriction = 0.f;
 	sprintSetting.UseSeperateBrakingFriction = true;
 	GateSetting.Add(EGate::EG_Sprint, sprintSetting);	
 }
@@ -81,7 +81,7 @@ void UShooterMovementHandler::BindMovementHandler(AShooterCharacter* TargetChara
 	ShooterCharacter->GetCharacterMovement()->MaxWalkSpeedCrouched = 200.f;
 	ShooterCharacter->GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	ShooterCharacter->GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
-	ShooterCharacter->GetCharacterMovement()->BrakingDecelerationFalling = 500.0f;
+	ShooterCharacter->GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
 	// Active movement
 	EnableMovementAction();
