@@ -46,7 +46,7 @@ void UShooterMovementHandler::BeginPlay()
 
 	FGateSetting sprintSetting;
 	sprintSetting.MaxMoveSpeed = 800.f;
-	sprintSetting.MaxAcceleration = 800.f;
+	sprintSetting.MaxAcceleration = 1200.f;
 	sprintSetting.BrakingDeceleration = 1400.f;
 	sprintSetting.BrakingFrictionFactor = 1.0f;
 	sprintSetting.BrakingFriction = 0.f;
@@ -162,7 +162,6 @@ void UShooterMovementHandler::UpdateGate(EGate Gate)
 		break;
 	}
 	ShooterCharacter->GetCharacterAnimInstance()->ReceiveCurrentGate(CurrentGate);
-	ShooterCharacter->OnChangeGateDelegate.Broadcast(CurrentGate);
 }
 
 void UShooterMovementHandler::Move(const FInputActionValue& Value)
