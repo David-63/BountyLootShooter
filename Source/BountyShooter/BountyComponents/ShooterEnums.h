@@ -37,8 +37,17 @@ enum class ELocomotionDirections : uint8
 	ELD_MAX UMETA(DisplayName = "DefaultMAX"),
 };
 
+UENUM(BlueprintType)
+enum class ERootYawOffset : uint8
+{
+	ERYO_Accumulate UMETA(DisplayName = "Accumulate"),
+	ERYO_BlendOut UMETA(DisplayName = "BlendOut"),
+	ERYO_Hold UMETA(DisplayName = "Hold"),
+	ERYO_MAX UMETA(DisplayName = "DefaultMAX"),
+};
 
-//
+
+// ================================
 
 UENUM(BlueprintType)
 enum class EWeaponCategory : uint8
