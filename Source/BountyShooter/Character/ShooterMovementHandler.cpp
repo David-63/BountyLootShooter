@@ -30,15 +30,15 @@ void UShooterMovementHandler::BeginPlay()
 	walkSetting.MaxMoveSpeed = 250.f;
 	walkSetting.MaxAcceleration = 250.f;
 	walkSetting.BrakingDeceleration = 150.f;
-	walkSetting.BrakingFrictionFactor = 1.1f;
+	walkSetting.BrakingFrictionFactor = 1.5f;
 	walkSetting.BrakingFriction = 1.f;
 	walkSetting.UseSeperateBrakingFriction = true;
 	GateSetting.Add(EGate::EG_Walk, walkSetting);
 
 	FGateSetting jogSetting;
 	jogSetting.MaxMoveSpeed = 400.f;
-	jogSetting.MaxAcceleration = 250.f;
-	jogSetting.BrakingDeceleration = 150.f;
+	jogSetting.MaxAcceleration = 400.f;
+	jogSetting.BrakingDeceleration = 250.f;
 	jogSetting.BrakingFrictionFactor = 1.1f;
 	jogSetting.BrakingFriction = 1.f;
 	jogSetting.UseSeperateBrakingFriction = true;
