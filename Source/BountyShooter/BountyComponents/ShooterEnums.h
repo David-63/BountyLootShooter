@@ -21,9 +21,10 @@ enum class EEquippedState : uint8
 UENUM(BlueprintType)
 enum class EGate : uint8
 {
-	EG_Walk UMETA(DisplayName = "Walking"),
-	EG_Jog UMETA(DisplayName = "Jogging"),
-	EG_Sprint UMETA(DisplayName = "Sprinting"),
+	EG_Walk UMETA(DisplayName = "Walking"),		// 완전 느리게 이동
+	EG_Jog UMETA(DisplayName = "Jogging"),		// 평소 이동
+	EG_Sprint UMETA(DisplayName = "Sprinting"),	// 대시 상태
+	EG_Crouch UMETA(DisplayName = "Crouching"),
 	EG_MAX UMETA(DisplayName = "DefaultMAX"),
 };
 

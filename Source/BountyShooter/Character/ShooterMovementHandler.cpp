@@ -51,7 +51,16 @@ void UShooterMovementHandler::BeginPlay()
 	sprintSetting.BrakingFrictionFactor = 1.0f;
 	sprintSetting.BrakingFriction = 0.f;
 	sprintSetting.UseSeperateBrakingFriction = true;
-	GateSetting.Add(EGate::EG_Sprint, sprintSetting);	
+	GateSetting.Add(EGate::EG_Sprint, sprintSetting);
+
+	FGateSetting crouchtSetting;
+	crouchtSetting.MaxMoveSpeed = 250.f;
+	crouchtSetting.MaxAcceleration = 250.f;
+	crouchtSetting.BrakingDeceleration = 250.f;
+	crouchtSetting.BrakingFrictionFactor = 1.0f;
+	crouchtSetting.BrakingFriction = 0.f;
+	crouchtSetting.UseSeperateBrakingFriction = true;
+	GateSetting.Add(EGate::EG_Crouch, crouchtSetting);
 }
 
 
@@ -201,7 +210,7 @@ void UShooterMovementHandler::StopJumping()
 
 void UShooterMovementHandler::Crouch()
 {
-	UpdateGate(EGate::EG_Walk);
+	UpdateGate(EGate::EG_Crouch);
 	bIsCrouched = true;
 	ShooterCharacter->Crouch();
 }
@@ -232,7 +241,7 @@ void UShooterMovementHandler::Jog()
 void UShooterMovementHandler::AimHold()
 {
 	UpdateGate(EGate::EG_Walk);
-	bIsAimed = true;	
+	bIsAimed = true;
 }
 
 void UShooterMovementHandler::AimRelease()
