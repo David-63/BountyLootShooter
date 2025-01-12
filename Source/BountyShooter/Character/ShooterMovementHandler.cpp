@@ -87,7 +87,7 @@ void UShooterMovementHandler::BindMovementHandler(AShooterCharacter* TargetChara
 	ShooterCharacter->GetCharacterMovement()->AirControl = 0.15f;
 
 	ShooterCharacter->GetCharacterMovement()->MaxWalkSpeed = 300.f;
-	ShooterCharacter->GetCharacterMovement()->MaxWalkSpeedCrouched = 200.f;
+	ShooterCharacter->GetCharacterMovement()->MaxWalkSpeedCrouched = 250.f;			// crouch gate
 	ShooterCharacter->GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	ShooterCharacter->GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	ShooterCharacter->GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
