@@ -29,18 +29,18 @@ void UShooterMovementHandler::BeginPlay()
 	FGateSetting walkSetting;
 	walkSetting.MaxMoveSpeed = 250.f;
 	walkSetting.MaxAcceleration = 250.f;
-	walkSetting.BrakingDeceleration = 150.f;
+	walkSetting.BrakingDeceleration = 600.f;
 	walkSetting.BrakingFrictionFactor = 1.5f;
-	walkSetting.BrakingFriction = 1.f;
+	walkSetting.BrakingFriction = 0.f;
 	walkSetting.UseSeperateBrakingFriction = true;
 	GateSetting.Add(EGate::EG_Walk, walkSetting);
 
 	FGateSetting jogSetting;
 	jogSetting.MaxMoveSpeed = 400.f;
 	jogSetting.MaxAcceleration = 400.f;
-	jogSetting.BrakingDeceleration = 250.f;
+	jogSetting.BrakingDeceleration = 600.f;
 	jogSetting.BrakingFrictionFactor = 1.1f;
-	jogSetting.BrakingFriction = 1.f;
+	jogSetting.BrakingFriction = 0.f;
 	jogSetting.UseSeperateBrakingFriction = true;
 	GateSetting.Add(EGate::EG_Jog, jogSetting);
 
@@ -56,7 +56,7 @@ void UShooterMovementHandler::BeginPlay()
 	FGateSetting crouchtSetting;
 	crouchtSetting.MaxMoveSpeed = 250.f;
 	crouchtSetting.MaxAcceleration = 250.f;
-	crouchtSetting.BrakingDeceleration = 250.f;
+	crouchtSetting.BrakingDeceleration = 600.f;
 	crouchtSetting.BrakingFrictionFactor = 1.0f;
 	crouchtSetting.BrakingFriction = 0.f;
 	crouchtSetting.UseSeperateBrakingFriction = true;
@@ -82,15 +82,15 @@ void UShooterMovementHandler::BindMovementHandler(AShooterCharacter* TargetChara
 	ShooterCharacter->GetCharacterMovement()->RotationRate = FRotator(0.0f, 800.0f, 0.0f); // ...at this rotation rate
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
 	// instead of recompiling to adjust them
-	ShooterCharacter->GetCharacterMovement()->JumpZVelocity = 1000.f;
-	ShooterCharacter->GetCharacterMovement()->GravityScale = 3.f;
-	ShooterCharacter->GetCharacterMovement()->AirControl = 0.15f;
+	ShooterCharacter->GetCharacterMovement()->JumpZVelocity = 700.f;
+	ShooterCharacter->GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
+	ShooterCharacter->GetCharacterMovement()->AirControl = 0.25f;
+	ShooterCharacter->GetCharacterMovement()->GravityScale = 2.f;
 
 	ShooterCharacter->GetCharacterMovement()->MaxWalkSpeed = 300.f;
 	ShooterCharacter->GetCharacterMovement()->MaxWalkSpeedCrouched = 250.f;			// crouch gate
 	ShooterCharacter->GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	ShooterCharacter->GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
-	ShooterCharacter->GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
 	// Active movement
 	EnableMovementAction();
