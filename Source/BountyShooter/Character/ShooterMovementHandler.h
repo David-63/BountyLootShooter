@@ -30,6 +30,8 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	void CheckGround();
+
 	UFUNCTION(BlueprintCallable)
 	void BindMovementHandler(AShooterCharacter* TargetCharacter);
 

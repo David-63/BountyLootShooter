@@ -15,3 +15,8 @@ void UShooterAnimInstance::ReceiveCurrentGate(EGate Gate)
 {
 	this->InComingGate = Gate;
 }
+
+void UShooterAnimInstance::ReceiveGroundDistance(float Distance)
+{
+	GroundDistance = Distance;
+}

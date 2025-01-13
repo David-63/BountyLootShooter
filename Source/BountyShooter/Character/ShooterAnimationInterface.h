@@ -25,4 +25,5 @@ class BOUNTYSHOOTER_API IShooterAnimationInterface
 public:
 	virtual void ReceiveEquippedState(EEquippedState EquipState) = 0;
 	virtual void ReceiveCurrentGate(EGate Gate) = 0;
+	virtual void ReceiveGroundDistance(float Distance) = 0;
 };

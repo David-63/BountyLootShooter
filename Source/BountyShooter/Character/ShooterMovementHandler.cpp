@@ -10,6 +10,10 @@
 #include "BountyShooter/BountyComponents/ShooterEnums.h"
 #include "ShooterAnimInstance.h"
 
+#include "Kismet/KismetSystemLibrary.h"
+#include "Components/CapsuleComponent.h"
+
+
 // Sets default values for this component's properties
 UShooterMovementHandler::UShooterMovementHandler()
 {
@@ -68,8 +72,32 @@ void UShooterMovementHandler::BeginPlay()
 void UShooterMovementHandler::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	// ...	
 
-	// ...
+	//UKismetSystemLibrary::SphereTraceMulti
+	
+	CheckGround();
+}
+
+void UShooterMovementHandler::CheckGround()
+{
+	float capsuleHeight = ShooterCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+	FVector characterLocation = ShooterCharacter->GetActorLocation();
+
+	FVector groundTraceStartLocation = characterLocation;
+	FVector groundTraceEndLocation = characterLocation;
+
+	groundTraceStartLocation.Z -= capsuleHeight;
+	groundTraceEndLocation.Z -= 1000.f;
+
+	FHitResult outHit;
+	TArray<AActor*> actorsToIgnore;
+	EDrawDebugTrace::Type drawDebugType = EDrawDebugTrace::ForOneFrame;
+
+	UKismetSystemLibrary::SphereTraceSingle(
+		GetWorld(), groundTraceStartLocation, groundTraceEndLocation, 5.f,
+		UEngineTypes::ConvertToTraceType(ECC_Visibility), false, actorsToIgnore, drawDebugType, outHit, true);
+	ShooterCharacter->GetCharacterAnimInstance()->ReceiveGroundDistance(outHit.Distance);
 }
 
 void UShooterMovementHandler::BindMovementHandler(AShooterCharacter* TargetCharacter)

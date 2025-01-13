@@ -27,6 +27,8 @@ class BOUNTYSHOOTER_API UShooterAnimInstance : public UAnimInstance, public ISho
 public:
 	virtual void ReceiveEquippedState(EEquippedState EquipState) override;
 	virtual void ReceiveCurrentGate(EGate Gate) override;
+	virtual void ReceiveGroundDistance(float Distance) override;
+
 protected:
 	UPROPERTY(BlueprintReadWrite, category = "References")
 	TObjectPtr<AShooterCharacter> ShooterCharacter = nullptr;
@@ -41,7 +43,11 @@ public:
 	EGate InComingGate = EGate::EG_Walk;
 	UPROPERTY(BlueprintReadWrite, category = "Character enums")
 	EGate CurrentGate = EGate::EG_Walk;
+	UPROPERTY(BlueprintReadWrite, category = "Character enums")
+	float GroundDistance = 0.f;
 
+
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, category = "Character Structs")
 	FDebugOptions DebugOptions;
 

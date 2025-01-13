@@ -60,6 +60,8 @@ void AShooterCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	FHitResult result;
 	LineTraceViewDirection(result);
+
+	
 }
 
 
