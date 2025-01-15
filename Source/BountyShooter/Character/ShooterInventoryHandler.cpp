@@ -154,7 +154,7 @@ void UShooterInventoryHandler::ToggleWeapon()
 			ELoadoutSlot otherSlot = GetOccupiedWeaponSlot();
 			if (ELoadoutSlot::ELS_MAX == otherSlot) return;
 
-			WeaponSlots[otherSlot]->DrawWeapon(FName(TEXT("Hand")));
+			WeaponSlots[otherSlot]->DrawWeapon(FName(TEXT("WeaponEquipped")));
 			switch (otherSlot)
 			{
 			case ELoadoutSlot::ELS_Primary:
@@ -204,7 +204,7 @@ bool UShooterInventoryHandler::DrawSelectWeapon()
 	if (WeaponSlots[SelectedWeaponSlot])
 	{
 		isWeaponArmed = true;
-		WeaponSlots[SelectedWeaponSlot]->DrawWeapon(FName(TEXT("Hand")));
+		WeaponSlots[SelectedWeaponSlot]->DrawWeapon(FName(TEXT("WeaponEquipped")));
 		ShooterCharacter->EnableCombatAction();
 		return true;
 	}
