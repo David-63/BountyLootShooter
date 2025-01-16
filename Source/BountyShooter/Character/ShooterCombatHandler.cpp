@@ -12,6 +12,8 @@
 
 #include "ShooterInventoryHandler.h"
 #include "BountyShooter/Items/Weapons/WeaponBase.h"
+#include "BountyShooter/Items/Weapons/PlatformComponent.h"
+#include "ShooterAnimInstance.h"
 
 // Sets default values for this component's properties
 UShooterCombatHandler::UShooterCombatHandler()
@@ -98,12 +100,21 @@ void UShooterCombatHandler::AmmoInsertion()
 
 void UShooterCombatHandler::Fire()
 {
+	// 제어 조건
+
+	EGate currentGate = ShooterCharacter->GetCharacterAnimInstance()->GetCurrentGate();
+
+	if (EGate::EG_Sprint == currentGate)
+	{
+		return;
+	}
 	
 	AWeaponBase* weapon = ShooterCharacter->InventoryHandler->GetSelectedWeapon();
 	if (!weapon) return;
 	
 	if (CanFire())
 	{
+		ShooterCharacter->PlayAnimMontage(weapon->GetPlatformComponent()->GetFireMontage(), 1.f);
 		FireTimerStart();
 		weapon->FireRound(ShooterCharacter->GetHitLocation());
 	}

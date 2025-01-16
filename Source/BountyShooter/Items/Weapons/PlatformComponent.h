@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Animation/AnimMontage.h"
 #include "PlatformComponent.generated.h"
 
 
@@ -32,7 +33,14 @@ public:
 private:
 	TObjectPtr<AWeaponBase> WeaponBase = nullptr;
 
+	UPROPERTY(EditAnywhere, Category = "Character Addon")
+	UAnimMontage* FireMontage;
+	UAnimMontage* ReloadMontage;
 
+public:
+	FORCEINLINE UAnimMontage* GetFireMontage() { return FireMontage; }
+	FORCEINLINE UAnimMontage* GetReloadMontage() { return ReloadMontage; }
+	
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Platform Property")	// 유효 거리

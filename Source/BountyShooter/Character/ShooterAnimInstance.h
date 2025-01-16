@@ -48,6 +48,10 @@ public:
 
 
 public:
+	FORCEINLINE EGate GetCurrentGate() const { return CurrentGate; }
+
+
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, category = "Character Structs")
 	FDebugOptions DebugOptions;
 
