@@ -38,10 +38,11 @@ public:
 	void EjectCase(const USkeletalMeshSocket* EjectSocket, UWorld* World);
 	void UpdateChamber(uint32& ClipSize, uint32 ClipCapacity, bool& bChamberLoaded);
 
-
 public:
 	void PlayFireParticle();
 	void PlayTrailParticle();
 	void PlayImpactParticle();
+
+
 
 };

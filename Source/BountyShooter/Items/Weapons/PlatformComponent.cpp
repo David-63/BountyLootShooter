@@ -144,15 +144,10 @@ FVector UPlatformComponent::TraceEndWithScatter(const FVector& _traceStart, cons
 
 void UPlatformComponent::CycleCartridge(UWorld* World)
 {
-	if (bChamberLoaded && WeaponBase->GetItemMeshComponent())
+	if (bChamberLoaded)
 	{
-		const USkeletalMeshSocket* ejectSocket = WeaponBase->GetItemMeshComponent()->GetSocketByName(FName("Eject"));
-		if (ejectSocket)
-		{
-			WeaponBase->GetAmmunitionComponent()->EjectCase(ejectSocket, World);
-		}
+		AmmoEjectCase(World);
 	}
-
 	WeaponBase->GetAmmunitionComponent()->UpdateChamber(CurrentClipSize, PlatformBaseClipCapacity, bChamberLoaded);
 
 	UE_LOG(LogTemp, Warning, TEXT("CurrentClip %d"), CurrentClipSize);
@@ -166,8 +161,34 @@ void UPlatformComponent::CycleCartridge(UWorld* World)
 	}
 }
 
+void UPlatformComponent::AmmoEjectCase(UWorld* World)
+{
+	if (bChamberLoaded && WeaponBase->GetItemMeshComponent())
+	{
+		const USkeletalMeshSocket* ejectSocket = WeaponBase->GetItemMeshComponent()->GetSocketByName(FName("Eject"));
+		if (ejectSocket)
+		{
+			WeaponBase->GetAmmunitionComponent()->EjectCase(ejectSocket, World);
+		}
+	}
+}
+
 float UPlatformComponent::GetTotalDamage()
 {
 	return PlatformBaseDamage;
 }
 
+void UPlatformComponent::AmmoInsertion()
+{
+	CurrentClipSize = FMath::Clamp(CurrentClipSize + PlatformBaseClipCapacity, 0, PlatformBaseClipCapacity + 1);
+}
+
+void UPlatformComponent::PlayFireMontage()
+{
+	WeaponBase->GetItemMeshComponent()->PlayAnimation(WeaponFireMontage, false);
+}
+
+void UPlatformComponent::PlayReloadMontage()
+{
+	WeaponBase->GetItemMeshComponent()->PlayAnimation(WeaponReloadMontage, false);
+}

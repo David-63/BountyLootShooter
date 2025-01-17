@@ -58,6 +58,7 @@ public:
 
 	
 public:
+	void Reload(); // temp system
 	void ChamberingRound();
 	void AmmoInsertion();
 	void Fire();

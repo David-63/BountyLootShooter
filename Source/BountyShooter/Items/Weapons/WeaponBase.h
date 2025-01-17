@@ -55,7 +55,7 @@ public:
 	
 public:
 	void FireRound(const FVector& _hitTarget);
-
+	void Reload();
 	
 public:
 	float GetFireRate() const;

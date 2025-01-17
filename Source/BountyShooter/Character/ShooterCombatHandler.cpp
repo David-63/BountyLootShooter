@@ -68,9 +68,8 @@ void UShooterCombatHandler::EnableCombatAction()
 			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &UShooterCombatHandler::Fire);
 			EnhancedInputComponent->BindAction(MeleeAction, ETriggerEvent::Triggered, this, &UShooterCombatHandler::Melee);
 			EnhancedInputComponent->BindAction(ThrowAction, ETriggerEvent::Triggered, this, &UShooterCombatHandler::Throw);
-			EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &UShooterCombatHandler::ChamberingRound);
-			EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &UShooterCombatHandler::AmmoInsertion);
-
+			EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Canceled, this, &UShooterCombatHandler::Reload);
+			//EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &UShooterCombatHandler::AmmoInsertion);
 		}
 	}
 }
@@ -90,8 +89,19 @@ void UShooterCombatHandler::DisableCombatAction()
 	}
 }
 
+void UShooterCombatHandler::Reload()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Reload"));
+	AWeaponBase* weapon = ShooterCharacter->InventoryHandler->GetSelectedWeapon();
+	if (!weapon) return;
+	ShooterCharacter->PlayAnimMontage(weapon->GetPlatformComponent()->GetReloadMontage(), 1.f);
+	weapon->GetPlatformComponent()->PlayReloadMontage();
+	weapon->Reload();
+}
+
 void UShooterCombatHandler::ChamberingRound()
 {
+	
 }
 
 void UShooterCombatHandler::AmmoInsertion()
@@ -114,8 +124,9 @@ void UShooterCombatHandler::Fire()
 	
 	if (CanFire())
 	{
-		ShooterCharacter->PlayAnimMontage(weapon->GetPlatformComponent()->GetFireMontage(), 1.f);
 		FireTimerStart();
+		ShooterCharacter->PlayAnimMontage(weapon->GetPlatformComponent()->GetFireMontage(), 1.f);
+		weapon->GetPlatformComponent()->PlayFireMontage();
 		weapon->FireRound(ShooterCharacter->GetHitLocation());
 	}
 }

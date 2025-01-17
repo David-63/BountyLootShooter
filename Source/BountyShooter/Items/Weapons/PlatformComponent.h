@@ -33,22 +33,31 @@ public:
 private:
 	TObjectPtr<AWeaponBase> WeaponBase = nullptr;
 
-	UPROPERTY(EditAnywhere, Category = "Character Addon")
-	UAnimMontage* FireMontage;
-	UAnimMontage* ReloadMontage;
+	UPROPERTY(EditAnywhere, Category = "Montage Shooter")
+	UAnimMontage* ShooterFireMontage;
+	UPROPERTY(EditAnywhere, Category = "Montage Shooter")
+	UAnimMontage* ShooterReloadMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Montage Weapon")
+	UAnimationAsset* WeaponFireMontage;
+	UPROPERTY(EditAnywhere, Category = "Montage Weapon")
+	UAnimationAsset* WeaponReloadMontage;
 
 public:
-	FORCEINLINE UAnimMontage* GetFireMontage() { return FireMontage; }
-	FORCEINLINE UAnimMontage* GetReloadMontage() { return ReloadMontage; }
+	void PlayFireMontage();
+	void PlayReloadMontage();
+
+	FORCEINLINE UAnimMontage* GetFireMontage() { return ShooterFireMontage; }
+	FORCEINLINE UAnimMontage* GetReloadMontage() { return ShooterReloadMontage; }
 	
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Platform Property")	// 유효 거리
-		float EffectiveRange = 500.f;
+	float EffectiveRange = 500.f;
 	UPROPERTY(EditAnywhere, Category = "Platform Property")	// 산탄(집탄율) 범위
-		float SpreadRadius = 25.f;
+	float SpreadRadius = 25.f;
 	UPROPERTY(EditAnywhere, Category = "Platform Property") // 멀티샷 개수
-		uint32 PelletCount = 2;
+	uint32 PelletCount = 2;
 
 	UPROPERTY(EditAnywhere, Category = "Platform Property")
 	uint32 PlatformBaseClipCapacity = 25.f;	
@@ -74,8 +83,13 @@ public:
 	// 매 사격마다 약실 갱신 및 탄피 배출 (Ammunition 에서 진행)
 	void CycleCartridge(UWorld* World);
 
+	void AmmoEjectCase(UWorld* World);
+
 
 	// 여기서 계산하지 말고, Combat으로 전달할 예정
 	float GetTotalDamage();
-		
+
+public:
+	void ChamberingRound();
+	void AmmoInsertion();
 };

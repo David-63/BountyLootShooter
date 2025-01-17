@@ -91,6 +91,17 @@ void AWeaponBase::FireRound(const FVector& _hitTarget)
 	WeaponPlatform->CycleCartridge(world);
 }
 
+void AWeaponBase::Reload()
+{
+	WeaponPlatform->AmmoInsertion();
+	
+	if (WeaponPlatform->IsChamberLoaded())
+	{
+		UWorld* world = GetWorld();
+		WeaponPlatform->CycleCartridge(world);
+	}
+}
+
 float AWeaponBase::GetFireRate() const
 {
 	// 추후에 추가될 예정?
