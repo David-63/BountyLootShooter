@@ -95,7 +95,7 @@ void AWeaponBase::Reload()
 {
 	WeaponPlatform->AmmoInsertion();
 	
-	if (WeaponPlatform->IsChamberLoaded())
+	if (false == WeaponPlatform->IsChamberLoaded())
 	{
 		UWorld* world = GetWorld();
 		WeaponPlatform->CycleCartridge(world);

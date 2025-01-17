@@ -76,9 +76,23 @@ private:
 
 	EGate CurrentGate;
 	TMap<EGate, FGateSetting> GateSetting;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Movement", meta = (AllowPrivateAccess = "true"))
+	float DefaultArmLength = 150;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Movement", meta = (AllowPrivateAccess = "true"))
+	float AimArmLength = 75;
+
+
+	float TransitionTimeCur = 0.f;
+	bool DoTransition = false;
+
 public:
 	void UpdateGate(EGate Gate);
+	void BeginTransition();
 
+private:
+	void TickTransition(float DeltaTime);
+	
 public:
 	void Move(const FInputActionValue& Value);
 	void Jump();

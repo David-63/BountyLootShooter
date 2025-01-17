@@ -12,6 +12,7 @@
 
 #include "Kismet/KismetSystemLibrary.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 
 
 // Sets default values for this component's properties
@@ -76,6 +77,7 @@ void UShooterMovementHandler::TickComponent(float DeltaTime, ELevelTick TickType
 
 	//UKismetSystemLibrary::SphereTraceMulti
 	
+	TickTransition(DeltaTime);
 	CheckGround();
 }
 
@@ -201,6 +203,40 @@ void UShooterMovementHandler::UpdateGate(EGate Gate)
 	ShooterCharacter->GetCharacterAnimInstance()->ReceiveCurrentGate(CurrentGate);
 }
 
+void UShooterMovementHandler::BeginTransition()
+{
+	// 타이머 초기화하고
+	TransitionTimeCur = 0.f;
+	// 트렌지션 시작
+	DoTransition = true;
+}
+
+void UShooterMovementHandler::TickTransition(float DeltaTime)
+{
+	if (!DoTransition) return;
+
+	float endTime = 0.15f;
+	float alpha = FMath::Clamp(TransitionTimeCur / endTime, 0.f, 1.f);
+	TransitionTimeCur += DeltaTime;
+
+	// 완료 조건
+	if (TransitionTimeCur >= endTime)
+	{
+		DoTransition = false;
+		return;
+	}
+
+	// lerp 적용
+	if (bIsAimed)
+	{
+		ShooterCharacter->GetTpsSpringArm()->TargetArmLength = FMath::Lerp(DefaultArmLength, AimArmLength, alpha); 
+	}
+	else
+	{
+		ShooterCharacter->GetTpsSpringArm()->TargetArmLength = FMath::Lerp(AimArmLength, DefaultArmLength, alpha);
+	}
+}
+
 void UShooterMovementHandler::Move(const FInputActionValue& Value)
 {
 	if (!ShooterCharacter || !ShooterCharacter->GetController()) return;
@@ -267,14 +303,31 @@ void UShooterMovementHandler::Jog()
 }
 
 void UShooterMovementHandler::AimHold()
-{
-	UpdateGate(EGate::EG_Walk);
+{	
+	if (EGate::EG_Crouch == CurrentGate)
+	{
+		UpdateGate(EGate::EG_Crouch);
+	}
+	else
+	{
+		UpdateGate(EGate::EG_Walk);
+	}
+	BeginTransition();
 	bIsAimed = true;
 }
 
 void UShooterMovementHandler::AimRelease()
 {
-	UpdateGate(EGate::EG_Jog);
+	
+	if (EGate::EG_Crouch == CurrentGate)
+	{
+		UpdateGate(EGate::EG_Crouch);
+	}
+	else
+	{
+		UpdateGate(EGate::EG_Jog);
+	}
+	BeginTransition();
 	bIsAimed = false;
 }
 
