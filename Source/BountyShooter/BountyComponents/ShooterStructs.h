@@ -9,24 +9,6 @@
 /**
  * 
  */
-USTRUCT(BlueprintType)
-struct BOUNTYSHOOTER_API FGateSetting
-{
-	GENERATED_BODY()
-
-	UPROPERTY(BlueprintReadWrite)
-	float MaxMoveSpeed;
-	UPROPERTY(BlueprintReadWrite)
-	float MaxAcceleration;
-	UPROPERTY(BlueprintReadWrite)
-	float BrakingDeceleration;
-	UPROPERTY(BlueprintReadWrite)
-	float BrakingFrictionFactor;
-	UPROPERTY(BlueprintReadWrite)
-	float BrakingFriction;
-	UPROPERTY(BlueprintReadWrite)
-	bool UseSeperateBrakingFriction;
-};
 
 USTRUCT(BlueprintType)
 struct BOUNTYSHOOTER_API FDebugOptions
@@ -58,4 +40,23 @@ struct BOUNTYSHOOTER_API FDirectionalAnimations
 	UAnimSequence* RightAnim;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UAnimSequence* LeftAnim;
+};
+
+USTRUCT(BlueprintType)
+struct BOUNTYSHOOTER_API FGateMovement : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite)
+	float MaxMoveSpeed;
+	UPROPERTY(BlueprintReadWrite)
+	float MaxAcceleration;
+	UPROPERTY(BlueprintReadWrite)
+	float BrakingDeceleration;
+	UPROPERTY(BlueprintReadWrite)
+	float BrakingFrictionFactor;
+	UPROPERTY(BlueprintReadWrite)
+	float BrakingFriction;
+	UPROPERTY(BlueprintReadWrite)
+	bool UseSeperateBrakingFriction;
 };

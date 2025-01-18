@@ -104,7 +104,6 @@ void AWeaponBase::Reload()
 
 float AWeaponBase::GetFireRate() const
 {
-	// 추후에 추가될 예정?
 	return WeaponPlatform->GetBaseFireRate();
 }
 

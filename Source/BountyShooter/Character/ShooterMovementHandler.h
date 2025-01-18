@@ -75,7 +75,7 @@ private:
 	float AdsMovespeed = 250.f;
 
 	EGate CurrentGate;
-	TMap<EGate, FGateSetting> GateSetting;
+	UDataTable* GateDataTable;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Movement", meta = (AllowPrivateAccess = "true"))
 	float DefaultArmLength = 150;

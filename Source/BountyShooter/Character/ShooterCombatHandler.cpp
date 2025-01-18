@@ -91,7 +91,6 @@ void UShooterCombatHandler::DisableCombatAction()
 
 void UShooterCombatHandler::Reload()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Reload"));
 	AWeaponBase* weapon = ShooterCharacter->InventoryHandler->GetSelectedWeapon();
 	if (!weapon) return;
 	ShooterCharacter->PlayAnimMontage(weapon->GetPlatformComponent()->GetReloadMontage(), 1.f);

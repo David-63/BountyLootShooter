@@ -63,6 +63,8 @@ public:
 
 private:
 	EEquippedState EquippedState;
+public:
+	FORCEINLINE EEquippedState GetEquippedState() { return EquippedState; }
 
 
 

@@ -149,15 +149,14 @@ void UPlatformComponent::CycleCartridge(UWorld* World)
 		AmmoEjectCase(World);
 	}
 	WeaponBase->GetAmmunitionComponent()->UpdateChamber(CurrentClipSize, PlatformBaseClipCapacity, bChamberLoaded);
-
-	UE_LOG(LogTemp, Warning, TEXT("CurrentClip %d"), CurrentClipSize);
+		
 	if (bChamberLoaded)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Chamber Enable"));
+		UE_LOG(LogTemp, Warning, TEXT("CurrentClip %d + 1"), CurrentClipSize);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Chamber Empty"));
+		UE_LOG(LogTemp, Warning, TEXT("CurrentClip %d"), CurrentClipSize);	
 	}
 }
 
@@ -180,7 +179,7 @@ float UPlatformComponent::GetTotalDamage()
 
 void UPlatformComponent::AmmoInsertion()
 {
-	CurrentClipSize = FMath::Clamp(CurrentClipSize + PlatformBaseClipCapacity, 0, PlatformBaseClipCapacity + 1);
+	CurrentClipSize = FMath::Clamp(CurrentClipSize + PlatformBaseClipCapacity, 0, PlatformBaseClipCapacity);
 }
 
 void UPlatformComponent::PlayFireMontage()
