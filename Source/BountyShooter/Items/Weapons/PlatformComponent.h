@@ -72,6 +72,7 @@ private:
 	float PlatformBaseFireRate = 6.f;
 public:
 	FORCEINLINE float GetBaseFireRate() const { return PlatformBaseFireRate; }
+	// 약실 확인
 	FORCEINLINE bool IsChamberLoaded() const { return bChamberLoaded; }
 
 public:
@@ -90,6 +91,8 @@ public:
 	float GetTotalDamage();
 
 public:
+	// 나중에 구현
 	void ChamberingRound();
+	// 탄약 보충
 	void AmmoInsertion();
 };

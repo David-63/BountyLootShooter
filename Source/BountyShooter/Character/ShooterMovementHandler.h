@@ -9,6 +9,22 @@
 
 #include "ShooterMovementHandler.generated.h"
 
+#define UnarmedWalk FName("UnarmedWalk")
+#define PistolWalk FName("PistolWalk")
+#define RifleWalk FName("RifleWalk")
+
+#define UnarmedJog FName("UnarmedJog")
+#define PistolJog FName("PistolJog")
+#define RifleJog FName("RifleJog")
+
+#define UnarmedSprint FName("UnarmedSprint")
+#define PistolSprint FName("PistolSprint")
+#define RifleSprint FName("RifleSprint")
+
+#define UnarmedCrouch FName("UnarmedCrouch")
+#define PistolCrouch FName("PistolCrouch")
+#define RifleCrouch FName("RifleCrouch")
+
 class AShooterCharacter;
 class UInputAction;
 struct FInputActionValue;
@@ -73,8 +89,9 @@ private:
 	float BaseMovespeed = 450.f;
 	float SprintMovespeed = 800.f;
 	float AdsMovespeed = 250.f;
-
+	UPROPERTY()
 	EGate CurrentGate;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GateData", meta = (AllowPrivateAccess = "true"))
 	UDataTable* GateDataTable;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Movement", meta = (AllowPrivateAccess = "true"))
@@ -88,6 +105,7 @@ private:
 
 public:
 	void UpdateGate(EGate Gate);
+
 	void BeginTransition();
 
 private:

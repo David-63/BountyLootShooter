@@ -144,10 +144,12 @@ FVector UPlatformComponent::TraceEndWithScatter(const FVector& _traceStart, cons
 
 void UPlatformComponent::CycleCartridge(UWorld* World)
 {
+	// 탄피 배출 여부
 	if (bChamberLoaded)
 	{
 		AmmoEjectCase(World);
 	}
+
 	WeaponBase->GetAmmunitionComponent()->UpdateChamber(CurrentClipSize, PlatformBaseClipCapacity, bChamberLoaded);
 		
 	if (bChamberLoaded)
@@ -175,6 +177,10 @@ void UPlatformComponent::AmmoEjectCase(UWorld* World)
 float UPlatformComponent::GetTotalDamage()
 {
 	return PlatformBaseDamage;
+}
+
+void UPlatformComponent::ChamberingRound()
+{
 }
 
 void UPlatformComponent::AmmoInsertion()

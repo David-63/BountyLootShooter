@@ -61,6 +61,7 @@ void UAmmunitionComponent::EjectCase(const USkeletalMeshSocket* EjectSocket, UWo
 void UAmmunitionComponent::UpdateChamber(uint32& ClipSize, uint32 ClipCapacity, bool& bChamberLoaded)
 {
 	bChamberLoaded = 0 != ClipSize ? true : false;
+
 	if (0 == ClipSize) return;
 	ClipSize = FMath::Clamp(ClipSize - 1, 0, ClipCapacity);
 }

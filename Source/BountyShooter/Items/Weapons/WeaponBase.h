@@ -55,7 +55,7 @@ public:
 	
 public:
 	void FireRound(const FVector& _hitTarget);
-	void Reload();
+	void Reload();	// 현재로서는 무조건 한발씩 소모되는 구조
 	
 public:
 	float GetFireRate() const;

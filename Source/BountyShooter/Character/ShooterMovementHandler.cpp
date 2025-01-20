@@ -30,107 +30,7 @@ void UShooterMovementHandler::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GateDataTable = NewObject<UDataTable>();
-	GateDataTable->RowStruct = FGateMovement::StaticStruct();
-
-	FGateMovement unarmedWalk;
-	unarmedWalk.MaxMoveSpeed = 200.f;
-	unarmedWalk.MaxAcceleration = 200.f;
-	unarmedWalk.BrakingDeceleration = 200.f;
-	unarmedWalk.BrakingFrictionFactor = 1.f;
-	unarmedWalk.BrakingFriction = 0.f;
-	unarmedWalk.UseSeperateBrakingFriction = true;
-	GateDataTable->AddRow(FName("UnarmedWalk"), unarmedWalk);
-	FGateMovement unarmedJog;
-	unarmedJog.MaxMoveSpeed = 300.f;
-	unarmedJog.MaxAcceleration = 300.f;
-	unarmedJog.BrakingDeceleration = 300.f;
-	unarmedJog.BrakingFrictionFactor = 1.f;
-	unarmedJog.BrakingFriction = 0.f;
-	unarmedJog.UseSeperateBrakingFriction = true;
-	GateDataTable->AddRow(FName("UnarmedJog"), unarmedJog);
-	FGateMovement unarmedSprint;
-	unarmedSprint.MaxMoveSpeed = 700.f;
-	unarmedSprint.MaxAcceleration = 700.f;
-	unarmedSprint.BrakingDeceleration = 700.f;
-	unarmedSprint.BrakingFrictionFactor = 1.f;
-	unarmedSprint.BrakingFriction = 0.f;
-	unarmedSprint.UseSeperateBrakingFriction = true;
-	GateDataTable->AddRow(FName("UnarmedSprint"), unarmedSprint);
-	FGateMovement unarmedCrouch;
-	unarmedCrouch.MaxMoveSpeed = 200.f;
-	unarmedCrouch.MaxAcceleration = 200.f;
-	unarmedCrouch.BrakingDeceleration = 200.f;
-	unarmedCrouch.BrakingFrictionFactor = 1.f;
-	unarmedCrouch.BrakingFriction = 0.f;
-	unarmedCrouch.UseSeperateBrakingFriction = true;
-	GateDataTable->AddRow(FName("UnarmedCrouch"), unarmedCrouch);
-
-	FGateMovement pistolWalk;
-	pistolWalk.MaxMoveSpeed = 200.f;
-	pistolWalk.MaxAcceleration = 200.f;
-	pistolWalk.BrakingDeceleration = 200.f;
-	pistolWalk.BrakingFrictionFactor = 1.f;
-	pistolWalk.BrakingFriction = 0.f;
-	pistolWalk.UseSeperateBrakingFriction = true;
-	GateDataTable->AddRow(FName("PistolWalk"), pistolWalk);
-	FGateMovement pistolJog;
-	pistolJog.MaxMoveSpeed = 300.f;
-	pistolJog.MaxAcceleration = 300.f;
-	pistolJog.BrakingDeceleration = 300.f;
-	pistolJog.BrakingFrictionFactor = 1.f;
-	pistolJog.BrakingFriction = 0.f;
-	pistolJog.UseSeperateBrakingFriction = true;
-	GateDataTable->AddRow(FName("PistolJog"), pistolJog);
-	FGateMovement pistolSprint;
-	pistolSprint.MaxMoveSpeed = 700.f;
-	pistolSprint.MaxAcceleration = 700.f;
-	pistolSprint.BrakingDeceleration = 700.f;
-	pistolSprint.BrakingFrictionFactor = 1.f;
-	pistolSprint.BrakingFriction = 0.f;
-	pistolSprint.UseSeperateBrakingFriction = true;
-	GateDataTable->AddRow(FName("PistolSprint"), pistolSprint);
-	FGateMovement pistolCrouch;
-	pistolCrouch.MaxMoveSpeed = 200.f;
-	pistolCrouch.MaxAcceleration = 200.f;
-	pistolCrouch.BrakingDeceleration = 200.f;
-	pistolCrouch.BrakingFrictionFactor = 1.f;
-	pistolCrouch.BrakingFriction = 0.f;
-	pistolCrouch.UseSeperateBrakingFriction = true;
-	GateDataTable->AddRow(FName("PistolCrouch"), pistolCrouch);
-
-	FGateMovement rifleWalk;
-	rifleWalk.MaxMoveSpeed = 300.f;
-	rifleWalk.MaxAcceleration = 300.f;
-	rifleWalk.BrakingDeceleration = 550.f;
-	rifleWalk.BrakingFrictionFactor = 1.f;
-	rifleWalk.BrakingFriction = 0.f;
-	rifleWalk.UseSeperateBrakingFriction = true;
-	GateDataTable->AddRow(FName("RifleWalk"), rifleWalk);
-	FGateMovement rifleJog;
-	rifleJog.MaxMoveSpeed = 400.f;
-	rifleJog.MaxAcceleration = 400.f;
-	rifleJog.BrakingDeceleration = 650.f;
-	rifleJog.BrakingFrictionFactor = 1.f;
-	rifleJog.BrakingFriction = 0.f;
-	rifleJog.UseSeperateBrakingFriction = true;
-	GateDataTable->AddRow(FName("RifleJog"), rifleJog);
-	FGateMovement rifleSprint;
-	rifleSprint.MaxMoveSpeed = 700.f;
-	rifleSprint.MaxAcceleration = 700.f;
-	rifleSprint.BrakingDeceleration = 975.f;
-	rifleSprint.BrakingFrictionFactor = 1.f;
-	rifleSprint.BrakingFriction = 0.f;
-	rifleSprint.UseSeperateBrakingFriction = true;
-	GateDataTable->AddRow(FName("RifleSprint"), rifleSprint);
-	FGateMovement rifleCrouch;
-	rifleCrouch.MaxMoveSpeed = 200.f;
-	rifleCrouch.MaxAcceleration = 200.f;
-	rifleCrouch.BrakingDeceleration = 275.f;
-	rifleCrouch.BrakingFrictionFactor = 1.f;
-	rifleCrouch.BrakingFriction = 0.f;
-	rifleCrouch.UseSeperateBrakingFriction = true;
-	GateDataTable->AddRow(FName("RifleCrouch"), rifleCrouch);
+	
 }
 
 
@@ -241,7 +141,13 @@ void UShooterMovementHandler::UpdateGate(EGate Gate)
 {
 	CurrentGate = Gate;
 	ShooterCharacter->GetCharacterAnimInstance()->ReceiveCurrentGate(CurrentGate);
-	UCharacterMovementComponent* movement = ShooterCharacter->GetCharacterMovement();
+
+	if (nullptr == GateDataTable)
+		return;
+
+
+	UCharacterMovementComponent* movement = ShooterCharacter->GetCharacterMovement();	
+
 	EEquippedState equipState = ShooterCharacter->GetEquippedState();
 
 	static const FString ContextString(TEXT("GENERAL"));
@@ -252,13 +158,13 @@ void UShooterMovementHandler::UpdateGate(EGate Gate)
 		switch (equipState)
 		{
 		case EEquippedState::EES_TwoHands:
-			gateMovement = GateDataTable->FindRow<FGateMovement>(FName("RifleWalk"), ContextString);
+			gateMovement = GateDataTable->FindRow<FGateMovement>(RifleWalk, ContextString);
 			break;
 		case EEquippedState::EES_OneHand:
-			gateMovement = GateDataTable->FindRow<FGateMovement>(FName("PistolWalk"), ContextString);
+			gateMovement = GateDataTable->FindRow<FGateMovement>(PistolWalk, ContextString);
 			break;
 		case EEquippedState::EES_Unarmed:
-			gateMovement = GateDataTable->FindRow<FGateMovement>(FName("UnarmedWalk"), ContextString);
+			gateMovement = GateDataTable->FindRow<FGateMovement>(UnarmedWalk, ContextString);
 			break;
 		}
 		break;
@@ -266,13 +172,13 @@ void UShooterMovementHandler::UpdateGate(EGate Gate)
 		switch (equipState)
 		{
 		case EEquippedState::EES_TwoHands:
-			gateMovement = GateDataTable->FindRow<FGateMovement>(FName("RifleJog"), ContextString);
+			gateMovement = GateDataTable->FindRow<FGateMovement>(RifleJog, ContextString);
 			break;
 		case EEquippedState::EES_OneHand:
-			gateMovement = GateDataTable->FindRow<FGateMovement>(FName("PistolJog"), ContextString);
+			gateMovement = GateDataTable->FindRow<FGateMovement>(PistolJog, ContextString);
 			break;
 		case EEquippedState::EES_Unarmed:
-			gateMovement = GateDataTable->FindRow<FGateMovement>(FName("UnarmedJog"), ContextString);
+			gateMovement = GateDataTable->FindRow<FGateMovement>(UnarmedJog, ContextString);
 			break;
 		}
 		break;
@@ -280,13 +186,13 @@ void UShooterMovementHandler::UpdateGate(EGate Gate)
 		switch (equipState)
 		{
 		case EEquippedState::EES_TwoHands:
-			gateMovement = GateDataTable->FindRow<FGateMovement>(FName("RifleSprint"), ContextString);
+			gateMovement = GateDataTable->FindRow<FGateMovement>(RifleSprint, ContextString);
 			break;
 		case EEquippedState::EES_OneHand:
-			gateMovement = GateDataTable->FindRow<FGateMovement>(FName("PistolSprint"), ContextString);
+			gateMovement = GateDataTable->FindRow<FGateMovement>(PistolSprint, ContextString);
 			break;
 		case EEquippedState::EES_Unarmed:
-			gateMovement = GateDataTable->FindRow<FGateMovement>(FName("UnarmedSprint"), ContextString);
+			gateMovement = GateDataTable->FindRow<FGateMovement>(UnarmedSprint, ContextString);
 			break;
 		}
 		break;
@@ -294,25 +200,34 @@ void UShooterMovementHandler::UpdateGate(EGate Gate)
 		switch (equipState)
 		{
 		case EEquippedState::EES_TwoHands:
-			gateMovement = GateDataTable->FindRow<FGateMovement>(FName("RifleCrouch"), ContextString);
+			gateMovement = GateDataTable->FindRow<FGateMovement>(RifleCrouch, ContextString);
 			break;
 		case EEquippedState::EES_OneHand:
-			gateMovement = GateDataTable->FindRow<FGateMovement>(FName("PistolCrouch"), ContextString);
+			gateMovement = GateDataTable->FindRow<FGateMovement>(PistolCrouch, ContextString);
 			break;
 		case EEquippedState::EES_Unarmed:
-			gateMovement = GateDataTable->FindRow<FGateMovement>(FName("UnarmedCrouch"), ContextString);
+			gateMovement = GateDataTable->FindRow<FGateMovement>(UnarmedCrouch, ContextString);
 			break;
-		}
-		ShooterCharacter->GetCharacterMovement()->MaxWalkSpeedCrouched = gateMovement->MaxMoveSpeed;
+		}		
 		break;
 	}
 
-	movement->MaxWalkSpeed = gateMovement->MaxMoveSpeed;
-	movement->MaxAcceleration = gateMovement->MaxAcceleration;
-	movement->BrakingDecelerationWalking = gateMovement->BrakingDeceleration;
-	movement->BrakingFrictionFactor = gateMovement->BrakingFrictionFactor;
-	movement->BrakingFriction = gateMovement->BrakingFriction;
-	movement->bUseSeparateBrakingFriction = gateMovement->UseSeperateBrakingFriction;		
+	if (gateMovement)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GateChange"));
+
+		movement->MaxWalkSpeed = gateMovement->MaxMoveSpeed;
+		movement->MaxAcceleration = gateMovement->MaxAcceleration;
+		movement->BrakingDecelerationWalking = gateMovement->BrakingDeceleration;
+		movement->BrakingFrictionFactor = gateMovement->BrakingFrictionFactor;
+		movement->BrakingFriction = gateMovement->BrakingFriction;
+		movement->bUseSeparateBrakingFriction = gateMovement->UseSeperateBrakingFriction;
+
+		if (EGate::EG_Crouch == CurrentGate)
+		{
+			movement->MaxWalkSpeedCrouched = gateMovement->MaxMoveSpeed;
+		}
+	}
 }
 
 void UShooterMovementHandler::BeginTransition()
