@@ -5,6 +5,7 @@
 #include "BountyShooter/Character/ShooterCharacter.h"
 #include "BountyShooter/Character/ShooterInventoryHandler.h"
 #include "Engine/SkeletalMeshSocket.h"
+#include "Kismet/GameplayStatics.h"
 #include "../ItemMeshComponent.h"
 #include "AmmunitionComponent.h"
 #include "PlatformComponent.h"
@@ -74,18 +75,18 @@ void AWeaponBase::FireRound(const FVector& _hitTarget)
 	if (nullptr == ownerPawn) { UE_LOG(LogTemp, Warning, TEXT("Owner pawn is null.")); return; }
 	UWorld* world = GetWorld();
 	if (nullptr == world) { UE_LOG(LogTemp, Warning, TEXT("World is null.")); return; }
-
-	// »ç°Ý ÀÌÆÑÆ® Àç»ý (Åº¾à¿¡¼­ ÇØÁà¾ßÇÔ)
-	WeaponAmmunition->PlayFireParticle();
-
-	// Å¸°Ý
+		
+	// ¹ß»ç
 	AController* instigatorController = ownerPawn->GetController();
-	const USkeletalMeshSocket* muzzleSocket = ItemMeshComponent->GetSocketByName(FName("Muzzle"));
-	if (muzzleSocket)
+	const USkeletalMeshSocket* meshSocket = ItemMeshComponent->GetSocketByName(FName("Muzzle"));
+	if (meshSocket)
 	{
-		WeaponPlatform->FireHitscan(world, _hitTarget, instigatorController, muzzleSocket);
+		WeaponPlatform->FireHitscan(world, _hitTarget, instigatorController, meshSocket);
 	}
 	else { UE_LOG(LogTemp, Warning, TEXT("Muzzle socket not found.")); }
+
+
+	UGameplayStatics::PlaySoundAtLocation(this, WeaponAmmunition->FireSound, ItemMeshComponent->GetBoneLocation(FName("Barrel")));
 
 	// ÃÑ¾Ë ¼Ò¸ðµÊ
 	WeaponPlatform->CycleCartridge(world);

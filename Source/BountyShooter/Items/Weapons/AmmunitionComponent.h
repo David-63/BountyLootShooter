@@ -8,6 +8,7 @@
 
 class AWeaponBase;
 class ACartridgeCase;
+class USoundBase;
 
 UCLASS( Blueprintable, BlueprintType, ClassGroup=(Weapon), meta=(BlueprintSpawnableComponent) )
 class BOUNTYSHOOTER_API UAmmunitionComponent : public UActorComponent
@@ -43,6 +44,10 @@ public:
 	void PlayTrailParticle();
 	void PlayImpactParticle();
 
+public:
+	UPROPERTY(EditAnywhere, Category = "Sounds")
+	USoundBase* FireSound = nullptr;
 
+	void PlayFireSound();
 
 };

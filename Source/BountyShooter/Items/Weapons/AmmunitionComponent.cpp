@@ -78,3 +78,7 @@ void UAmmunitionComponent::PlayImpactParticle()
 {
 }
 
+void UAmmunitionComponent::PlayFireSound()
+{
+}
+
