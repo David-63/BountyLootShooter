@@ -77,7 +77,7 @@ public:
 
 public:
 	// Hit Ray ·ÎÁ÷ 1, 2, 3
-	void FireHitscan(UWorld* World, const FVector& _hitTarget, AController* InstigatorController, const USkeletalMeshSocket* MuzzleSocket);
+	void FireHitscan(UWorld* World, const FVector& _hitTarget, AController* InstigatorController);
 	FVector WeaponTraceHit(const FVector& _traceStart, const FVector& _hitTarget, FHitResult& _inOutHit);
 	FVector TraceEndWithScatter(const FVector& _traceStart, const FVector& _hitTarget);
 	

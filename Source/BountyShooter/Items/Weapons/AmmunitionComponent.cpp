@@ -68,17 +68,24 @@ void UAmmunitionComponent::UpdateChamber(uint32& ClipSize, uint32 ClipCapacity, 
 
 void UAmmunitionComponent::PlayFireParticle()
 {
+
 }
 
-void UAmmunitionComponent::PlayTrailParticle()
+void UAmmunitionComponent::PlayTrailParticle(const FVector& Location)
 {
+	/*if (HitScanTrail)
+		{
+			FVector beginLocation = WeaponBase->GetItemMeshComponent()->GetBoneLocation(FName("Barrel"));
+
+			UParticleSystemComponent* trail = UGameplayStatics::SpawnEmitterAtLocation(this, HitScanTrail, beginLocation, FRotator::ZeroRotator, true);
+			if (trail)
+			{
+				trail->SetVectorParameter(FName("Target"), endLocation);
+			}
+		}*/
 }
 
-void UAmmunitionComponent::PlayImpactParticle()
-{
-}
-
-void UAmmunitionComponent::PlayFireSound()
+void UAmmunitionComponent::PlayImpactParticle(const FVector& Location)
 {
 }
 

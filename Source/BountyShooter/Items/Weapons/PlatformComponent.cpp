@@ -48,35 +48,34 @@ void UPlatformComponent::Initialize(AWeaponBase* Base)
 	WeaponBase = Base;
 }
 
-void UPlatformComponent::FireHitscan(UWorld* World, const FVector& _hitTarget, AController* InstigatorController, const USkeletalMeshSocket* MuzzleSocket)
+void UPlatformComponent::FireHitscan(UWorld* World, const FVector& _hitTarget, AController* InstigatorController)
 {
 	UWorld* world = GetWorld();
 	if (nullptr == world) { UE_LOG(LogTemp, Warning, TEXT("World is null.")); return; }
 	if (nullptr == InstigatorController) { UE_LOG(LogTemp, Warning, TEXT("Instigator controller is null.")); return; }
 
-	FTransform socketTransform = MuzzleSocket->GetSocketTransform(WeaponBase->GetItemMeshComponent());
-	FVector beginLocation = socketTransform.GetLocation();
+	// 사격음
+	UGameplayStatics::PlaySoundAtLocation(this, WeaponBase->GetAmmunitionComponent()->FireSound, WeaponBase->GetItemMeshComponent()->GetBoneLocation(FName("Barrel")));
+
+	//WeaponBase->GetAmmunitionComponent()->PlayFireParticle(endLocation);
+	// Hit 로직
+	FVector beginLocation = WeaponBase->GetItemMeshComponent()->GetBoneLocation(FName("Barrel"));
+	FVector endLocation = FVector();
+	bool isHit = false;
 	TMap<AActor*, uint32> hitMap;
+	FHitResult hitInfo;
 	for (uint32 pellet = 0; pellet < PelletCount; ++pellet)
-	{
-		FHitResult hitInfo;
-		FVector endLocation = WeaponTraceHit(beginLocation, _hitTarget, hitInfo);
+	{		
+		endLocation = WeaponTraceHit(beginLocation, _hitTarget, hitInfo);
 
 		// 궤적 이팩트 재생 (탄약에서 해줘야함)
-		WeaponBase->GetAmmunitionComponent()->PlayTrailParticle();
+		WeaponBase->GetAmmunitionComponent()->PlayTrailParticle(endLocation);
 
-		/*if (HitScanTrail)
-		{
-			UParticleSystemComponent* trail = UGameplayStatics::SpawnEmitterAtLocation(&world, HitScanTrail, beginLocation, FRotator::ZeroRotator, true);
-			if (trail)
-			{
-				trail->SetVectorParameter(FName("Target"), endLocation);
-			}
-		}*/
+		
 		AActor* victimActor = Cast<AActor>(hitInfo.GetActor());
 		// 맞춘거 같으면 TMap에 등록
 		if (victimActor)
-		{
+		{			
 			if (hitMap.Contains(victimActor))
 			{
 				hitMap[victimActor]++;
@@ -88,11 +87,11 @@ void UPlatformComponent::FireHitscan(UWorld* World, const FVector& _hitTarget, A
 		}
 
 		// 타격 이팩트 재생 (탄약에서 해줘야함)
-		WeaponBase->GetAmmunitionComponent()->PlayFireParticle();
-		/*if (hitInfo.bBlockingHit)
+		if (hitInfo.bBlockingHit)
 		{
-			PlayImpactEffect(hitInfo, world);
-		}*/
+			isHit = true;
+			WeaponBase->GetAmmunitionComponent()->PlayImpactParticle(endLocation);
+		}
 	}
 
 	for (auto hitPair : hitMap)
@@ -101,6 +100,16 @@ void UPlatformComponent::FireHitscan(UWorld* World, const FVector& _hitTarget, A
 		{
 			UGameplayStatics::ApplyDamage(hitPair.Key, GetTotalDamage() * hitPair.Value, InstigatorController, WeaponBase, UDamageType::StaticClass());
 		}
+	}
+
+	hitInfo.ImpactNormal;
+	hitInfo.Normal;
+	hitInfo.PhysMaterial;
+	
+	if (isHit)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, WeaponBase->GetAmmunitionComponent()->ImpactPlasterSound, endLocation);
+		UGameplayStatics::PlaySoundAtLocation(this, WeaponBase->GetAmmunitionComponent()->ImpactDebrisSound, endLocation);
 	}
 }
 
@@ -115,6 +124,9 @@ FVector UPlatformComponent::WeaponTraceHit(const FVector& _traceStart, const FVe
 		if (_inOutHit.bBlockingHit)
 		{
 			endLocation = _inOutHit.ImpactPoint;
+
+			// 충돌지점
+			DrawDebugSphere(GetWorld(), endLocation, 4.f, 6, FColor::Magenta, false, 0.1f);
 		}
 		return endLocation;
 	}
@@ -135,10 +147,13 @@ FVector UPlatformComponent::TraceEndWithScatter(const FVector& _traceStart, cons
 	// 시작점에서 최종 위치로의 벡터 계산
 	FVector toEndVector = bulletImpactPoint - _traceStart;
 
-	DrawDebugSphere(GetWorld(), scatterRangeCenter, SpreadRadius, 10, FColor::Green, false, 0.1f);
-	DrawDebugSphere(GetWorld(), bulletImpactPoint, 4.f, 6, FColor::Orange, false, 0.1f);
-	DrawDebugLine(GetWorld(), _traceStart, FVector(_traceStart + toEndVector * TRACE_LENGTH / toEndVector.Size()), FColor::Cyan, false, 0.1f);
-
+	// 범위
+	DrawDebugSphere(GetWorld(), scatterRangeCenter, SpreadRadius, 16, FColor::Green, false, -1.f);
+	// 산탄지점
+	DrawDebugSphere(GetWorld(), bulletImpactPoint, 8.f, 6, FColor::Orange, false, 0.1f);
+	// 궤적
+	DrawDebugLine(GetWorld(), _traceStart, FVector(_traceStart + toEndVector * TRACE_LENGTH / toEndVector.Size()), FColor::Cyan, false, -1.f);
+	
 	return FVector(_traceStart + toEndVector * TRACE_LENGTH / toEndVector.Size());
 }
 

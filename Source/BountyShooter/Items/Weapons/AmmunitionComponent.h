@@ -41,13 +41,15 @@ public:
 
 public:
 	void PlayFireParticle();
-	void PlayTrailParticle();
-	void PlayImpactParticle();
+	void PlayTrailParticle(const FVector& Location);
+	void PlayImpactParticle(const FVector& Location);
 
 public:
 	UPROPERTY(EditAnywhere, Category = "Sounds")
 	USoundBase* FireSound = nullptr;
-
-	void PlayFireSound();
-
+	
+	UPROPERTY(EditAnywhere, Category = "Sounds")
+	USoundBase* ImpactPlasterSound = nullptr;
+	UPROPERTY(EditAnywhere, Category = "Sounds")
+	USoundBase* ImpactDebrisSound = nullptr;
 };

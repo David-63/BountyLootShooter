@@ -78,15 +78,10 @@ void AWeaponBase::FireRound(const FVector& _hitTarget)
 		
 	// ¹ß»ç
 	AController* instigatorController = ownerPawn->GetController();
-	const USkeletalMeshSocket* meshSocket = ItemMeshComponent->GetSocketByName(FName("Muzzle"));
-	if (meshSocket)
-	{
-		WeaponPlatform->FireHitscan(world, _hitTarget, instigatorController, meshSocket);
-	}
-	else { UE_LOG(LogTemp, Warning, TEXT("Muzzle socket not found.")); }
+	WeaponPlatform->FireHitscan(world, _hitTarget, instigatorController);
 
-
-	UGameplayStatics::PlaySoundAtLocation(this, WeaponAmmunition->FireSound, ItemMeshComponent->GetBoneLocation(FName("Barrel")));
+	// »ç¿îµå
+	
 
 	// ÃÑ¾Ë ¼Ò¸ðµÊ
 	WeaponPlatform->CycleCartridge(world);
