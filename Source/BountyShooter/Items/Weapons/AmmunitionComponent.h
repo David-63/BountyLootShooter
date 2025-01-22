@@ -47,9 +47,4 @@ public:
 public:
 	UPROPERTY(EditAnywhere, Category = "Sounds")
 	USoundBase* FireSound = nullptr;
-	
-	UPROPERTY(EditAnywhere, Category = "Sounds")
-	USoundBase* ImpactPlasterSound = nullptr;
-	UPROPERTY(EditAnywhere, Category = "Sounds")
-	USoundBase* ImpactDebrisSound = nullptr;
 };

@@ -4,11 +4,13 @@
 #include "WeaponBase.h"
 #include "BountyShooter/Character/ShooterCharacter.h"
 #include "BountyShooter/Character/ShooterInventoryHandler.h"
+#include "BountyShooter/Character/ShooterCombatHandler.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Kismet/GameplayStatics.h"
 #include "../ItemMeshComponent.h"
 #include "AmmunitionComponent.h"
 #include "PlatformComponent.h"
+#include "Sound/SoundBase.h"
 
 void AWeaponBase::Equip(AShooterCharacter* Character, FName Socket)
 {
@@ -78,13 +80,14 @@ void AWeaponBase::FireRound(const FVector& _hitTarget)
 		
 	// ¹ß»ç
 	AController* instigatorController = ownerPawn->GetController();
-	WeaponPlatform->FireHitscan(world, _hitTarget, instigatorController);
+	WeaponPlatform->FireHitscan(_hitTarget, instigatorController);
 
-	// »ç¿îµå
+	// ImpactSound
 	
 
 	// ÃÑ¾Ë ¼Ò¸ðµÊ
 	WeaponPlatform->CycleCartridge(world);
+	
 }
 
 void AWeaponBase::Reload()

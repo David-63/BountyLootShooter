@@ -6,10 +6,10 @@
 #include "Components/ActorComponent.h"
 #include "ShooterCombatHandler.generated.h"
 
+struct FInputActionValue;
 class AShooterCharacter;
 class UInputAction;
-struct FInputActionValue;
-
+class USoundBase;
 
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup=(ShooterHandler), meta=(BlueprintSpawnableComponent) )
@@ -65,7 +65,6 @@ public:
 	void Melee();
 	void Throw();
 
-
 protected:
 	FTimerHandle FireTimer = FTimerHandle();
 
@@ -74,4 +73,14 @@ protected:
 	void FireTimerStart();
 	void FireTimerFinished();
 	bool CanFire();
+
+public:
+	UPROPERTY(EditAnywhere, Category = "Sounds")
+	USoundBase* ImpactPlasterSound = nullptr;
+	UPROPERTY(EditAnywhere, Category = "Sounds")
+	USoundBase* ImpactPlasterDebrisSound = nullptr;
+	UPROPERTY(EditAnywhere, Category = "Sounds")
+	USoundBase* ImpactGlassSound = nullptr;
+	UPROPERTY(EditAnywhere, Category = "Sounds")
+	USoundBase* ImpactGlassDebrisSound = nullptr;
 };

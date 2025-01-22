@@ -53,7 +53,7 @@ public:
 	/*
 	*	Actors
 	*/
-protected:
+public:
 	UPROPERTY()
 	TObjectPtr<AShooterCharacter> ShooterCharacter = nullptr;
 

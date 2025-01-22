@@ -109,8 +109,6 @@ void UShooterCombatHandler::AmmoInsertion()
 
 void UShooterCombatHandler::Fire()
 {
-	// 제어 조건
-
 	EGate currentGate = ShooterCharacter->GetCharacterAnimInstance()->GetCurrentGate();
 
 	if (EGate::EG_Sprint == currentGate)
@@ -127,6 +125,8 @@ void UShooterCombatHandler::Fire()
 		ShooterCharacter->PlayAnimMontage(weapon->GetPlatformComponent()->GetFireMontage(), 1.f);
 		weapon->GetPlatformComponent()->PlayFireMontage();
 		weapon->FireRound(ShooterCharacter->GetHitLocation());
+
+		
 	}
 }
 

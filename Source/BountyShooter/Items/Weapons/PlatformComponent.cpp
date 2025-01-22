@@ -7,6 +7,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "BountyShooter/Character/ShooterCharacter.h"
 #include "BountyShooter/Character/ShooterInventoryHandler.h"
+#include "BountyShooter/Character/ShooterCombatHandler.h"
 
 #include "Engine/SkeletalMeshSocket.h"
 #include "../ItemMeshComponent.h"
@@ -48,20 +49,16 @@ void UPlatformComponent::Initialize(AWeaponBase* Base)
 	WeaponBase = Base;
 }
 
-void UPlatformComponent::FireHitscan(UWorld* World, const FVector& _hitTarget, AController* InstigatorController)
+FHitResult UPlatformComponent::FireHitscan(const FVector& _hitTarget, AController* InstigatorController)
 {
-	UWorld* world = GetWorld();
-	if (nullptr == world) { UE_LOG(LogTemp, Warning, TEXT("World is null.")); return; }
-	if (nullptr == InstigatorController) { UE_LOG(LogTemp, Warning, TEXT("Instigator controller is null.")); return; }
+	if (nullptr == InstigatorController) { UE_LOG(LogTemp, Warning, TEXT("Instigator controller is null.")); return FHitResult(); }
 
 	// 사격음
 	UGameplayStatics::PlaySoundAtLocation(this, WeaponBase->GetAmmunitionComponent()->FireSound, WeaponBase->GetItemMeshComponent()->GetBoneLocation(FName("Barrel")));
 
-	//WeaponBase->GetAmmunitionComponent()->PlayFireParticle(endLocation);
 	// Hit 로직
 	FVector beginLocation = WeaponBase->GetItemMeshComponent()->GetBoneLocation(FName("Barrel"));
 	FVector endLocation = FVector();
-	bool isHit = false;
 	TMap<AActor*, uint32> hitMap;
 	FHitResult hitInfo;
 	for (uint32 pellet = 0; pellet < PelletCount; ++pellet)
@@ -88,8 +85,7 @@ void UPlatformComponent::FireHitscan(UWorld* World, const FVector& _hitTarget, A
 
 		// 타격 이팩트 재생 (탄약에서 해줘야함)
 		if (hitInfo.bBlockingHit)
-		{
-			isHit = true;
+		{			
 			WeaponBase->GetAmmunitionComponent()->PlayImpactParticle(endLocation);
 		}
 	}
@@ -101,16 +97,56 @@ void UPlatformComponent::FireHitscan(UWorld* World, const FVector& _hitTarget, A
 			UGameplayStatics::ApplyDamage(hitPair.Key, GetTotalDamage() * hitPair.Value, InstigatorController, WeaponBase, UDamageType::StaticClass());
 		}
 	}
-
-	hitInfo.ImpactNormal;
-	hitInfo.Normal;
-	hitInfo.PhysMaterial;
-	
-	if (isHit)
+	if (hitInfo.bBlockingHit)
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, WeaponBase->GetAmmunitionComponent()->ImpactPlasterSound, endLocation);
-		UGameplayStatics::PlaySoundAtLocation(this, WeaponBase->GetAmmunitionComponent()->ImpactDebrisSound, endLocation);
+		
+		if (WeaponBase->ShooterCharacter->CombatHandler->ImpactPlasterSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, WeaponBase->ShooterCharacter->CombatHandler->ImpactPlasterSound, hitInfo.ImpactPoint);
+		}
+		if (WeaponBase->ShooterCharacter->CombatHandler->ImpactPlasterDebrisSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, WeaponBase->ShooterCharacter->CombatHandler->ImpactPlasterDebrisSound, hitInfo.ImpactPoint);
+		}
+		if (nullptr == hitInfo.PhysMaterial)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("No PhysMtrl"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Find SurfaceType"));
+			switch (hitInfo.PhysMaterial->SurfaceType)
+			{
+			case SurfaceType_Default:
+				UE_LOG(LogTemp, Warning, TEXT("Default"));
+				break;
+			case SurfaceType1:
+				UE_LOG(LogTemp, Warning, TEXT("1"));
+				break;
+			}			
+		}
+		//UE_LOG(LogTemp, Warning, TEXT("Enum Value: %d"), static_cast<int32>(hitInfo.PhysMaterial->SurfaceType));
+
+		/*UE_LOG(LogTemp, Warning, TEXT("Find SurfaceType"));
+		if (EPhysicalSurface::SurfaceType_Default == hitInfo.PhysMaterial->SurfaceType)
+		{
+			
+			
+
+		}
+		if (EPhysicalSurface::SurfaceType1 == hitInfo.PhysMaterial->SurfaceType)
+		{
+			if (WeaponBase->ShooterCharacter->CombatHandler->ImpactGlassSound)
+			{
+				UGameplayStatics::PlaySoundAtLocation(this, WeaponBase->ShooterCharacter->CombatHandler->ImpactGlassSound, hitInfo.ImpactPoint);
+			}
+			if (WeaponBase->ShooterCharacter->CombatHandler->ImpactGlassDebrisSound)
+			{
+				UGameplayStatics::PlaySoundAtLocation(this, WeaponBase->ShooterCharacter->CombatHandler->ImpactGlassDebrisSound, hitInfo.ImpactPoint);
+			}
+		}*/
 	}
+	return hitInfo;
 }
 
 FVector UPlatformComponent::WeaponTraceHit(const FVector& _traceStart, const FVector& _hitTarget, FHitResult& _inOutHit)
@@ -119,7 +155,9 @@ FVector UPlatformComponent::WeaponTraceHit(const FVector& _traceStart, const FVe
 	if (world)
 	{
 		FVector endLocation = TraceEndWithScatter(_traceStart, _hitTarget);
-		world->LineTraceSingleByChannel(_inOutHit, _traceStart, endLocation, ECollisionChannel::ECC_Visibility);
+		FCollisionQueryParams queryParams;
+		queryParams.bReturnPhysicalMaterial = true;
+		world->LineTraceSingleByChannel(_inOutHit, _traceStart, endLocation, ECollisionChannel::ECC_Visibility, queryParams);
 
 		if (_inOutHit.bBlockingHit)
 		{
