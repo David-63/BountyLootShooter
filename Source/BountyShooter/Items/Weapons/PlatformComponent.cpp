@@ -49,9 +49,9 @@ void UPlatformComponent::Initialize(AWeaponBase* Base)
 	WeaponBase = Base;
 }
 
-FHitResult UPlatformComponent::FireHitscan(const FVector& _hitTarget, AController* InstigatorController)
+void UPlatformComponent::FireHitscan(const FVector& _hitTarget, AController* InstigatorController)
 {
-	if (nullptr == InstigatorController) { UE_LOG(LogTemp, Warning, TEXT("Instigator controller is null.")); return FHitResult(); }
+	if (nullptr == InstigatorController) { UE_LOG(LogTemp, Warning, TEXT("Instigator controller is null.")); return; }
 
 	// 사격음
 	UGameplayStatics::PlaySoundAtLocation(this, WeaponBase->GetAmmunitionComponent()->FireSound, WeaponBase->GetItemMeshComponent()->GetBoneLocation(FName("Barrel")));
@@ -61,6 +61,7 @@ FHitResult UPlatformComponent::FireHitscan(const FVector& _hitTarget, AControlle
 	FVector endLocation = FVector();
 	TMap<AActor*, uint32> hitMap;
 	FHitResult hitInfo;
+	bool isHit = false;
 	for (uint32 pellet = 0; pellet < PelletCount; ++pellet)
 	{		
 		endLocation = WeaponTraceHit(beginLocation, _hitTarget, hitInfo);
@@ -85,7 +86,8 @@ FHitResult UPlatformComponent::FireHitscan(const FVector& _hitTarget, AControlle
 
 		// 타격 이팩트 재생 (탄약에서 해줘야함)
 		if (hitInfo.bBlockingHit)
-		{			
+		{
+			isHit = true;
 			WeaponBase->GetAmmunitionComponent()->PlayImpactParticle(endLocation);
 		}
 	}
@@ -97,42 +99,23 @@ FHitResult UPlatformComponent::FireHitscan(const FVector& _hitTarget, AControlle
 			UGameplayStatics::ApplyDamage(hitPair.Key, GetTotalDamage() * hitPair.Value, InstigatorController, WeaponBase, UDamageType::StaticClass());
 		}
 	}
-	if (hitInfo.bBlockingHit)
+	if (isHit)
 	{
-		
-		if (WeaponBase->ShooterCharacter->CombatHandler->ImpactPlasterSound)
-		{
-			UGameplayStatics::PlaySoundAtLocation(this, WeaponBase->ShooterCharacter->CombatHandler->ImpactPlasterSound, hitInfo.ImpactPoint);
-		}
-		if (WeaponBase->ShooterCharacter->CombatHandler->ImpactPlasterDebrisSound)
-		{
-			UGameplayStatics::PlaySoundAtLocation(this, WeaponBase->ShooterCharacter->CombatHandler->ImpactPlasterDebrisSound, hitInfo.ImpactPoint);
-		}
 		if (nullptr == hitInfo.PhysMaterial)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("No PhysMtrl"));
+			return;
 		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Find SurfaceType"));
-			switch (hitInfo.PhysMaterial->SurfaceType)
-			{
-			case SurfaceType_Default:
-				UE_LOG(LogTemp, Warning, TEXT("Default"));
-				break;
-			case SurfaceType1:
-				UE_LOG(LogTemp, Warning, TEXT("1"));
-				break;
-			}			
-		}
-		//UE_LOG(LogTemp, Warning, TEXT("Enum Value: %d"), static_cast<int32>(hitInfo.PhysMaterial->SurfaceType));
-
-		/*UE_LOG(LogTemp, Warning, TEXT("Find SurfaceType"));
 		if (EPhysicalSurface::SurfaceType_Default == hitInfo.PhysMaterial->SurfaceType)
 		{
-			
-			
-
+			if (WeaponBase->ShooterCharacter->CombatHandler->ImpactPlasterSound)
+			{
+				UGameplayStatics::PlaySoundAtLocation(this, WeaponBase->ShooterCharacter->CombatHandler->ImpactPlasterSound, hitInfo.ImpactPoint);
+			}
+			if (WeaponBase->ShooterCharacter->CombatHandler->ImpactPlasterDebrisSound)
+			{
+				UGameplayStatics::PlaySoundAtLocation(this, WeaponBase->ShooterCharacter->CombatHandler->ImpactPlasterDebrisSound, hitInfo.ImpactPoint);
+			}
 		}
 		if (EPhysicalSurface::SurfaceType1 == hitInfo.PhysMaterial->SurfaceType)
 		{
@@ -144,9 +127,8 @@ FHitResult UPlatformComponent::FireHitscan(const FVector& _hitTarget, AControlle
 			{
 				UGameplayStatics::PlaySoundAtLocation(this, WeaponBase->ShooterCharacter->CombatHandler->ImpactGlassDebrisSound, hitInfo.ImpactPoint);
 			}
-		}*/
+		}		
 	}
-	return hitInfo;
 }
 
 FVector UPlatformComponent::WeaponTraceHit(const FVector& _traceStart, const FVector& _hitTarget, FHitResult& _inOutHit)

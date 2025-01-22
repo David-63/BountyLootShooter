@@ -55,7 +55,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Platform Property")	// 유효 거리
 	float EffectiveRange = 500.f;
 	UPROPERTY(EditAnywhere, Category = "Platform Property")	// 산탄(집탄율) 범위
-	float SpreadRadius = 25.f;
+	float SpreadRadius = 10.f;
 	UPROPERTY(EditAnywhere, Category = "Platform Property") // 멀티샷 개수
 	uint32 PelletCount = 2;
 
@@ -77,7 +77,7 @@ public:
 
 public:
 	// Hit Ray 로직 1, 2, 3
-	FHitResult FireHitscan(const FVector& _hitTarget, AController* InstigatorController);
+	void FireHitscan(const FVector& _hitTarget, AController* InstigatorController);
 	FVector WeaponTraceHit(const FVector& _traceStart, const FVector& _hitTarget, FHitResult& _inOutHit);
 	FVector TraceEndWithScatter(const FVector& _traceStart, const FVector& _hitTarget);
 	
