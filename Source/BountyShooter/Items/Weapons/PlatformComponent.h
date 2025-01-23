@@ -53,9 +53,9 @@ public:
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Platform Property")	// 유효 거리
-	float EffectiveRange = 500.f;
+	float EffectiveRange = 1200.f;
 	UPROPERTY(EditAnywhere, Category = "Platform Property")	// 산탄(집탄율) 범위
-	float SpreadRadius = 10.f;
+	float SpreadRadius = 25.f;
 	UPROPERTY(EditAnywhere, Category = "Platform Property") // 멀티샷 개수
 	uint32 PelletCount = 2;
 

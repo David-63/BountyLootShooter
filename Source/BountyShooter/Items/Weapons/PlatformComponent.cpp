@@ -127,7 +127,7 @@ void UPlatformComponent::FireHitscan(const FVector& _hitTarget, AController* Ins
 			{
 				UGameplayStatics::PlaySoundAtLocation(this, WeaponBase->ShooterCharacter->CombatHandler->ImpactGlassDebrisSound, hitInfo.ImpactPoint);
 			}
-		}		
+		}
 	}
 }
 
