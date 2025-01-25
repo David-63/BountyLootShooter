@@ -60,7 +60,7 @@ private:
 	uint32 PelletCount = 2;
 
 	UPROPERTY(EditAnywhere, Category = "Platform Property")
-	uint32 PlatformBaseClipCapacity = 25.f;	
+	uint32 PlatformBaseClipCapacity = 25.f;
 	UPROPERTY(EditAnywhere, Category = "Platform Property")
 	uint32 CurrentClipSize = 25.f;
 
